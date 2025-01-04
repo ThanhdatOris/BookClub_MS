@@ -3,3 +3,16 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+registration:
+    path: /registration
+    controller: App\Controller\LoginController::new
+    methods: ['GET', 'POST']
+
+logout:
+    path: /logout
+    controller: App\Controller\LoginController::index
+
+profile:
+    path: /profile
+    controller: App\Controller\LoginController::index
