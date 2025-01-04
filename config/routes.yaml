@@ -15,4 +15,4 @@ logout:
 
 profile:
     path: /profile
-    controller: App\Controller\LoginController::index
+    controller: App\Controller\DefaultController::profile
