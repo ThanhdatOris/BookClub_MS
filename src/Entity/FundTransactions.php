@@ -24,7 +24,7 @@ class FundTransactions
     private ?\DateTimeInterface $date = null;
 
     #[ORM\ManyToOne]
-    private ?users $executed_by = null;
+    private ?Users $executed_by = null;
 
     public function getId(): ?int
     {
@@ -79,12 +79,12 @@ class FundTransactions
         return $this;
     }
 
-    public function getExecutedBy(): ?users
+    public function getExecutedBy(): ?Users
     {
         return $this->executed_by;
     }
 
-    public function setExecutedBy(?users $executed_by): static
+    public function setExecutedBy(?Users $executed_by): static
     {
         $this->executed_by = $executed_by;
 

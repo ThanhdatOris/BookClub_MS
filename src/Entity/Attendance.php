@@ -17,14 +17,14 @@ class Attendance
     private ?int $id = null;
 
     /**
-     * @var Collection<int, members>
+     * @var Collection<int, Members>
      */
-    #[ORM\ManyToMany(targetEntity: members::class)]
+    #[ORM\ManyToMany(targetEntity: Members::class)]
     private Collection $member_id;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?activities $activity_id = null;
+    private ?Activities $activity_id = null;
 
     #[ORM\Column]
     private ?bool $checked_in = null;
@@ -46,14 +46,14 @@ class Attendance
     }
 
     /**
-     * @return Collection<int, members>
+     * @return Collection<int, Members>
      */
     public function getMemberId(): Collection
     {
         return $this->member_id;
     }
 
-    public function addMemberId(members $memberId): static
+    public function addMemberId(Members $memberId): static
     {
         if (!$this->member_id->contains($memberId)) {
             $this->member_id->add($memberId);
@@ -62,19 +62,19 @@ class Attendance
         return $this;
     }
 
-    public function removeMemberId(members $memberId): static
+    public function removeMemberId(Members $memberId): static
     {
         $this->member_id->removeElement($memberId);
 
         return $this;
     }
 
-    public function getActivityId(): ?activities
+    public function getActivityId(): ?Activities
     {
         return $this->activity_id;
     }
 
-    public function setActivityId(?activities $activity_id): static
+    public function setActivityId(?Activities $activity_id): static
     {
         $this->activity_id = $activity_id;
 
