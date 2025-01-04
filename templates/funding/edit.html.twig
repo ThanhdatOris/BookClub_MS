@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit FundTransactions{% endblock %}
+
+{% block body %}
+    <h1>Edit FundTransactions</h1>
+
+    {{ include('funding/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_funding_index') }}">back to list</a>
+
+    {{ include('funding/_delete_form.html.twig') }}
+{% endblock %}
