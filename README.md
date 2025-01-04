@@ -18,7 +18,7 @@ composer update
 
 symfony new --webapp ./
 ```
-- Cài các gói composer cần thiết (xem phụ lục) hoặc bỏ qua nếu đã cài symfony clicli
+- Cài các gói composer cần thiết (xem phụ lục) hoặc bỏ qua nếu đã cài symfony cli
 - Cấu hình .env
 ```php
 DATABASE_URL="mysql://root:<your password>@127.0.0.1:3306/bookclub?serverVersion=8.0.32&charset=utf8mb4"
@@ -34,10 +34,15 @@ Created database `bookclub` for connection named default
 ```bash
 php bin/console make:entity <tên_entity>
 ```
+
 - Sau khi update entity
 ```bash
 php bin/console doctrine:database:create  # Nếu chưa tạo database
 php bin/console make:migration
 php bin/console doctrine:migrations:migrate
 ```
+- Tạo controller
+```bash
+php bin/console make:crud <Name>
 
+```
