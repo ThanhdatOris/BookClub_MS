@@ -3,6 +3,6 @@
     type: upstream
     upstream: "app:http"
 
-"https://bookclub.io.vnvn/":
+"https://bookclub.io.vn/":
     type: redirect
     to: "https://www.bookclub.io.vn/"
