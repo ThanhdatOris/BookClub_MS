@@ -1,0 +1,8 @@
+# Each route describes how an incoming URL is going to be processed by Platform.sh.
+"https://www.bookclub.io.vn/":
+    type: upstream
+    upstream: "app:http"
+
+"https://bookclub.io.vnvn/":
+    type: redirect
+    to: "https://www.bookclub.io.vn/"
