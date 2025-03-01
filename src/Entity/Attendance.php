@@ -37,7 +37,7 @@ class Attendance
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?users $checked_by_id = null;
+    private ?UUsers $checked_by_id = null;
 
     public function __construct()
     {
@@ -121,12 +121,12 @@ class Attendance
         return $this;
     }
 
-    public function getCheckedById(): ?users
+    public function getCheckedById(): ?Users
     {
         return $this->checked_by_id;
     }
 
-    public function setCheckedById(?users $checked_by_id): static
+    public function setCheckedById(?Users $checked_by_id): static
     {
         $this->checked_by_id = $checked_by_id;
 

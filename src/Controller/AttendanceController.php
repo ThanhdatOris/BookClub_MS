@@ -26,7 +26,7 @@ final class AttendanceController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $attendance = new Attendance();
-        $form = $this->createForm(Attendance1Type::class, $attendance);
+        $form = $this->createForm(AttendanceType::class, $attendance);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -53,7 +53,7 @@ final class AttendanceController extends AbstractController
     #[Route('/{id}/edit', name: 'app_attendance_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Attendance $attendance, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(Attendance1Type::class, $attendance);
+        $form = $this->createForm(AttendanceType::class, $attendance);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
