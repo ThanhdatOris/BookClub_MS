@@ -16,24 +16,28 @@ class Attendance
     #[ORM\Column]
     private ?int $id = null;
 
-    /**
-     * @var Collection<int, Members>
-     */
-    #[ORM\ManyToMany(targetEntity: Members::class)]
-    private Collection $member_id;
-
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Activities $activity_id = null;
+    private ?activities $activity_id = null;
+
+    /**
+     * @var Collection<int, members>
+     */
+    #[ORM\ManyToMany(targetEntity: members::class)]
+    private Collection $member_id;
 
     #[ORM\Column]
     private ?bool $checked_in = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $checked_in_time = null;
+    private ?\DateTimeInterface $check_in_time = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $remarks = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?users $checked_by_id = null;
 
     public function __construct()
     {
@@ -45,15 +49,27 @@ class Attendance
         return $this->id;
     }
 
+    public function getActivityId(): ?activities
+    {
+        return $this->activity_id;
+    }
+
+    public function setActivityId(?activities $activity_id): static
+    {
+        $this->activity_id = $activity_id;
+
+        return $this;
+    }
+
     /**
-     * @return Collection<int, Members>
+     * @return Collection<int, members>
      */
     public function getMemberId(): Collection
     {
         return $this->member_id;
     }
 
-    public function addMemberId(Members $memberId): static
+    public function addMemberId(members $memberId): static
     {
         if (!$this->member_id->contains($memberId)) {
             $this->member_id->add($memberId);
@@ -62,21 +78,9 @@ class Attendance
         return $this;
     }
 
-    public function removeMemberId(Members $memberId): static
+    public function removeMemberId(members $memberId): static
     {
         $this->member_id->removeElement($memberId);
-
-        return $this;
-    }
-
-    public function getActivityId(): ?Activities
-    {
-        return $this->activity_id;
-    }
-
-    public function setActivityId(?Activities $activity_id): static
-    {
-        $this->activity_id = $activity_id;
 
         return $this;
     }
@@ -93,14 +97,14 @@ class Attendance
         return $this;
     }
 
-    public function getCheckedInTime(): ?\DateTimeInterface
+    public function getCheckInTime(): ?\DateTimeInterface
     {
-        return $this->checked_in_time;
+        return $this->check_in_time;
     }
 
-    public function setCheckedInTime(?\DateTimeInterface $checked_in_time): static
+    public function setCheckInTime(?\DateTimeInterface $check_in_time): static
     {
-        $this->checked_in_time = $checked_in_time;
+        $this->check_in_time = $check_in_time;
 
         return $this;
     }
@@ -113,6 +117,18 @@ class Attendance
     public function setRemarks(?string $remarks): static
     {
         $this->remarks = $remarks;
+
+        return $this;
+    }
+
+    public function getCheckedById(): ?users
+    {
+        return $this->checked_by_id;
+    }
+
+    public function setCheckedById(?users $checked_by_id): static
+    {
+        $this->checked_by_id = $checked_by_id;
 
         return $this;
     }

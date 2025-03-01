@@ -10,7 +10,7 @@
             <tr>
                 <th>Id</th>
                 <th>Checked_in</th>
-                <th>Checked_in_time</th>
+                <th>Check_in_time</th>
                 <th>Remarks</th>
                 <th>actions</th>
             </tr>
@@ -20,7 +20,7 @@
             <tr>
                 <td>{{ attendance.id }}</td>
                 <td>{{ attendance.checkedIn ? 'Yes' : 'No' }}</td>
-                <td>{{ attendance.checkedInTime ? attendance.checkedInTime|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ attendance.checkInTime ? attendance.checkInTime|date('Y-m-d H:i:s') : '' }}</td>
                 <td>{{ attendance.remarks }}</td>
                 <td>
                     <a href="{{ path('app_attendance_show', {'id': attendance.id}) }}">show</a>

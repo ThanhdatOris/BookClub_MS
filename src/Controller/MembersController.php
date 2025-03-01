@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Members;
-use App\Form\MembersType;
+use App\Form\Members1Type;
 use App\Repository\MembersRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +26,7 @@ final class MembersController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $member = new Members();
-        $form = $this->createForm(MembersType::class, $member);
+        $form = $this->createForm(Members1Type::class, $member);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -53,7 +53,7 @@ final class MembersController extends AbstractController
     #[Route('/{id}/edit', name: 'app_members_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Members $member, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(MembersType::class, $member);
+        $form = $this->createForm(Members1Type::class, $member);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

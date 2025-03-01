@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Activities;
-use App\Form\ActivitiesType;
+use App\Form\Activities1Type;
 use App\Repository\ActivitiesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +26,7 @@ final class ActivitiesController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $activity = new Activities();
-        $form = $this->createForm(ActivitiesType::class, $activity);
+        $form = $this->createForm(Activities1Type::class, $activity);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -53,7 +53,7 @@ final class ActivitiesController extends AbstractController
     #[Route('/{id}/edit', name: 'app_activities_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Activities $activity, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(ActivitiesType::class, $activity);
+        $form = $this->createForm(Activities1Type::class, $activity);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
