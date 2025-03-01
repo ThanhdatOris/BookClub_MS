@@ -3,20 +3,39 @@
 namespace App\Controller;
 
 use App\Entity\Activities;
-use App\Form\Activities1Type;
+use App\Form\ActivitiesType;
 use App\Repository\ActivitiesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/activities')]
 final class ActivitiesController extends AbstractController
 {
     #[Route(name: 'app_activities_index', methods: ['GET'])]
-    public function index(ActivitiesRepository $activitiesRepository): Response
+    public function index(Request $request, ActivitiesRepository $activitiesRepository): Response
     {
+        if ($request->isXmlHttpRequest()) {
+            $activities = $activitiesRepository->findAll();
+            $data = [];
+
+            foreach ($activities as $activity) {
+                $data[] = [
+                    'id' => $activity->getId(),
+                    'title' => $activity->getTitle(),
+                    'description' => $activity->getDescription(),
+                    'date' => $activity->getDate()?->format('Y-m-d'),
+                    'time' => $activity->getTime()?->format('H:i:s'),
+                    'status' => $activity->getStatus(),
+                ];
+            }
+
+            return new JsonResponse(['data' => $data]);
+        }
+
         return $this->render('activities/index.html.twig', [
             'activities' => $activitiesRepository->findAll(),
         ]);

@@ -3,7 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Activities;
-use App\Entity\users;
+use App\Entity\Users;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -15,14 +15,13 @@ class ActivitiesType extends AbstractType
     {
         $builder
             ->add('title')
-            ->add('act_descr')
+            ->add('description')
             ->add('date', null, [
                 'widget' => 'single_text',
             ])
             ->add('time', null, [
                 'widget' => 'single_text',
             ])
-            ->add('place')
             ->add('status')
             ->add('created_by', EntityType::class, [
                 'class' => users::class,
