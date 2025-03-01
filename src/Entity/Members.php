@@ -33,7 +33,7 @@ class Members
     private ?\DateTimeInterface $birth_date = null;
 
     #[ORM\OneToOne(inversedBy: 'member_id', cascade: ['persist', 'remove'])]
-    private ?users $user_id = null;
+    private ?Users $user_id = null;
 
     #[ORM\Column(length: 255)]
     private ?string $Classes = null;
@@ -118,12 +118,12 @@ class Members
         return $this;
     }
 
-    public function getUserId(): ?users
+    public function getUserId(): ?Users
     {
         return $this->user_id;
     }
 
-    public function setUserId(?users $user_id): static
+    public function setUserId(?Users $user_id): static
     {
         $this->user_id = $user_id;
 

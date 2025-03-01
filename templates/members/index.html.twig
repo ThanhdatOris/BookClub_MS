@@ -12,7 +12,7 @@
                         <h6>Danh sách thành viên</h6>
                     </div>
                     <div class="card-body px-4 pt-0 pb-2"> <!-- Thêm lớp px-3 để tạo khoảng trống -->
-                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <div class="table-responsive">
                             <table id="membersTable" class="table align-items-center mb-0">
                                 <thead class="sticky-top bg-white">
                                     <tr>
@@ -51,28 +51,31 @@
 
 <script>
 $(document).ready(function() {
-    $('#membersTable').DataTable({
-        "ajax": "{{ path('app_members_index') }}",
-        "columns": [
-            { "data": "id" },
-            { "data": "fullname" },
-            { "data": "student_id" },
-            { "data": "email" },
-            { "data": "phone" },
-            { "data": "faculty" },
-            { "data": "join_date", "className": "text-center" },
-            {
-                "data": null,
-                "className": "align-middle",
-                "render": function(data, type, row) {
-                    return '<a href="{{ path('app_members_show', {'id': 'ID_PLACEHOLDER'}) }}" class="btn btn-primary btn-sm">Xem chi tiết</a>'.replace('ID_PLACEHOLDER', row.id);
+    if (!$.fn.DataTable.isDataTable('#membersTable')) {
+        $('#membersTable').DataTable({
+            "ajax": "{{ path('app_members_index') }}",
+            "columns": [
+                { "data": "id" },
+                { "data": "fullname" },
+                { "data": "student_id" },
+                { "data": "email" },
+                { "data": "phone" },
+                { "data": "faculty" },
+                { "data": "join_date", "className": "text-center" },
+                {
+                    "data": null,
+                    "className": "align-middle",
+                    "render": function(data, type, row) {
+                        return '<a href="{{ path('app_members_show', {'id': 'ID_PLACEHOLDER'}) }}" class="btn btn-primary btn-sm">Show</a> ' +
+                                '<a href="{{ path('app_members_edit', {'id': 'ID_PLACEHOLDER'}) }}" class="btn btn-secondary btn-sm">Edit</a>'.replace(/ID_PLACEHOLDER/g, row.id);
+                    }
                 }
-            }
-        ],
-        "scrollX": true,  // Kéo ngang nếu bảng quá dài
-        "autoWidth": false,  // Không tự động co giãn
-        "order": [[0, "asc"]]  // Sắp xếp theo ID
-    });
+            ],
+            "scrollX": true,
+            "autoWidth": false,
+            "order": [[0, "asc"]]
+        });
+    }
 });
 </script>
 {% endblock %}

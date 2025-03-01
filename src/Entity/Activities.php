@@ -30,7 +30,7 @@ class Activities
     private ?string $status = null;
 
     #[ORM\ManyToOne]
-    private ?users $created_by = null;
+    private ?Users $created_by = null;
 
     public function getId(): ?int
     {
@@ -97,12 +97,12 @@ class Activities
         return $this;
     }
 
-    public function getCreatedBy(): ?users
+    public function getCreatedBy(): ?Users
     {
         return $this->created_by;
     }
 
-    public function setCreatedBy(?users $created_by): static
+    public function setCreatedBy(?Users $created_by): static
     {
         $this->created_by = $created_by;
 

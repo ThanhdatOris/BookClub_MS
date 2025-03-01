@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/members')]
 class MembersController extends AbstractController
 {
-    #[Route('/', name: 'app_members_index', methods: ['GET'])]
+    #[Route(name: 'app_members_index', methods: ['GET'])]
     public function index(Request $request, MembersRepository $membersRepository): Response
     {
         if ($request->isXmlHttpRequest()) {
@@ -37,7 +37,9 @@ class MembersController extends AbstractController
             return new JsonResponse(['data' => $data]);
         }
 
-        return $this->render('members/index.html.twig');
+        return $this->render('members/index.html.twig', [
+            'members' => $membersRepository->findAll(),
+        ]);
     }
 
 
@@ -45,7 +47,7 @@ class MembersController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $member = new Members();
-        $form = $this->createForm(Members1Type::class, $member);
+        $form = $this->createForm(MembersType::class, $member);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -72,7 +74,7 @@ class MembersController extends AbstractController
     #[Route('/{id}/edit', name: 'app_members_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Members $member, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(Members1Type::class, $member);
+        $form = $this->createForm(MembersType::class, $member);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

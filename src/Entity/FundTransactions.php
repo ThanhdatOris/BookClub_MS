@@ -28,7 +28,7 @@ class FundTransactions
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?users $executed_by_id = null;
+    private ?UUsers $executed_by_id = null;
 
     #[ORM\ManyToOne]
     private ?members $related_member_id = null;
@@ -86,12 +86,12 @@ class FundTransactions
         return $this;
     }
 
-    public function getExecutedById(): ?users
+    public function getExecutedById(): ?Users
     {
         return $this->executed_by_id;
     }
 
-    public function setExecutedById(?users $executed_by_id): static
+    public function setExecutedById(?Users $executed_by_id): static
     {
         $this->executed_by_id = $executed_by_id;
 
