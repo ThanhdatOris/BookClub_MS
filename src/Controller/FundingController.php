@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\FundTransactions;
-use App\Form\FundTransactionsType;
+use App\Form\FundTransactions1Type;
 use App\Repository\FundTransactionsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +26,7 @@ final class FundingController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $fundTransaction = new FundTransactions();
-        $form = $this->createForm(FundTransactionsType::class, $fundTransaction);
+        $form = $this->createForm(FundTransactions1Type::class, $fundTransaction);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -53,7 +53,7 @@ final class FundingController extends AbstractController
     #[Route('/{id}/edit', name: 'app_funding_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, FundTransactions $fundTransaction, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(FundTransactionsType::class, $fundTransaction);
+        $form = $this->createForm(FundTransactions1Type::class, $fundTransaction);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

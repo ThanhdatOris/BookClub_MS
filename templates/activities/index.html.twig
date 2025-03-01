@@ -10,10 +10,9 @@
             <tr>
                 <th>Id</th>
                 <th>Title</th>
-                <th>Act_descr</th>
+                <th>Description</th>
                 <th>Date</th>
                 <th>Time</th>
-                <th>Place</th>
                 <th>Status</th>
                 <th>actions</th>
             </tr>
@@ -23,10 +22,9 @@
             <tr>
                 <td>{{ activity.id }}</td>
                 <td>{{ activity.title }}</td>
-                <td>{{ activity.actDescr }}</td>
+                <td>{{ activity.description }}</td>
                 <td>{{ activity.date ? activity.date|date('Y-m-d') : '' }}</td>
                 <td>{{ activity.time ? activity.time|date('H:i:s') : '' }}</td>
-                <td>{{ activity.place }}</td>
                 <td>{{ activity.status }}</td>
                 <td>
                     <a href="{{ path('app_activities_show', {'id': activity.id}) }}">show</a>
@@ -35,7 +33,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="8">no records found</td>
+                <td colspan="7">no records found</td>
             </tr>
         {% endfor %}
         </tbody>

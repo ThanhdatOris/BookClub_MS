@@ -16,8 +16,8 @@
                 <td>{{ activity.title }}</td>
             </tr>
             <tr>
-                <th>Act_descr</th>
-                <td>{{ activity.actDescr }}</td>
+                <th>Description</th>
+                <td>{{ activity.description }}</td>
             </tr>
             <tr>
                 <th>Date</th>
@@ -26,10 +26,6 @@
             <tr>
                 <th>Time</th>
                 <td>{{ activity.time ? activity.time|date('H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Place</th>
-                <td>{{ activity.place }}</td>
             </tr>
             <tr>
                 <th>Status</th>

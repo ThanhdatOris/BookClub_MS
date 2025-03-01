@@ -9,8 +9,9 @@
         <thead>
             <tr>
                 <th>Id</th>
+                <th>Type</th>
                 <th>Amount</th>
-                <th>Fund_descr</th>
+                <th>Description</th>
                 <th>Date</th>
                 <th>actions</th>
             </tr>
@@ -19,8 +20,9 @@
         {% for fund_transaction in fund_transactions %}
             <tr>
                 <td>{{ fund_transaction.id }}</td>
+                <td>{{ fund_transaction.type }}</td>
                 <td>{{ fund_transaction.amount }}</td>
-                <td>{{ fund_transaction.fundDescr }}</td>
+                <td>{{ fund_transaction.description }}</td>
                 <td>{{ fund_transaction.date ? fund_transaction.date|date('Y-m-d H:i:s') : '' }}</td>
                 <td>
                     <a href="{{ path('app_funding_show', {'id': fund_transaction.id}) }}">show</a>
@@ -29,7 +31,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="5">no records found</td>
+                <td colspan="6">no records found</td>
             </tr>
         {% endfor %}
         </tbody>

@@ -9,12 +9,14 @@
         <thead>
             <tr>
                 <th>Id</th>
-                <th>Name</th>
+                <th>Fullname</th>
                 <th>Student_id</th>
                 <th>Email</th>
-                <th>Phone</th>
+                <th>Phone_num</th>
                 <th>Join_date</th>
-                <th>Birth_day</th>
+                <th>Birth_date</th>
+                <th>Classes</th>
+                <th>Faculty</th>
                 <th>actions</th>
             </tr>
         </thead>
@@ -22,12 +24,14 @@
         {% for member in members %}
             <tr>
                 <td>{{ member.id }}</td>
-                <td>{{ member.name }}</td>
+                <td>{{ member.fullname }}</td>
                 <td>{{ member.studentId }}</td>
                 <td>{{ member.email }}</td>
-                <td>{{ member.phone }}</td>
+                <td>{{ member.phoneNum }}</td>
                 <td>{{ member.joinDate ? member.joinDate|date('Y-m-d') : '' }}</td>
-                <td>{{ member.birthDay ? member.birthDay|date('Y-m-d') : '' }}</td>
+                <td>{{ member.birthDate ? member.birthDate|date('Y-m-d') : '' }}</td>
+                <td>{{ member.Classes }}</td>
+                <td>{{ member.Faculty }}</td>
                 <td>
                     <a href="{{ path('app_members_show', {'id': member.id}) }}">show</a>
                     <a href="{{ path('app_members_edit', {'id': member.id}) }}">edit</a>
@@ -35,7 +39,7 @@
             </tr>
         {% else %}
             <tr>
-                <td colspan="8">no records found</td>
+                <td colspan="10">no records found</td>
             </tr>
         {% endfor %}
         </tbody>

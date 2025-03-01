@@ -14,17 +14,24 @@ class FundTransactions
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $type = null;
+
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 3)]
     private ?string $amount = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $fund_descr = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $description = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date = null;
 
     #[ORM\ManyToOne]
-    private ?Users $executed_by = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private ?users $executed_by_id = null;
+
+    #[ORM\ManyToOne]
+    private ?members $related_member_id = null;
 
     public function getId(): ?int
     {
@@ -36,7 +43,7 @@ class FundTransactions
         return $this->type;
     }
 
-    public function setType(string $type): self
+    public function setType(string $type): static
     {
         $this->type = $type;
 
@@ -55,14 +62,14 @@ class FundTransactions
         return $this;
     }
 
-    public function getFundDescr(): ?string
+    public function getDescription(): ?string
     {
-        return $this->fund_descr;
+        return $this->description;
     }
 
-    public function setFundDescr(?string $fund_descr): static
+    public function setDescription(?string $description): static
     {
-        $this->fund_descr = $fund_descr;
+        $this->description = $description;
 
         return $this;
     }
@@ -79,14 +86,26 @@ class FundTransactions
         return $this;
     }
 
-    public function getExecutedBy(): ?Users
+    public function getExecutedById(): ?users
     {
-        return $this->executed_by;
+        return $this->executed_by_id;
     }
 
-    public function setExecutedBy(?Users $executed_by): static
+    public function setExecutedById(?users $executed_by_id): static
     {
-        $this->executed_by = $executed_by;
+        $this->executed_by_id = $executed_by_id;
+
+        return $this;
+    }
+
+    public function getRelatedMemberId(): ?members
+    {
+        return $this->related_member_id;
+    }
+
+    public function setRelatedMemberId(?members $related_member_id): static
+    {
+        $this->related_member_id = $related_member_id;
 
         return $this;
     }

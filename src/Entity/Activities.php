@@ -18,7 +18,7 @@ class Activities
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $act_descr = null;
+    private ?string $description = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $date = null;
@@ -26,14 +26,11 @@ class Activities
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $time = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $place = null;
-
-    #[ORM\Column(type: "string", columnDefinition: "ENUM('planned', 'completed', 'cancelled')", nullable: false)]
+    #[ORM\Column(length: 255)]
     private ?string $status = null;
 
     #[ORM\ManyToOne]
-    private ?Users $created_by = null;
+    private ?users $created_by = null;
 
     public function getId(): ?int
     {
@@ -52,14 +49,14 @@ class Activities
         return $this;
     }
 
-    public function getActDescr(): ?string
+    public function getDescription(): ?string
     {
-        return $this->act_descr;
+        return $this->description;
     }
 
-    public function setActDescr(?string $act_descr): static
+    public function setDescription(?string $description): static
     {
-        $this->act_descr = $act_descr;
+        $this->description = $description;
 
         return $this;
     }
@@ -88,36 +85,24 @@ class Activities
         return $this;
     }
 
-    public function getPlace(): ?string
-    {
-        return $this->place;
-    }
-
-    public function setPlace(?string $place): static
-    {
-        $this->place = $place;
-
-        return $this;
-    }
-
     public function getStatus(): ?string
     {
         return $this->status;
     }
 
-    public function setStatus(string $status): self
+    public function setStatus(string $status): static
     {
         $this->status = $status;
 
         return $this;
     }
 
-    public function getCreatedBy(): ?Users
+    public function getCreatedBy(): ?users
     {
         return $this->created_by;
     }
 
-    public function setCreatedBy(?Users $created_by): static
+    public function setCreatedBy(?users $created_by): static
     {
         $this->created_by = $created_by;
 

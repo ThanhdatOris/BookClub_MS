@@ -14,32 +14,26 @@ class Users
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 128)]
+    #[ORM\Column(length: 100)]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
-    #[ORM\Column(type: "string", columnDefinition: "ENUM('admin', 'member')", nullable: false)]
+    #[ORM\Column(length: 255)]
     private ?string $role = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $email = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $creat_at = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $created_at = null;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $update_at = null;
+    private ?\DateTimeImmutable $update_at = null;
 
     #[ORM\Column]
     private ?bool $is_active = null;
 
     #[ORM\OneToOne(mappedBy: 'user_id', cascade: ['persist', 'remove'])]
-    private ?Members $name = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $Image = null;
+    private ?Members $member_id = null;
 
     public function getId(): ?int
     {
@@ -75,43 +69,31 @@ class Users
         return $this->role;
     }
 
-    public function setRole(string $role): self
+    public function setRole(string $role): static
     {
         $this->role = $role;
 
         return $this;
     }
 
-    public function getEmail(): ?string
+    public function getCreatAt(): ?\DateTimeInterface
     {
-        return $this->email;
+        return $this->creat_at;
     }
 
-    public function setEmail(?string $email): static
+    public function setCreatAt(\DateTimeInterface $creat_at): static
     {
-        $this->email = $email;
+        $this->creat_at = $creat_at;
 
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $created_at): static
-    {
-        $this->created_at = $created_at;
-
-        return $this;
-    }
-
-    public function getUpdateAt(): ?\DateTimeInterface
+    public function getUpdateAt(): ?\DateTimeImmutable
     {
         return $this->update_at;
     }
 
-    public function setUpdateAt(\DateTimeInterface $update_at): static
+    public function setUpdateAt(\DateTimeImmutable $update_at): static
     {
         $this->update_at = $update_at;
 
@@ -123,43 +105,31 @@ class Users
         return $this->is_active;
     }
 
-    public function setActive(bool $is_active): static
+    public function setIsActive(bool $is_active): static
     {
         $this->is_active = $is_active;
 
         return $this;
     }
 
-    public function getName(): ?Members
+    public function getMemberId(): ?Members
     {
-        return $this->name;
+        return $this->member_id;
     }
 
-    public function setName(?Members $name): static
+    public function setMemberId(?Members $member_id): static
     {
         // unset the owning side of the relation if necessary
-        if ($name === null && $this->name !== null) {
-            $this->name->setUserId(null);
+        if ($member_id === null && $this->member_id !== null) {
+            $this->member_id->setUserId(null);
         }
 
         // set the owning side of the relation if necessary
-        if ($name !== null && $name->getUserId() !== $this) {
-            $name->setUserId($this);
+        if ($member_id !== null && $member_id->getUserId() !== $this) {
+            $member_id->setUserId($this);
         }
 
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getImage(): ?string
-    {
-        return $this->Image;
-    }
-
-    public function setImage(?string $Image): static
-    {
-        $this->Image = $Image;
+        $this->member_id = $member_id;
 
         return $this;
     }
