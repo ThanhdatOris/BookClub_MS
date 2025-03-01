@@ -3,8 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Attendance;
+use App\Entity\Activities;
 use App\Form\AttendanceType;
 use App\Repository\AttendanceRepository;
+use App\Repository\ActivitiesRepository;
+use App\Repository\MemberRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,11 +17,24 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/attendance')]
 final class AttendanceController extends AbstractController
 {
-    #[Route(name: 'app_attendance_index', methods: ['GET'])]
-    public function index(AttendanceRepository $attendanceRepository): Response
+    #[Route('/', name: 'app_attendance_index', methods: ['GET'])]
+    public function index(ActivitiesRepository $activityRepository): Response
     {
+        $activities = $activityRepository->findAll();
+        
         return $this->render('attendance/index.html.twig', [
-            'attendances' => $attendanceRepository->findAll(),
+            'activities' => $activities,
+        ]);
+    }
+
+    #[Route('/activity/{id}', name: 'app_attendance_activity', methods: ['GET'])]
+    public function activity(Activities $activity, AttendanceRepository $attendanceRepository): Response
+    {
+        $attendances = $attendanceRepository->findBy(['activity' => $activity]);
+
+        return $this->render('attendance/activity.html.twig', [
+            'activity' => $activity,
+            'attendances' => $attendances,
         ]);
     }
 
@@ -30,23 +46,15 @@ final class AttendanceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $attendance->setCheckInTime(new \DateTime());
             $entityManager->persist($attendance);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_attendance_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_attendance_activity', ['id' => $attendance->getActivity()->getId()]);
         }
 
         return $this->render('attendance/new.html.twig', [
-            'attendance' => $attendance,
             'form' => $form,
-        ]);
-    }
-
-    #[Route('/{id}', name: 'app_attendance_show', methods: ['GET'])]
-    public function show(Attendance $attendance): Response
-    {
-        return $this->render('attendance/show.html.twig', [
-            'attendance' => $attendance,
         ]);
     }
 
@@ -58,12 +66,10 @@ final class AttendanceController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-
-            return $this->redirectToRoute('app_attendance_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_attendance_activity', ['id' => $attendance->getActivity()->getId()]);
         }
 
         return $this->render('attendance/edit.html.twig', [
-            'attendance' => $attendance,
             'form' => $form,
         ]);
     }
@@ -71,11 +77,13 @@ final class AttendanceController extends AbstractController
     #[Route('/{id}', name: 'app_attendance_delete', methods: ['POST'])]
     public function delete(Request $request, Attendance $attendance, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$attendance->getId(), $request->getPayload()->getString('_token'))) {
+        $activityId = $attendance->getActivityId()->getId();
+
+        if ($this->isCsrfTokenValid('delete'.$attendance->getId(), $request->get('_token'))) {
             $entityManager->remove($attendance);
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_attendance_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_attendance_activity', ['id' => $activityId]);
     }
 }

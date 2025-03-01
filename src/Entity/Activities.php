@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ActivitiesRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -31,6 +33,17 @@ class Activities
 
     #[ORM\ManyToOne]
     private ?Users $created_by = null;
+
+    #[ORM\ManyToMany(targetEntity: Members::class, inversedBy: 'activities')]
+    private Collection $members;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $location = null;
+
+    public function __construct()
+    {
+        $this->members = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -105,6 +118,47 @@ class Activities
     public function setCreatedBy(?Users $created_by): static
     {
         $this->created_by = $created_by;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Members>
+     */
+    public function getMembers(): Collection
+    {
+        return $this->members;
+    }
+
+    public function addMember(Members $member): static
+    {
+        if (!$this->members->contains($member)) {
+            $this->members->add($member);
+        }
+
+        return $this;
+    }
+
+    public function removeMember(Members $member): static
+    {
+        $this->members->removeElement($member);
+
+        return $this;
+    }
+
+    public function getParticipantCount(): int
+    {
+        return $this->members->count();
+    }
+
+    public function getLocation(): ?string
+    {
+        return $this->location;
+    }
+
+    public function setLocation(?string $location): static
+    {
+        $this->location = $location;
 
         return $this;
     }

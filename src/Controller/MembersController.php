@@ -31,6 +31,10 @@ class MembersController extends AbstractController
                     'phone' => $member->getPhoneNum(),
                     'faculty' => $member->getFaculty(),
                     'join_date' => $member->getJoinDate()?->format('d-m-Y'),
+                    'birth_date' => $member->getBirthDate()?->format('d-m-Y'),
+                    'classes' => $member->getClasses(),
+                    'gender' => $member->isGenders() === 0 ? 'male' : ($member->isGenders() === 1 ? 'female' : ''),
+                    'address' => $member->getAddress(),
                 ];
             }
 
