@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\FundTransactions;
-use App\Form\FundTransactions1Type;
+use App\Form\FundTransactionsType;
 use App\Repository\FundTransactionsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

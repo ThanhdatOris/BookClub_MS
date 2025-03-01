@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Attendance;
-use App\Form\Attendance1Type;
+use App\Form\AttendanceType;
 use App\Repository\AttendanceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
