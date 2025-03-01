@@ -7,6 +7,7 @@ use App\Form\FundTransactionsType;
 use App\Repository\FundTransactionsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -14,9 +15,26 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/funding')]
 final class FundingController extends AbstractController
 {
-    #[Route(name: 'app_funding_index', methods: ['GET'])]
-    public function index(FundTransactionsRepository $fundTransactionsRepository): Response
+    #[Route('/', name: 'app_funding_index', methods: ['GET'])]
+    public function index(Request $request, FundTransactionsRepository $fundTransactionsRepository): Response
     {
+        if ($request->isXmlHttpRequest()) {
+            $fundTransactions = $fundTransactionsRepository->findAll();
+            $data = [];
+
+            foreach ($fundTransactions as $fundTransaction) {
+                $data[] = [
+                    'id' => $fundTransaction->getId(),
+                    'type' => $fundTransaction->getType(),
+                    'amount' => $fundTransaction->getAmount(),
+                    'description' => $fundTransaction->getDescription(),
+                    'date' => $fundTransaction->getDate() ? $fundTransaction->getDate()->format('Y-m-d H:i:s') : '',
+                ];
+            }
+
+            return new JsonResponse(['data' => $data]);
+        }
+
         return $this->render('funding/index.html.twig', [
             'fund_transactions' => $fundTransactionsRepository->findAll(),
         ]);

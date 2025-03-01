@@ -28,10 +28,10 @@ class FundTransactions
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?UUsers $executed_by_id = null;
+    private ?Users $executed_by_id = null;
 
     #[ORM\ManyToOne]
-    private ?members $related_member_id = null;
+    private ?Members $related_member_id = null;
 
     public function getId(): ?int
     {
@@ -98,12 +98,12 @@ class FundTransactions
         return $this;
     }
 
-    public function getRelatedMemberId(): ?members
+    public function getRelatedMemberId(): ?Members
     {
         return $this->related_member_id;
     }
 
-    public function setRelatedMemberId(?members $related_member_id): static
+    public function setRelatedMemberId(?Members $related_member_id): static
     {
         $this->related_member_id = $related_member_id;
 

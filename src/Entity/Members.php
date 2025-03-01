@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\MembersRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: MembersRepository::class)]
 class Members
@@ -40,6 +42,20 @@ class Members
 
     #[ORM\Column(length: 255)]
     private ?string $Faculty = null;
+
+    #[ORM\ManyToMany(targetEntity: Activities::class, mappedBy: 'members')]
+    private Collection $activities;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $genders = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $address = null;
+
+    public function __construct()
+    {
+        $this->activities = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -150,6 +166,57 @@ class Members
     public function setFaculty(string $Faculty): static
     {
         $this->Faculty = $Faculty;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Activities>
+     */
+    public function getActivities(): Collection
+    {
+        return $this->activities;
+    }
+
+    public function addActivity(Activities $activity): static
+    {
+        if (!$this->activities->contains($activity)) {
+            $this->activities->add($activity);
+            $activity->addMember($this);
+        }
+
+        return $this;
+    }
+
+    public function removeActivity(Activities $activity): static
+    {
+        if ($this->activities->removeElement($activity)) {
+            $activity->removeMember($this);
+        }
+
+        return $this;
+    }
+
+    public function isGenders(): ?bool
+    {
+        return $this->genders;
+    }
+
+    public function setGenders(?bool $genders): static
+    {
+        $this->genders = $genders;
+
+        return $this;
+    }
+
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    public function setAddress(?string $address): static
+    {
+        $this->address = $address;
 
         return $this;
     }

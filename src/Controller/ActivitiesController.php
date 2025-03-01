@@ -30,6 +30,8 @@ final class ActivitiesController extends AbstractController
                     'date' => $activity->getDate()?->format('Y-m-d'),
                     'time' => $activity->getTime()?->format('H:i:s'),
                     'status' => $activity->getStatus(),
+                    'created_by' => $activity->getCreatedBy()?->getUsername(),
+                    'participant_count' => $activity->getParticipantCount(),
                 ];
             }
 
@@ -45,7 +47,7 @@ final class ActivitiesController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $activity = new Activities();
-        $form = $this->createForm(Activities1Type::class, $activity);
+        $form = $this->createForm(ActivitiesType::class, $activity);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

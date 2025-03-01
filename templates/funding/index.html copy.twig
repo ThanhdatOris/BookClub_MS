@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}FundTransactions index{% endblock %}
+
+{% block body %}
+    <h1>FundTransactions index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Date</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for fund_transaction in fund_transactions %}
+            <tr>
+                <td>{{ fund_transaction.id }}</td>
+                <td>{{ fund_transaction.type }}</td>
+                <td>{{ fund_transaction.amount }}</td>
+                <td>{{ fund_transaction.description }}</td>
+                <td>{{ fund_transaction.date ? fund_transaction.date|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_funding_show', {'id': fund_transaction.id}) }}">show</a>
+                    <a href="{{ path('app_funding_edit', {'id': fund_transaction.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_funding_new') }}">Create new</a>
+{% endblock %}

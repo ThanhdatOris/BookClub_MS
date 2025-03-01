@@ -7,30 +7,47 @@
     <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">
-                <div class="card mb-4">
-                    <div class="card-header pb-0">
-                        <h6>Danh sách hoạt động</h6>
+                <!-- Chi tiết hoạt động -->
+                <div class="card mt-4 mb-4 shadow-sm d-none" id="activityDetail">
+                    <div class="card-header pb-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-primary">Chi tiết hoạt động - <span id="activityTitleHeader"></span></h6>
+                        <button class="btn btn-danger btn-sm" id="closeDetail">Đóng</button>
                     </div>
-                    <div class="card-body px-4 pt-0 pb-2"> <!-- Thêm lớp px-3 để tạo khoảng trống -->
+                    <div class="card-body px-4 pt-0 pb-2">
+                        <p><strong>Tên hoạt động:</strong> <span id="activityTitle"></span></p>
+                        <p><strong>Mô tả:</strong> <span id="activityDescription"></span></p>
+                        <p><strong>Ngày:</strong> <span id="activityDate"></span></p>
+                        <p><strong>Thời gian:</strong> <span id="activityTime"></span></p>
+                        <p><strong>Địa điểm:</strong> <span id="activityLocation"></span></p>
+                        <p><strong>Người tạo:</strong> <span id="activityCreator"></span></p>
+                        <p><strong>Thành viên tham gia:</strong> <span id="activityMembers"></span></p>
+                        <p><strong>Trạng thái:</strong> <span id="activityStatus"></span></p>
+                        <button class="btn btn-danger btn-sm" id="deleteActivity">Xóa hoạt động</button>
+                    </div>
+                </div>
+                <div class="card mb-4 shadow-lg">
+                    <div class="card-header bg-gradient-primary text-white pb-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-list-ul me-2"></i> Danh sách hoạt động</h6>
+                        <a href="{{ path('app_activities_new') }}" class="btn btn-light btn-sm d-flex align-items-center">
+                            <i class="fas fa-plus me-2"></i> Tạo mới
+                        </a>
+                    </div>
+                    <div class="card-body px-4 pt-3 pb-2">
                         <div class="table-responsive">
-                            <table id="activitiesTable" class="table align-items-center mb-0">
-                                <thead class="sticky-top bg-white">
+                            <table id="activitiesTable" class="table table-hover align-items-center mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tên hoạt động</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mô tả</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Giờ</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
-                                        <th class="text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
+                                        <th class="text-secondary text-xs font-weight-bold">ID</th>
+                                        <th class="text-secondary text-xs font-weight-bold">Tên hoạt động</th>
+                                        <th class="text-secondary text-xs font-weight-bold">Mô tả</th>
+                                        <th class="text-secondary text-xs font-weight-bold text-center">Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- Data will be populated by DataTables -->
+                                    <!-- DataTables sẽ tự động điền -->
                                 </tbody>
                             </table>
                         </div>
-                        <a href="{{ path('app_activities_new') }}" class="btn btn-primary px-3 mt-3">Tạo mới</a>
                     </div>
                 </div>
             </div>
@@ -39,13 +56,44 @@
 </main>
 
 <!-- DataTables CSS -->
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .table th, .table td {
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 14px;
+        border-radius: 6px;
+    }
+    .bg-gradient-primary {
+        background: linear-gradient(90deg,rgb(0, 157, 255),rgb(127, 35, 247));
+    }
+    .shadow-lg {
+        box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    h6 {
+        color: white;
+    }
+</style>
 
 <!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!-- DataTables JS -->
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
 $(document).ready(function() {
@@ -55,21 +103,57 @@ $(document).ready(function() {
             { "data": "id" },
             { "data": "title" },
             { "data": "description" },
-            { "data": "date" },
-            { "data": "time" },
-            { "data": "status" },
             {
                 "data": null,
-                "className": "align-middle",
+                "className": "text-center",
                 "render": function(data, type, row) {
-                    return '<a href="{{ path('app_activities_show', {'id': 'ID_PLACEHOLDER'}) }}" class="btn btn-primary btn-sm">Show</a> ' +
-                            '<a href="{{ path('app_activities_edit', {'id': 'ID_PLACEHOLDER'}) }}" class="btn btn-secondary btn-sm">Edit</a>'.replace(/ID_PLACEHOLDER/g, row.id);
+                    return '<a href="{{ path('app_activities_show', {'id': 'ID_PLACEHOLDER'}) }}" class="btn btn-primary btn-sm bg-gradient-primary"><i class="fas fa-eye"></i> Xem</a>'.replace(/ID_PLACEHOLDER/g, row.id);
                 }
             }
         ],
-        "scrollX": true,  // Kéo ngang nếu bảng quá dài
-        "autoWidth": false,  // Không tự động co giãn
-        "order": [[0, "asc"]]  // Sắp xếp theo ID
+        "scrollX": true,
+        "autoWidth": false,
+        "order": [[0, "asc"]],
+        "language": {
+            "search": "🔍 Tìm kiếm ",
+            "lengthMenu": "Hiển thị _MENU_ mục",
+            "info": "Hiển thị _START_ đến _END_ trong _TOTAL_ mục",
+            "paginate": {
+                "previous": "←",
+                "next": "→"
+            }
+        },
+        "rowCallback": function(row, data) {
+            $(row).on('click', function() {
+                $('#activityTitleHeader').text(data.title);
+                $('#activityTitle').text(data.title);
+                $('#activityDescription').text(data.description);
+                $('#activityDate').text(data.date);
+                $('#activityTime').text(data.time);
+                $('#activityLocation').text(data.location);
+                $('#activityCreator').text(data.creator);
+                $('#activityMembers').text(data.members);
+                $('#activityStatus').text(data.status);
+                $('#activityDetail').hide().removeClass('d-none').slideDown();
+                $('html, body').animate({ scrollTop: 0 }, 'fast');
+            });
+        }
+    });
+
+    $('#closeDetail').on('click', function() {
+        $('#activityDetail').slideUp(function() {
+            $(this).addClass('d-none');
+        });
+    });
+
+    $('#deleteActivity').on('click', function() {
+        if (confirm('Bạn có chắc chắn muốn xóa hoạt động này không?')) {
+            // Xử lý xóa hoạt động
+            alert('Xóa hoạt động thành công!');
+            $('#activityDetail').slideUp(function() {
+                $(this).addClass('d-none');
+            });
+        }
     });
 });
 </script>

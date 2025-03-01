@@ -1,39 +1,174 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Attendance index{% endblock %}
+{% block title %}Quản lý điểm danh{% endblock %}
 
 {% block body %}
-    <h1>Attendance index</h1>
+<main class="main-content position-relative border-radius-lg">
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Chi tiết điểm danh -->
+                <div class="card mt-4 shadow-sm d-none" id="attendanceSection">
+                    <div class="card-header pb-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-primary">Chi tiết điểm danh - <span id="activityName"></span></h6>
+                        <button class="btn btn-danger btn-sm" id="closeAttendance">Đóng</button>
+                    </div>
+                    <div class="card-body px-4 pt-0 pb-2">
+                        <div class="table-responsive">
+                            <table id="attendanceTable" class="table table-striped align-items-center mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên thành viên</th>
+                                        <th>Check-in time</th>
+                                        <th class="text-center">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <button class="btn btn-success mt-3 btn-sm" id="addMemberBtn">+ Thêm thành viên</button>
+                    </div>
+                </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Checked_in</th>
-                <th>Check_in_time</th>
-                <th>Remarks</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for attendance in attendances %}
-            <tr>
-                <td>{{ attendance.id }}</td>
-                <td>{{ attendance.checkedIn ? 'Yes' : 'No' }}</td>
-                <td>{{ attendance.checkInTime ? attendance.checkInTime|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ attendance.remarks }}</td>
-                <td>
-                    <a href="{{ path('app_attendance_show', {'id': attendance.id}) }}">show</a>
-                    <a href="{{ path('app_attendance_edit', {'id': attendance.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="5">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                <!-- Danh sách hoạt động -->
+                <div class="card mb-4 shadow-lg">
+                    <div class="card-header bg-gradient-primary text-white pb-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-list-ul me-2"></i>Danh sách điểm danh</h6>
+                    </div>
+                    <div class="card-body px-4 pt-3 pb-2">
+                        <div class="table-responsive">
+                            <table id="activitiesTable" class="table table-striped align-items-center mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="text-secondary text-xs font-weight-bold">ID</th>
+                                        <th class="text-secondary text-xs font-weight-bold">Tên hoạt động</th>
+                                        <th class="text-secondary text-xs font-weight-bold">Số lượt tham gia</th>
+                                        <th class="text-secondary text-xs font-weight-bold text-center">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
 
-    <a href="{{ path('app_attendance_new') }}">Create new</a>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+<style>
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .table th, .table td {
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 14px;
+        border-radius: 6px;
+    }
+    .bg-gradient-primary {
+        background: linear-gradient(90deg, rgb(0, 157, 255), rgb(127, 35, 247));
+    }
+    .shadow-lg {
+        box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    h6 {
+        color: white;
+    }
+</style>
+
+<script>
+$(document).ready(function() {
+    let activitiesTable = $('#activitiesTable').DataTable({
+        "ajax": "{{ path('app_activities_index') }}",
+        "columns": [
+            { "data": "id" },
+            { "data": "title" },
+            { "data": "participant_count" },
+            {
+                "data": null,
+                "className": "text-center",
+                "render": function(data, type, row) {
+                    return `<button class="btn btn-primary btn-sm view-attendance bg-gradient-primary" data-id="${row.id}" data-title="${row.title}"><i class="fas fa-eye"></i> Xem</button>`;
+                }
+            }
+        ],
+        "language": {
+            "search": "🔍 Tìm kiếm ",
+            "lengthMenu": "Hiển thị _MENU_ mục",
+            "info": "Hiển thị _START_ đến _END_ trong _TOTAL_ mục",
+            "paginate": {
+                "previous": "←",
+                "next": "→"
+            }
+        },
+        "rowCallback": function(row, data) {
+            $(row).on('click', function() {
+                let activityId = data.id;
+                let activityTitle = data.title;
+
+                $('#activityName').text(activityTitle);
+                $('#attendanceSection').removeClass('d-none');
+
+                let attendanceTable = $('#attendanceTable').DataTable({
+                    "destroy": true,
+                    "ajax": `/attendance/${activityId}`,
+                    "columns": [
+                        { "data": "id" },
+                        { "data": "member_name" },
+                        { "data": "check_in_time" },
+                        {
+                            "data": null,
+                            "className": "text-center",
+                            "render": function(data, type, row) {
+                                return `<button class="btn btn-danger btn-sm remove-member" data-id="${row.id}">Xóa</button>`;
+                            }
+                        }
+                    ]
+                });
+
+                $('#attendanceTable tbody').on('click', '.remove-member', function() {
+                    let attendanceId = $(this).data('id');
+                    $.ajax({
+                        url: `/attendance/delete/${attendanceId}`,
+                        type: 'POST',
+                        success: function() { attendanceTable.ajax.reload(); }
+                    });
+                });
+
+                $('#addMemberBtn').off('click').on('click', function() {
+                    let memberName = prompt("Nhập tên thành viên:");
+                    if (memberName) {
+                        $.ajax({
+                            url: `/attendance/add`,
+                            type: 'POST',
+                            contentType: "application/json",
+                            data: JSON.stringify({ activity_id: activityId, member_name: memberName }),
+                            success: function() { attendanceTable.ajax.reload(); }
+                        });
+                    }
+                });
+
+                $('html, body').animate({ scrollTop: 0 }, 'fast');
+            });
+        }
+    });
+
+    $('#closeAttendance').on('click', function() {
+        $('#attendanceSection').addClass('d-none');
+    });
+});
+</script>
 {% endblock %}
