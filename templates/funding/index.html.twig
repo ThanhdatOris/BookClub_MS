@@ -10,20 +10,74 @@
                 <!-- Chi tiết giao dịch -->
                 <div class="card mt-4 mb-4 shadow-sm d-none" id="transactionDetail">
                     <div class="card-header pb-3 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 text-primary">Chi tiết giao dịch - <span id="transactionType"></span></h6>
-                        <button class="btn btn-danger btn-sm" id="closeDetail">Đóng</button>
+                        <h6 class="mb-0 text-primary">Chi tiết giao dịch - ID: <span id="transactionId"></span></h6>
+                        <button class="btn btn-danger btn-sm mb-0" id="closeDetail">Đóng</button>
                     </div>
                     <div class="card-body px-4 pt-0 pb-2">
                         <p><strong>Số tiền:</strong> <span id="transactionAmount"></span></p>
                         <p><strong>Mô tả:</strong> <span id="transactionDescription"></span></p>
                         <p><strong>Ngày:</strong> <span id="transactionDate"></span></p>
+                        <p><strong>Người tạo:</strong> <span id="transactionCreator"></span></p>
+                        <button class="btn btn-primary btn-sm" id="editTransaction">Sửa giao dịch</button>
                         <button class="btn btn-danger btn-sm" id="deleteTransaction">Xóa giao dịch</button>
                     </div>
                 </div>
 
-                <div class="card mb-4 shadow-lg">
+                <!-- Form sửa giao dịch -->
+                <div class="card mt-4 mb-4 shadow-sm d-none" id="editTransactionForm">
+                    <div class="card-header pb-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-primary">Sửa giao dịch - ID: <span id="editTransactionId"></span></h6>
+                        <button class="btn btn-danger btn-sm mb-0" id="closeEditForm">Đóng</button>
+                    </div>
+                    <div class="card-body px-4 pt-0 pb-2">
+                        <form id="transactionEditForm">
+                            <div class="mb-3">
+                                <label for="editTransactionAmount" class="form-label">Số tiền</label>
+                                <input type="number" class="form-control" id="editTransactionAmount" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editTransactionDescription" class="form-label">Mô tả</label>
+                                <input type="text" class="form-control" id="editTransactionDescription" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editTransactionDate" class="form-label">Ngày</label>
+                                <input type="datetime-local" class="form-control" id="editTransactionDate" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Form thêm giao dịch -->
+                <div class="card mt-4 mb-4 shadow-sm d-none" id="addTransactionForm">
+                    <div class="card-header pb-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-primary">Thêm giao dịch mới</h6>
+                        <button class="btn btn-danger btn-sm mb-0" id="closeAddForm">Đóng</button>
+                    </div>
+                    <div class="card-body px-4 pt-0 pb-2">
+                        <form id="transactionAddForm">
+                            <div class="mb-3">
+                                <label for="addTransactionAmount" class="form-label">Số tiền</label>
+                                <input type="number" class="form-control" id="addTransactionAmount" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="addTransactionDescription" class="form-label">Mô tả</label>
+                                <input type="text" class="form-control" id="addTransactionDescription" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="addTransactionDate" class="form-label">Ngày</label>
+                                <input type="datetime-local" class="form-control" id="addTransactionDate" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Thêm giao dịch</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-lg">
                     <div class="card-header bg-gradient-primary text-white pb-3 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold"><i class="fas fa-list-ul me-2"></i> Danh sách giao dịch quỹ</h6>
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-list-ul me-2"></i> Danh sách giao dịch quỹ</h5>
+                        <button class="btn btn-success btn-sm mb-0" id="addTransaction">
+                            <i class="fas fa-plus me-2"></i> Thêm giao dịch</button>
                     </div>
                     <div class="card-body px-4 pt-3 pb-2">
                         <div class="table-responsive">
@@ -35,13 +89,13 @@
                                         <th class="text-secondary text-xs font-weight-bold">Số tiền</th>
                                         <th class="text-secondary text-xs font-weight-bold">Mô tả</th>
                                         <th class="text-secondary text-xs font-weight-bold">Ngày</th>
+                                        <th class="text-secondary text-xs font-weight-bold">Người thực hiện</th>
                                         <th class="text-secondary text-xs font-weight-bold text-center">Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
                             </table>
                         </div>
-                        <a href="{{ path('app_funding_new') }}" class="btn btn-success btn-sm mt-3">+ Thêm giao dịch</a>
                     </div>
                 </div>
             </div>
@@ -81,8 +135,14 @@
     .shadow-lg {
         box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
     }
-    h6 {
+    h5 {
         color: white;
+    }
+    td.truncate {
+        max-width: 150px; /* Điều chỉnh chiều rộng tối đa theo ý bạn */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 </style>
 
@@ -91,19 +151,20 @@ $(document).ready(function() {
     let fundingTable = $('#fundingTable').DataTable({
         "ajax": "{{ path('app_funding_index') }}",
         "columns": [
-            { "data": "id" },
+            { "data": "id", "className": "text-center"},
             { "data": "type" },
             { "data": "amount" },
-            { "data": "description" },
+            { "data": "description", "className": "truncate" },
             { "data": "date" },
+            { "data": "created_by", "className": "truncate"}, // Add this line to include the created_by field
             {
                 "data": null,
                 "className": "text-center align-middle",
                 "render": function(data, type, row) {
-                    return `<button class="btn btn-primary btn-sm view-transaction bg-gradient-primary" 
+                    return `<button class="btn btn-primary btn-sm view-transaction bg-gradient-primary mb-0" 
                              data-id="${row.id}" data-type="${row.type}" 
                              data-amount="${row.amount}" data-description="${row.description}" 
-                             data-date="${row.date}"><i class="fas fa-eye"></i> Xem</button>`;
+                             data-date="${row.date}" data-creator="${row.created_by}"><i class="fas fa-eye"></i> Xem</button>`;
                 }
             }
         ],
@@ -115,16 +176,25 @@ $(document).ready(function() {
             "lengthMenu": "Hiển thị _MENU_ mục",
             "info": "Hiển thị _START_ đến _END_ trong _TOTAL_ mục",
             "paginate": {
-                "previous": "←",
-                "next": "→"
-            }
+                "first": "<i class='fas fa-angle-double-left'></i>",
+                "previous": "<i class='fas fa-angle-left'></i>",
+                "next": "<i class='fas fa-angle-right'></i>",
+                "last": "<i class='fas fa-angle-double-right'></i>"
+            },
+            "infoEmpty": "Không có mục nào để hiển thị",
+            "zeroRecords": "Không tìm thấy kết quả phù hợp",
+            "emptyTable": "Không có dữ liệu trong bảng",
+            "infoFiltered": "(được lọc từ _MAX_ mục)",
+            "loadingRecords": "Đang tải...",
+            "processing": "Đang xử lý..."
         },
         "rowCallback": function(row, data) {
             $(row).on('click', function() {
-                $('#transactionType').text(data.type);
+                $('#transactionId').text(data.id); // Add this line to display the transaction ID
                 $('#transactionAmount').text(data.amount);
                 $('#transactionDescription').text(data.description);
                 $('#transactionDate').text(data.date);
+                $('#transactionCreator').text(data.created_by); // Add this line to display the creator
 
                 $('#transactionDetail').hide().removeClass('d-none').slideDown();
                 $('html, body').animate({ scrollTop: 0 }, 'fast');
@@ -146,6 +216,102 @@ $(document).ready(function() {
                 $(this).addClass('d-none');
             });
         }
+    });
+
+    $('#editTransaction').on('click', function() {
+        $('#editTransactionId').text($('#transactionId').text());
+        $('#editTransactionAmount').val($('#transactionAmount').text());
+        $('#editTransactionDescription').val($('#transactionDescription').text());
+        $('#editTransactionDate').val($('#transactionDate').text());
+
+        $('#transactionDetail').slideUp(function() {
+            $(this).addClass('d-none');
+        });
+
+        $('#editTransactionForm').hide().removeClass('d-none').slideDown();
+    });
+
+    $('#closeEditForm').on('click', function() {
+        $('#editTransactionForm').slideUp(function() {
+            $(this).addClass('d-none');
+        });
+    });
+
+    $('#transactionEditForm').on('submit', function(e) {
+        e.preventDefault();
+
+        let transactionId = $('#editTransactionId').text();
+        let amount = $('#editTransactionAmount').val();
+        let description = $('#editTransactionDescription').val();
+        let date = $('#editTransactionDate').val();
+
+        $.ajax({
+            url: `/funding/${transactionId}/edit`,
+            type: 'POST',
+            data: {
+                amount: amount,
+                description: description,
+                date: date,
+                _token: '{{ csrf_token('edit_transaction') }}'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    alert('Giao dịch đã được cập nhật.');
+                    $('#editTransactionForm').slideUp(function() {
+                        $(this).addClass('d-none');
+                    });
+                    fundingTable.ajax.reload();
+                } else {
+                    alert('Có lỗi xảy ra khi cập nhật giao dịch.');
+                }
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi cập nhật giao dịch.');
+            }
+        });
+    });
+
+    $('#addTransaction').on('click', function() {
+        $('#addTransactionForm').hide().removeClass('d-none').slideDown();
+    });
+
+    $('#closeAddForm').on('click', function() {
+        $('#addTransactionForm').slideUp(function() {
+            $(this).addClass('d-none');
+        });
+    });
+
+    $('#transactionAddForm').on('submit', function(e) {
+        e.preventDefault();
+
+        let amount = $('#addTransactionAmount').val();
+        let description = $('#addTransactionDescription').val();
+        let date = $('#addTransactionDate').val();
+
+        $.ajax({
+            url: `/funding/new`,
+            type: 'POST',
+            data: {
+                amount: amount,
+                description: description,
+                date: date,
+                _token: '{{ csrf_token('add_transaction') }}'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    alert('Giao dịch đã được thêm.');
+                    $('#addTransactionForm').slideUp(function() {
+                        $(this).addClass('d-none');
+                    });
+                    fundingTable.ajax.reload();
+                } else {
+                    alert('Có lỗi xảy ra khi thêm giao dịch.');
+                }
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi thêm giao dịch.');
+            }
+        });
     });
 });
 </script>
