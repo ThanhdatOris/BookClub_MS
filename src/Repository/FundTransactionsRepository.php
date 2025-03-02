@@ -40,4 +40,11 @@ class FundTransactionsRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+    public function getTotalFunds(): float
+    {
+        return $this->createQueryBuilder('f')
+            ->select('SUM(f.amount)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

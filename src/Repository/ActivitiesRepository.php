@@ -40,4 +40,20 @@ class ActivitiesRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+    public function getNewActivitiesCount(): int
+    {
+        $lastMonth = new \DateTime('-1 month');
+
+        return $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.date > :lastMonth')
+            ->setParameter('lastMonth', $lastMonth)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function getTotalParticipationCount(): int
+    {
+        return $this->attendanceRepository->getTotalAttendanceCount();
+    }
 }
