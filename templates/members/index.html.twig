@@ -10,7 +10,7 @@
                 <!-- Chi tiết thành viên -->
                 <div class="card mb-4 shadow-sm d-none" id="MemberDetail">
                     <div class="card-header pb-3 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 text-primary">Thông tin thành viên<span id="transactionType"></span></h6>
+                        <h6 class="mb-0 text-primary">Thông tin thành viên - ID: <span id="MemberId"></span><span id="transactionType"></span></h6>
                         <button class="btn btn-danger btn-sm mb-0" id="closeDetail">Đóng</button>
                     </div>
                     <div class="card-body px-4 pt-0 pb-2">
@@ -200,6 +200,7 @@ $(document).ready(function() {
         },
         "rowCallback": function(row, data) {
             $(row).on('click', function() {
+                $('#MemberId').text(data.id);
                 $('#MemberName').text(data.fullname);
                 $('#MemberStudentID').text(data.student_id);
                 $('#MemberPhoneNum').text(data.phone);

@@ -11,7 +11,7 @@
                 <div class="card mb-4 shadow-sm d-none" id="activityDetail">
                     <div class="card-header pb-3 d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 text-primary">Chi tiết hoạt động - <span id="activityTitleHeader"></span></h6>
-                        <button class="btn btn-danger btn-sm mb-00" id="closeDetail">Đóng</button>
+                        <button class="btn btn-danger btn-sm mb-0" id="closeDetail">Đóng</button>
                     </div>
                     <div class="card-body px-4 pt-0 pb-2">
                         <p><strong>Tên hoạt động:</strong> <span id="activityTitle"></span></p>
@@ -22,9 +22,48 @@
                         <p><strong>Người tạo:</strong> <span id="activityCreator"></span></p>
                         <p><strong>Thành viên tham gia:</strong> <span id="activityMembers"></span></p>
                         <p><strong>Trạng thái:</strong> <span id="activityStatus"></span></p>
+                        <button class="btn btn-primary btn-sm" id="editActivity">Sửa hoạt động</button>
                         <button class="btn btn-danger btn-sm" id="deleteActivity">Xóa hoạt động</button>
                     </div>
                 </div>
+
+                <!-- Form sửa hoạt động -->
+                <div class="card mt-4 mb-4 shadow-sm d-none" id="editActivityForm">
+                    <div class="card-header pb-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-primary">Sửa hoạt động - ID: <span id="editActivityId"></span></h6>
+                        <button class="btn btn-danger btn-sm mb-0" id="closeEditForm">Đóng</button>
+                    </div>
+                    <div class="card-body px-4 pt-0 pb-2">
+                        <form id="activityEditForm">
+                            <div class="mb-3">
+                                <label for="editActivityTitle" class="form-label">Tên hoạt động</label>
+                                <input type="text" class="form-control" id="editActivityTitle" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editActivityDescription" class="form-label">Mô tả</label>
+                                <textarea class="form-control" id="editActivityDescription" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editActivityDate" class="form-label">Ngày</label>
+                                <input type="date" class="form-control" id="editActivityDate" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editActivityTime" class="form-label">Thời gian</label>
+                                <input type="time" class="form-control" id="editActivityTime" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editActivityLocation" class="form-label">Địa điểm</label>
+                                <input type="text" class="form-control" id="editActivityLocation" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editActivityStatus" class="form-label">Trạng thái</label>
+                                <input type="text" class="form-control" id="editActivityStatus" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="card shadow-lg">
                     <div class="card-header bg-gradient-primary text-white pb-3 d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-bold"><i class="fas fa-list-ul me-2"></i> Danh sách hoạt động</h5>
@@ -151,8 +190,68 @@ $(document).ready(function() {
                 $('#activityStatus').text(data.status);
                 $('#activityDetail').hide().removeClass('d-none').slideDown();
                 $('html, body').animate({ scrollTop: 0 }, 'fast');
+
+                // Set the edit button data attributes
+                $('#editActivity').data('id', data.id);
+                $('#editActivity').data('title', data.title);
+                $('#editActivity').data('description', data.description);
+                $('#editActivity').data('date', data.date);
+                $('#editActivity').data('time', data.time);
+                $('#editActivity').data('location', data.location);
+                $('#editActivity').data('status', data.status);
             });
         }
+    });
+
+    $('#editActivity').on('click', function() {
+        $('#editActivityId').text($(this).data('id'));
+        $('#editActivityTitle').val($(this).data('title'));
+        $('#editActivityDescription').val($(this).data('description'));
+        $('#editActivityDate').val($(this).data('date'));
+        $('#editActivityTime').val($(this).data('time'));
+        $('#editActivityLocation').val($(this).data('location'));
+        $('#editActivityStatus').val($(this).data('status'));
+
+        $('#activityDetail').slideUp(function() {
+            $(this).addClass('d-none');
+        });
+        $('#editActivityForm').hide().removeClass('d-none').slideDown();
+    });
+
+    $('#closeEditForm').on('click', function() {
+        $('#editActivityForm').slideUp(function() {
+            $(this).addClass('d-none');
+        });
+    });
+
+    $('#activityEditForm').on('submit', function(e) {
+        e.preventDefault();
+
+        const activityId = $('#editActivityId').text();
+        const formData = {
+            title: $('#editActivityTitle').val(),
+            description: $('#editActivityDescription').val(),
+            date: $('#editActivityDate').val(),
+            time: $('#editActivityTime').val(),
+            location: $('#editActivityLocation').val(),
+            status: $('#editActivityStatus').val()
+        };
+
+        $.ajax({
+            url: `/activities/${activityId}/edit`,
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                alert('Thông tin hoạt động đã được cập nhật.');
+                $('#editActivityForm').slideUp(function() {
+                    $(this).addClass('d-none');
+                });
+                $('#activitiesTable').DataTable().ajax.reload();
+            },
+            error: function(xhr, status, error) {
+                alert('Đã xảy ra lỗi khi cập nhật thông tin hoạt động.');
+            }
+        });
     });
 
     $('#closeDetail').on('click', function() {
