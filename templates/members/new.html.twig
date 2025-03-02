@@ -1,11 +1,79 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Members{% endblock %}
+{% block title %}Thêm thành viên mới{% endblock %}
 
 {% block body %}
-    <h1>Create new Members</h1>
-
-    {{ include('members/_form.html.twig') }}
-
-    <a href="{{ path('app_members_index') }}">back to list</a>
+<main class="main-content position-relative border-radius-lg">
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card mt-4 mb-4 shadow-sm">
+                    <div class="card-header pb-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-primary">Thêm thành viên mới</h6>
+                        <a href="{{ path('app_members_index') }}" class="btn btn-danger btn-sm mb-0">Cancel</a>
+                    </div>
+                    <div class="card-body px-4 pt-0 pb-2">
+                        {{ form_start(form) }}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.fullname, 'Full Name', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.fullname, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.student_id, 'Student ID', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.student_id, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.phone_num, 'Phone Number', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.phone_num, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.join_date, 'Join Date', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.join_date, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.birth_date, 'Birth Date', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.birth_date, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.Classes, 'Classes', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.Classes, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.Faculty, 'Faculty', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.Faculty, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.address, 'Address', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.address, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.genders, 'Gender', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.genders, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Create</button>
+                            </div>
+                        </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
 {% endblock %}

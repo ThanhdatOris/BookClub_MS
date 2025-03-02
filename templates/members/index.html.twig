@@ -30,9 +30,64 @@
                                 <p><strong>Ngày sinh:</strong> <span id="MemberDOB"></span></p>
                             </div>
                         </div>
+                        <button class="btn btn-primary btn-sm mt-3" id="editMember">Sửa thông tin</button>
                         <button class="btn btn-danger btn-sm mt-3" id="deleteTransaction">Xóa thành viên</button>
                     </div>
                 </div>
+
+                <!-- Form sửa thành viên -->
+                <div class="card mt-4 mb-4 shadow-sm d-none" id="editMemberForm">
+                    <div class="card-header pb-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-primary">Sửa thông tin thành viên - ID: <span id="editMemberId"></span></h6>
+                        <button class="btn btn-danger btn-sm mb-0" id="closeEditForm">Đóng</button>
+                    </div>
+                    <div class="card-body px-4 pt-0 pb-2">
+                        <form id="memberEditForm">
+                            <div class="mb-3">
+                                <label for="editMemberFullname" class="form-label">Họ và tên</label>
+                                <input type="text" class="form-control" id="editMemberFullname" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editMemberGender" class="form-label">Giới tính</label>
+                                <input type="text" class="form-control" id="editMemberGender" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editMemberStudentID" class="form-label">MSSV</label>
+                                <input type="text" class="form-control" id="editMemberStudentID" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editMemberClasses" class="form-label">Lớp</label>
+                                <input type="text" class="form-control" id="editMemberClasses" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editMemberFaculty" class="form-label">Khoa</label>
+                                <input type="text" class="form-control" id="editMemberFaculty" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editMemberEmail" class="form-label">Mail</label>
+                                <input type="email" class="form-control" id="editMemberEmail" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editMemberAddress" class="form-label">Địa chỉ</label>
+                                <input type="text" class="form-control" id="editMemberAddress" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editMemberPhone" class="form-label">Số điện thoại</label>
+                                <input type="text" class="form-control" id="editMemberPhone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editMemberJoinDate" class="form-label">Ngày tham gia</label>
+                                <input type="date" class="form-control" id="editMemberJoinDate" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editMemberDOB" class="form-label">Ngày sinh</label>
+                                <input type="date" class="form-control" id="editMemberDOB" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="card shadow-lg">
                     <div class="card-header bg-gradient-primary text-white pb-3 d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-bold"><i class="fas fa-users me-2"></i> Danh sách thành viên</h5>
@@ -116,7 +171,7 @@ $(document).ready(function() {
                 "className": "text-center",
                 "render": function(data, type, row) {
                     return `<button class="btn btn-primary btn-sm view-transaction bg-gradient-primary mb-0"
-                             data-fullname="${row.fullname}" data-student_id="${row.student_id}"
+                             data-id="${row.id}" data-fullname="${row.fullname}" data-student_id="${row.student_id}"
                              data-phone="${row.phone}" data-join_date="${row.join_date}" data-dob="${row.dob}"
                              data-gender="${row.gender}" data-classes="${row.classes}" data-faculty="${row.faculty}"
                              data-email="${row.email}" data-address="${row.address}"><i class="fas fa-eye"></i> Xem</button>`;
@@ -158,8 +213,80 @@ $(document).ready(function() {
 
                 $('#MemberDetail').hide().removeClass('d-none').slideDown();
                 $('html, body').animate({ scrollTop: 0 }, 'fast');
+
+                // Set the edit button link
+                $('#editMember').data('id', data.id);
+                $('#editMember').data('fullname', data.fullname);
+                $('#editMember').data('gender', data.gender);
+                $('#editMember').data('student_id', data.student_id);
+                $('#editMember').data('classes', data.classes);
+                $('#editMember').data('faculty', data.faculty);
+                $('#editMember').data('email', data.email);
+                $('#editMember').data('address', data.address);
+                $('#editMember').data('phone', data.phone);
+                $('#editMember').data('join_date', data.join_date);
+                $('#editMember').data('dob', data.dob);
             });
         }
+    });
+
+    $('#editMember').on('click', function() {
+        $('#editMemberId').text($(this).data('id'));
+        $('#editMemberFullname').val($(this).data('fullname'));
+        $('#editMemberGender').val($(this).data('gender'));
+        $('#editMemberStudentID').val($(this).data('student_id'));
+        $('#editMemberClasses').val($(this).data('classes'));
+        $('#editMemberFaculty').val($(this).data('faculty'));
+        $('#editMemberEmail').val($(this).data('email'));
+        $('#editMemberAddress').val($(this).data('address'));
+        $('#editMemberPhone').val($(this).data('phone'));
+        $('#editMemberJoinDate').val($(this).data('join_date'));
+        $('#editMemberDOB').val($(this).data('dob'));
+
+        $('#MemberDetail').slideUp(function() {
+            $(this).addClass('d-none');
+        });
+        $('#editMemberForm').hide().removeClass('d-none').slideDown();
+    });
+
+    $('#closeEditForm').on('click', function() {
+        $('#editMemberForm').slideUp(function() {
+            $(this).addClass('d-none');
+        });
+    });
+
+    $('#memberEditForm').on('submit', function(e) {
+        e.preventDefault();
+
+        const memberId = $('#editMemberId').text();
+        const formData = {
+            fullname: $('#editMemberFullname').val(),
+            gender: $('#editMemberGender').val(),
+            student_id: $('#editMemberStudentID').val(),
+            classes: $('#editMemberClasses').val(),
+            faculty: $('#editMemberFaculty').val(),
+            email: $('#editMemberEmail').val(),
+            address: $('#editMemberAddress').val(),
+            phone: $('#editMemberPhone').val(),
+            join_date: $('#editMemberJoinDate').val(),
+            dob: $('#editMemberDOB').val()
+        };
+
+        $.ajax({
+            url: `/members/${memberId}/edit`,
+            method: 'POST',
+            data: formData,
+            success: function(response) {
+                alert('Thông tin thành viên đã được cập nhật.');
+                $('#editMemberForm').slideUp(function() {
+                    $(this).addClass('d-none');
+                });
+                $('#membersTable').DataTable().ajax.reload();
+            },
+            error: function(xhr, status, error) {
+                alert('Đã xảy ra lỗi khi cập nhật thông tin thành viên.');
+            }
+        });
     });
 
     $('#closeDetail').on('click', function() {
