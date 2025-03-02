@@ -1,0 +1,55 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Thành viên" as Member
+actor "Ủy viên BCN" as UVBCN
+actor "Chủ nhiệm" as CN
+actor "Phó chủ nhiệm" as PCN
+
+rectangle "Hệ thống quản lý CLB" {
+    usecase "Đăng nhập/Đăng xuất" as UC1
+    usecase "Xem thông tin cá nhân" as UC2
+    usecase "Cập nhật thông tin cá nhân" as UC3
+    usecase "Xem danh sách hoạt động" as UC4
+    usecase "Đăng ký tham gia hoạt động" as UC5
+    usecase "Xem lịch sử tham gia" as UC6
+    usecase "Gửi đề xuất/chỉnh sửa" as UC7
+    usecase "Điểm danh hoạt động" as UC8
+    usecase "Xử lý đề xuất" as UC9
+    usecase "Gửi thông báo" as UC10
+    usecase "Quản lý thành viên" as UC11
+    usecase "Thay đổi vai trò thành viên" as UC12
+    usecase "Quản lý hoạt động" as UC13
+    usecase "Quản lý quỹ" as UC14
+}
+
+UC1 <-- Member
+UC2 <-- Member
+UC3 <-- Member
+UC4 <-- Member
+UC5 <-- Member
+UC6 <-- Member
+UC7 <-- Member
+
+UVBCN --> UC1
+UVBCN --> UC2
+UVBCN --> UC4
+UVBCN --> UC8
+UVBCN --> UC9
+UVBCN --> UC10
+
+CN <|- UVBCN
+PCN <|- UVBCN
+
+CN --> UC11
+CN --> UC12
+CN --> UC13
+
+PCN --> UC13
+
+actor "Thủ quỹ" as Treasurer
+Treasurer <|- UVBCN
+Treasurer --> UC14
+
+@enduml

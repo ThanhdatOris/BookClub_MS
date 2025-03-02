@@ -1,0 +1,132 @@
+@startuml
+skinparam classAttributeIconSize 0
+left to right direction
+class User {
+    - id: int
+    - studentId: string
+    - name: string
+    - email: string
+    - password: string
+    - role: Role
+    - status: string
+    - class: string
+    - faculty: string
+    - contactInfo: string
+    - createdAt: DateTime
+    - updatedAt: DateTime
+    + login(): bool
+    + logout(): void
+    + updateProfile(): void
+    + submitProposal(proposal: Proposal): void
+}
+
+enum Role {
+    MEMBER
+    UV_BCN
+    PRESIDENT
+    VICE_PRESIDENT
+    TREASURER
+}
+
+class Member {
+    + viewActivities(): List<Activity>
+    + registerForActivity(activity: Activity): void
+    + viewParticipationHistory(): List<Activity>
+}
+
+class UV_BCN {
+    + processAttendance(activity: Activity): void
+    + processProposals(): void
+    + sendNotifications(message: string): void
+}
+
+class President {
+    + manageMembers(): void
+    + changeMemberRoles(member: User, newRole: Role): void
+    + manageActivities(): void
+}
+
+class VicePresident {
+    + manageActivities(): void
+}
+
+class Treasurer {
+    + manageFunds(): void
+}
+
+class Activity {
+    - id: int
+    - title: string
+    - description: string
+    - date: DateTime
+    - time: Time
+    - location: string
+    - createdBy: User
+    - participants: List<User>
+    - status: string
+    - isDeleted: bool
+    - createdAt: DateTime
+    - updatedAt: DateTime
+    + create(): void
+    + update(): void
+    + softDelete(): void
+    + addParticipant(user: User): void
+    + removeParticipant(user: User): void
+}
+
+class Attendance {
+    - id: int
+    - user: User
+    - activity: Activity
+    - status: string
+    - remark: string
+    - markedAt: DateTime
+    + markAttendance(): void
+    + updateAttendance(status: string): void
+}
+
+class Fund {
+    - id: int
+    - transactionType: string
+    - amount: float
+    - date: DateTime
+    - description: string
+    - createdBy: User
+    - isDeleted: bool
+    - createdAt: DateTime
+    - updatedAt: DateTime
+    + addTransaction(): void
+    + updateTransaction(): void
+    + softDelete(): void
+}
+
+class Proposal {
+    - id: int
+    - user: User
+    - type: string
+    - content: string
+    - status: string
+    - createdAt: DateTime
+    - updatedAt: DateTime
+    + submit(): void
+    + approve(): void
+    + reject(): void
+}
+
+User <|-- Member
+User <|-- UV_BCN
+UV_BCN <|-- President
+UV_BCN <|-- VicePresident
+UV_BCN <|-- Treasurer
+
+User "1" -- "0..*" Proposal : submits
+User "1" -- "0..*" Attendance
+User "1" -- "0..*" Activity : creates
+Activity "1" -- "0..*" Attendance
+Activity "1" -- "0..*" User : participants
+Attendance "1" -- "1" Activity
+Attendance "1" -- "1" User
+Proposal "1" -- "1" User
+Fund "1" -- "1" User : createdBy
+
+@enduml
