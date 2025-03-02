@@ -8,10 +8,10 @@
         <div class="row">
             <div class="col-12">
                 <!-- Chi tiết thành viên -->
-                <div class="card mt-4 mb-4 shadow-sm d-none" id="MemberDetail">
+                <div class="card mb-4 shadow-sm d-none" id="MemberDetail">
                     <div class="card-header pb-3 d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 text-primary">Thông tin thành viên<span id="transactionType"></span></h6>
-                        <button class="btn btn-danger btn-sm" id="closeDetail">Đóng</button>
+                        <button class="btn btn-danger btn-sm mb-0" id="closeDetail">Đóng</button>
                     </div>
                     <div class="card-body px-4 pt-0 pb-2">
                         <div class="row">
@@ -33,10 +33,10 @@
                         <button class="btn btn-danger btn-sm mt-3" id="deleteTransaction">Xóa thành viên</button>
                     </div>
                 </div>
-                <div class="card mb-4 shadow-lg">
+                <div class="card shadow-lg">
                     <div class="card-header bg-gradient-primary text-white pb-3 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 fw-bold"><i class="fas fa-users me-2"></i> Danh sách thành viên</h6>
-                        <a href="{{ path('app_members_new') }}" class="btn btn-light btn-sm d-flex align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-users me-2"></i> Danh sách thành viên</h5>
+                        <a href="{{ path('app_members_new') }}" class="btn btn-success btn-sm mb-0">
                             <i class="fas fa-plus me-2"></i> Tạo mới
                         </a>
                     </div>
@@ -96,9 +96,10 @@
     .shadow-lg {
         box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
     }
-    h6 {
+    h5 {
         color: white;
     }
+
 </style>
 
 <script>
@@ -106,7 +107,7 @@ $(document).ready(function() {
     $('#membersTable').DataTable({
         "ajax": "{{ path('app_members_index') }}",
         "columns": [
-            { "data": "id" },
+            { "data": "id", "className": "text-center" },
             { "data": "fullname" },
             { "data": "student_id" },
             { "data": "phone" },
@@ -114,7 +115,7 @@ $(document).ready(function() {
                 "data": null,
                 "className": "text-center",
                 "render": function(data, type, row) {
-                    return `<button class="btn btn-primary btn-sm view-transaction bg-gradient-primary"
+                    return `<button class="btn btn-primary btn-sm view-transaction bg-gradient-primary mb-0"
                              data-fullname="${row.fullname}" data-student_id="${row.student_id}"
                              data-phone="${row.phone}" data-join_date="${row.join_date}" data-dob="${row.dob}"
                              data-gender="${row.gender}" data-classes="${row.classes}" data-faculty="${row.faculty}"
@@ -130,9 +131,17 @@ $(document).ready(function() {
             "lengthMenu": "Hiển thị _MENU_ mục",
             "info": "Hiển thị _START_ đến _END_ trong _TOTAL_ mục",
             "paginate": {
-                "previous": "←",
-                "next": "→"
-            }
+                "first": "<i class='fas fa-angle-double-left'></i>",
+                "previous": "<i class='fas fa-angle-left'></i>",
+                "next": "<i class='fas fa-angle-right'></i>",
+                "last": "<i class='fas fa-angle-double-right'></i>"
+            },
+            "infoEmpty": "Không có mục nào để hiển thị",
+            "zeroRecords": "Không tìm thấy kết quả phù hợp",
+            "emptyTable": "Không có dữ liệu trong bảng",
+            "infoFiltered": "(được lọc từ _MAX_ mục)",
+            "loadingRecords": "Đang tải...",
+            "processing": "Đang xử lý..."
         },
         "rowCallback": function(row, data) {
             $(row).on('click', function() {

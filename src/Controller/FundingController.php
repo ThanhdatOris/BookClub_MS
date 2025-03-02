@@ -10,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/funding')]
 final class FundingController extends AbstractController
@@ -23,12 +23,21 @@ final class FundingController extends AbstractController
             $data = [];
 
             foreach ($fundTransactions as $fundTransaction) {
+                $executedBy = $fundTransaction->getExecutedById();
+                $createdBy = '';
+
+                if ($executedBy) {
+                    $member = $executedBy->getMemberId();
+                    $createdBy = $member ? $member->getFullname() : $executedBy->getUsername();
+                }
+
                 $data[] = [
                     'id' => $fundTransaction->getId(),
                     'type' => $fundTransaction->getType(),
                     'amount' => $fundTransaction->getAmount(),
                     'description' => $fundTransaction->getDescription(),
                     'date' => $fundTransaction->getDate() ? $fundTransaction->getDate()->format('Y-m-d H:i:s') : '',
+                    'created_by' => $createdBy,
                 ];
             }
 
@@ -89,7 +98,7 @@ final class FundingController extends AbstractController
     #[Route('/{id}', name: 'app_funding_delete', methods: ['POST'])]
     public function delete(Request $request, FundTransactions $fundTransaction, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$fundTransaction->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$fundTransaction->getId(), $request->request->get('_token'))) {
             $entityManager->remove($fundTransaction);
             $entityManager->flush();
         }
