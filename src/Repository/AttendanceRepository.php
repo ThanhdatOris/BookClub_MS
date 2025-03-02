@@ -40,4 +40,12 @@ class AttendanceRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    public function getTotalAttendanceCount(): int
+    {
+        return $this->createQueryBuilder('att')
+            ->select('COUNT(att.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
