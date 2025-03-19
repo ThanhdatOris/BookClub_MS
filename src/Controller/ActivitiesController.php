@@ -9,12 +9,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/activities')]
 final class ActivitiesController extends AbstractController
 {
-    // note: Giữ nguyên action index để hiển thị danh sách hoạt động
     #[Route(name: 'app_activities_index', methods: ['GET'])]
     public function index(ActivitiesRepository $activitiesRepository): Response
     {
@@ -22,9 +22,7 @@ final class ActivitiesController extends AbstractController
             'activities' => $activitiesRepository->findAll(),
         ]);
     }
-    // end note
 
-    // note: Giữ nguyên action new để tạo hoạt động mới
     #[Route('/new', name: 'app_activities_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -36,6 +34,10 @@ final class ActivitiesController extends AbstractController
             $entityManager->persist($activity);
             $entityManager->flush();
 
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => true]);
+            }
+
             return $this->redirectToRoute('app_activities_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -44,9 +46,7 @@ final class ActivitiesController extends AbstractController
             'form' => $form,
         ]);
     }
-    // end note
 
-    // note: Giữ nguyên action show để hiển thị chi tiết hoạt động
     #[Route('/{id}', name: 'app_activities_show', methods: ['GET'])]
     public function show(Activities $activity): Response
     {
@@ -54,19 +54,21 @@ final class ActivitiesController extends AbstractController
             'activity' => $activity,
         ]);
     }
-    // end note
 
     #[Route('/{id}/edit', name: 'app_activities_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Activities $activity, EntityManagerInterface $entityManager): Response
     {
-        // Kiểm tra quyền chỉnh sửa
-        $this->denyAccessUnlessGranted('EDIT', $activity, 'Bạn không có quyền chỉnh sửa hoạt động này.');
+        $this->denyAccessUnlessGranted('EDIT', $activity, 'Chỉ có admin mới được chỉnh sửa hoạt động này.');
 
         $form = $this->createForm(ActivitiesType::class, $activity);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => true]);
+            }
 
             return $this->redirectToRoute('app_activities_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -80,12 +82,15 @@ final class ActivitiesController extends AbstractController
     #[Route('/{id}', name: 'app_activities_delete', methods: ['POST'])]
     public function delete(Request $request, Activities $activity, EntityManagerInterface $entityManager): Response
     {
-        // Kiểm tra quyền xóa
-        $this->denyAccessUnlessGranted('DELETE', $activity, 'Bạn không có quyền xóa hoạt động này.');
+        $this->denyAccessUnlessGranted('DELETE', $activity, 'Chỉ có admin mới được xóa hoạt động này.');
 
         if ($this->isCsrfTokenValid('delete'.$activity->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($activity);
             $entityManager->flush();
+
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => true]);
+            }
         }
 
         return $this->redirectToRoute('app_activities_index', [], Response::HTTP_SEE_OTHER);
