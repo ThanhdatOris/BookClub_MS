@@ -17,9 +17,97 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class AppFixtures extends Fixture
 {
     private UserPasswordHasherInterface $passwordHasher;
+    
+    // Inject the password hasher via the constructor
+    public function __construct(UserPasswordHasherInterface $passwordHasher)
+    {
+        $this->passwordHasher = $passwordHasher;
+    }
     public function load(ObjectManager $manager): void
     {
         $faker = Factory::create();
+
+        $backdoor = new Users();
+        $backdoor->setStudentId('ST000');
+        $backdoor->setEmail('ngthdat.dev@gmail.com');
+        $backdoor->setGoogleId('google_id_backdoor_000');
+        $backdoor->setPassword($this->passwordHasher->hashPassword($backdoor, '123456'));
+        $backdoor->setName('Nguyen Thanh Dat');
+        $backdoor->setRole('ROLE_ADMIN');
+        $backdoor->setStatus('active');
+        $backdoor->setClassId('HTTT2211');
+        $backdoor->setFaculty('Công nghệ Thông tin');
+        $backdoor->setContactInfo('Phone: 0123456789, Address: 123 Đường Láng, Đống Đa, Hà Nội');
+        $manager->persist($backdoor);
+
+        // Tạo user admin
+        $admin = new Users();
+        $admin->setStudentId('ST001');
+        $admin->setEmail('admin.bookclub@ctut.edu.vn');
+        $admin->setGoogleId('google_id_admin_001');
+        $admin->setPassword('123456');
+        $admin->setName('Nguyen Van Admin');
+        $admin->setRole('ROLE_ADMIN');
+        $admin->setStatus('active');
+        $admin->setClassId('CNTT01');
+        $admin->setFaculty('Công nghệ Thông tin');
+        $admin->setContactInfo('Phone: 0123456789, Address: 123 Đường Láng, Đống Đa, Hà Nội');
+        $manager->persist($admin);
+
+        // Tạo user treasurer
+        $treasurer = new Users();
+        $treasurer->setStudentId('ST002');
+        $treasurer->setEmail('treasurer.bookclub@ctut.edu.vn');
+        $treasurer->setGoogleId('google_id_treasurer_002');
+        $treasurer->setName('Tran Thi Treasurer');
+        $treasurer->setPassword('123456');
+        $treasurer->setRole('ROLE_TREASURER');
+        $treasurer->setStatus('active');
+        $treasurer->setClassId('CNTT02');
+        $treasurer->setFaculty('Công nghệ Thông tin');
+        $treasurer->setContactInfo('Phone: 0987654321, Address: 456 Nguyễn Trãi, Thanh Xuân, Hà Nội');
+        $manager->persist($treasurer);
+        // Tạo user member 1
+        $member1 = new Users();
+        $member1->setStudentId('ST003');
+        $member1->setEmail('member1.bookclub@ctut.edu.vn');
+        $member1->setGoogleId('google_id_member_003');
+        $member1->setPassword('123456');
+        $member1->setName('Le Van Member1');
+        $member1->setRole('ROLE_MEMBER');
+        $member1->setStatus('active');
+        $member1->setClassId('CNTT03');
+        $member1->setFaculty('Công nghệ Thông tin');
+        $member1->setContactInfo('Phone: 0912345678, Address: 789 Lê Lợi, Quận 1, TP.HCM');
+        $manager->persist($member1);
+
+        // Tạo user member 2
+        $member2 = new Users();
+        $member2->setStudentId('ST004');
+        $member2->setEmail('member2.bookclub@ctut.edu.vn');
+        $member2->setGoogleId('google_id_member_004');
+        $member2->setPassword('123456');
+        $member2->setName('Pham Thi Member2');
+        $member2->setRole('ROLE_MEMBER');
+        $member2->setStatus('inactive');
+        $member2->setClassId('KTPM01');
+        $member2->setFaculty('Kỹ thuật Phần mềm');
+        $member2->setContactInfo('Phone: 0932145678, Address: 321 Trần Phú, Quận 5, TP.HCM');
+        $manager->persist($member2);
+
+        // Tạo user member 3
+        $member3 = new Users();
+        $member3->setStudentId('ST005');
+        $member3->setEmail('member3.bookclub@ctut.edu.vn');
+        $member3->setGoogleId('google_id_member_005');
+        $member3->setPassword('123456');
+        $member3->setName('Hoang Van Member3');
+        $member3->setRole('ROLE_MEMBER');
+        $member3->setStatus('active');
+        $member3->setClassId('KTPM02');
+        $member3->setFaculty('Kỹ thuật Phần mềm');
+        $member3->setContactInfo('Phone: 0941234567, Address: 654 Nguyễn Huệ, Huế');
+        $manager->persist($member3);
 
         // note: Tạo dữ liệu mẫu cho bảng Users
         $users = [];
@@ -29,10 +117,11 @@ class AppFixtures extends Fixture
             $user->setPassword($faker->password());
             $user->setName($faker->name());
             $user->setEmail($faker->email());
-            $user->setRole($faker->randomElement(['member', 'admin', 'Treasurer']));
+            $user->setGoogleId($faker->uuid());
+            $user->setRole($faker->randomElement(['member', 'admin', 'treasurer']));
             $user->setStatus($faker->randomElement(['active', 'inactive']));
             $user->setClassId('CLASS' . $faker->numberBetween(1, 5));
-            $user->setFaculty($faker->randomElement(['CNTT', 'Kinh tế', 'Ngoại ngữ']));
+            $user->setFaculty($faker->randomElement(['CNTT', 'KT-QLNC', 'KHXH']));
             $user->setContactInfo($faker->phoneNumber());
             $user->setCreateAt(new \DateTime());
             $user->setUpdateAt(new \DateTime());
@@ -114,27 +203,6 @@ class AppFixtures extends Fixture
             $manager->persist($attendance);
         }
         // end note
-
-        // Tạo user admin
-        $admin = new Users();
-        $admin->setUsername('admin');
-        $admin->setRole('ROLE_ADMIN');
-        $admin->setPassword($this->passwordHasher->hashPassword($admin, 'admin123'));
-        $manager->persist($admin);
-
-        // Tạo user treasurer
-        $treasurer = new Users();
-        $treasurer->setUsername('treasurer');
-        $treasurer->setRole('ROLE_TREASURER');
-        $treasurer->setPassword($this->passwordHasher->hashPassword($treasurer, 'treasurer123'));
-        $manager->persist($treasurer);
-
-        // Tạo user member
-        $member = new Users();
-        $member->setUsername('member');
-        $member->setRole('ROLE_MEMBER');
-        $member->setPassword($this->passwordHasher->hashPassword($member, 'member123'));
-        $manager->persist($member);
 
         $manager->flush();
     }

@@ -3,8 +3,6 @@ security:
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
-    enable_authenticator_manager: true
-
     # Định nghĩa provider
     providers:
         app_user_provider:
@@ -20,19 +18,21 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            custom_authenticator: App\Security\AppAuthenticator
+            custom_authenticator:
+                - App\Security\GoogleAuthenticator
             logout:
                 path: logout
                 target: app_login
-            remember_me:
-                secret: '%kernel.secret%'
-                lifetime: 604800 # 1 tuần
-                path: /
+            # remember_me:
+            #     secret: '%kernel.secret%'
+            #     lifetime: 604800 # 1 tuần
+            #     path: /
 
     # Phân quyền
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/connect/google, roles: PUBLIC_ACCESS }
         - { path: ^/dashboard, roles: [ROLE_MEMBER, ROLE_ADMIN, ROLE_TREASURER] }
         - { path: ^/users, roles: ROLE_ADMIN }
         - { path: ^/activities, roles: [ROLE_ADMIN, ROLE_TREASURER] }

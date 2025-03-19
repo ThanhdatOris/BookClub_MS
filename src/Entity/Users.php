@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UsersRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Users implements PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -15,17 +16,20 @@ class Users implements PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 20)]
+    #[ORM\Column(length: 20, unique: true)]
     private ?string $student_id = null;
+
+    #[ORM\Column(length: 255, unique: true)]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $googleId = null;
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
     private ?string $name = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $email = null;
 
     #[ORM\Column(length: 255)]
     private ?string $role = null;
@@ -89,9 +93,21 @@ class Users implements PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getGoogleId(): ?string
+    {
+        return $this->googleId;
+    }
+
+    public function setGoogleId(?string $googleId): static
+    {
+        $this->googleId = $googleId;
+        return $this;
+    }
+
     public function getPassword(): ?string
     {
-        return $this->password;
+        // return $this->password;
+        return null;
     }
 
     public function setPassword(string $password): static
@@ -183,5 +199,20 @@ class Users implements PasswordAuthenticatedUserInterface
         $this->updated_at = $updated_at;
 
         return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->student_id;
+    }
+
+    public function getRoles(): array
+    {
+        $roles = [$this->role];
+        return array_unique($roles);
+    }
+
+    public function eraseCredentials(): void
+    {
     }
 }

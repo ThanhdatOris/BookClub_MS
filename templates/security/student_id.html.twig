@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/apple-icon-_mA87V4.png') }}">
     <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon-_mA87V4.png') }}">
-    <title>Book Club CTUT - Đăng nhập</title>
+    <title>Book Club CTUT - Nhập mã sinh viên</title>
     <!-- Fonts and icons -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <!-- Font Awesome Icons -->
@@ -25,7 +25,7 @@
                         <div class="card z-index-0 fadeIn3 fadeInBottom">
                             <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                                 <div class="bg-gradient-primary shadow-primary border-radius-lg py-3 pe-1">
-                                    <h4 class="text-white font-weight-bolder text-center mt-2 mb-0">Đăng nhập</h4>
+                                    <h4 class="text-white font-weight-bolder text-center mt-2 mb-0">Nhập mã sinh viên</h4>
                                     <div class="row mt-3">
                                         <div class="col-12 text-center">
                                             <img src="{{ asset('assets/img/logo-ct-dark-mn76con.png') }}" width="40px" height="40px" alt="logo">
@@ -35,25 +35,20 @@
                             </div>
                             <div class="card-body">
                                 {% if error %}
-                                    <div class="alert alert-danger text-white">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                                    <div class="alert alert-danger text-white">{{ error }}</div>
                                 {% endif %}
 
-                                {% if app.session.get('login_error') %}
-                                    <div class="alert alert-danger text-white">{{ app.session.get('login_error') }}</div>
-                                    {% do app.session.remove('login_error') %}
-                                {% endif %}
+                                <p>Vui lòng nhập mã sinh viên của bạn để hoàn tất đăng nhập.</p>
 
-                                {% if app.user %}
-                                    <div class="mb-3">
-                                        Bạn đã đăng nhập với tài khoản {{ app.user.studentId }}. <a href="{{ path('logout') }}">Đăng xuất</a>
+                                <form role="form" method="post" class="text-start">
+                                    <div class="input-group input-group-outline my-3">
+                                        <label class="form-label">Mã sinh viên</label>
+                                        <input type="text" name="student_id" class="form-control" required autofocus>
                                     </div>
-                                {% else %}
                                     <div class="text-center">
-                                        <a href="{{ path('connect_google_start') }}" class="btn bg-gradient-danger w-100 my-2 mb-2">
-                                            <i class="fab fa-google me-2"></i> Đăng nhập bằng Google
-                                        </a>
+                                        <button type="submit" class="btn bg-gradient-primary w-100 my-4 mb-2">Xác nhận</button>
                                     </div>
-                                {% endif %}
+                                </form>
                             </div>
                         </div>
                     </div>
