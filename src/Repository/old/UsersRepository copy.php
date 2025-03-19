@@ -2,39 +2,39 @@
 
 namespace App\Repository;
 
-use App\Entity\Activities;
+use App\Entity\Users;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Activities>
+ * @extends ServiceEntityRepository<Users>
  */
-class ActivitiesRepository extends ServiceEntityRepository
+class UsersRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Activities::class);
+        parent::__construct($registry, Users::class);
     }
 
 //    /**
-//     * @return Activities[] Returns an array of Activities objects
+//     * @return Users[] Returns an array of Users objects
 //     */
 //    public function findByExampleField($value): array
 //    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
+//        return $this->createQueryBuilder('u')
+//            ->andWhere('u.exampleField = :val')
 //            ->setParameter('val', $value)
-//            ->orderBy('a.id', 'ASC')
+//            ->orderBy('u.id', 'ASC')
 //            ->setMaxResults(10)
 //            ->getQuery()
 //            ->getResult()
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?Activities
+//    public function findOneBySomeField($value): ?Users
 //    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
+//        return $this->createQueryBuilder('u')
+//            ->andWhere('u.exampleField = :val')
 //            ->setParameter('val', $value)
 //            ->getQuery()
 //            ->getOneOrNullResult()

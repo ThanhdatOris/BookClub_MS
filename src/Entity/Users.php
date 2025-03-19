@@ -14,40 +14,76 @@ class Users
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
-    private ?string $username = null;
+    #[ORM\Column(length: 20)]
+    private ?string $student_id = null;
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    private ?string $name = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 255)]
     private ?string $role = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $creat_at = null;
+    #[ORM\Column(length: 50)]
+    private ?string $status = null;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $update_at = null;
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $class_id = null;
 
-    #[ORM\Column]
-    private ?bool $is_active = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $faculty = null;
 
-    #[ORM\OneToOne(mappedBy: 'user_id', cascade: ['persist', 'remove'])]
-    private ?Members $member_id = null;
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $contact_info = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $created_at = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $updated_at = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUsername(): ?string
+    public function getStudentId(): ?string
     {
-        return $this->username;
+        return $this->student_id;
     }
 
-    public function setUsername(string $username): static
+    public function setStudentId(string $student_id): static
     {
-        $this->username = $username;
+        $this->student_id = $student_id;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): static
+    {
+        $this->email = $email;
 
         return $this;
     }
@@ -76,60 +112,74 @@ class Users
         return $this;
     }
 
-    public function getCreatAt(): ?\DateTimeInterface
+    public function getStatus(): ?string
     {
-        return $this->creat_at;
+        return $this->status;
     }
 
-    public function setCreatAt(\DateTimeInterface $creat_at): static
+    public function setStatus(string $status): static
     {
-        $this->creat_at = $creat_at;
+        $this->status = $status;
 
         return $this;
     }
 
-    public function getUpdateAt(): ?\DateTimeImmutable
+    public function getClassId(): ?string
+    {
+        return $this->class_id;
+    }
+
+    public function setClassId(?string $class_id): static
+    {
+        $this->class_id = $class_id;
+
+        return $this;
+    }
+
+    public function getFaculty(): ?string
+    {
+        return $this->faculty;
+    }
+
+    public function setFaculty(?string $faculty): static
+    {
+        $this->faculty = $faculty;
+
+        return $this;
+    }
+
+    public function getContactInfo(): ?string
+    {
+        return $this->contact_info;
+    }
+
+    public function setContactInfo(?string $contact_info): static
+    {
+        $this->contact_info = $contact_info;
+
+        return $this;
+    }
+
+    public function getCreateAt(): ?\DateTimeInterface
+    {
+        return $this->create_at;
+    }
+
+    public function setCreateAt(?\DateTimeInterface $create_at): static
+    {
+        $this->create_at = $create_at;
+
+        return $this;
+    }
+
+    public function getUpdateAt(): ?\DateTimeInterface
     {
         return $this->update_at;
     }
 
-    public function setUpdateAt(\DateTimeImmutable $update_at): static
+    public function setUpdateAt(?\DateTimeInterface $update_at): static
     {
         $this->update_at = $update_at;
-
-        return $this;
-    }
-
-    public function isActive(): ?bool
-    {
-        return $this->is_active;
-    }
-
-    public function setIsActive(bool $is_active): static
-    {
-        $this->is_active = $is_active;
-
-        return $this;
-    }
-
-    public function getMemberId(): ?Members
-    {
-        return $this->member_id;
-    }
-
-    public function setMemberId(?Members $member_id): static
-    {
-        // unset the owning side of the relation if necessary
-        if ($member_id === null && $this->member_id !== null) {
-            $this->member_id->setUserId(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($member_id !== null && $member_id->getUserId() !== $this) {
-            $member_id->setUserId($this);
-        }
-
-        $this->member_id = $member_id;
 
         return $this;
     }

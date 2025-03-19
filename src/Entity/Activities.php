@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\ActivitiesRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -20,30 +18,16 @@ class Activities
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $description = null;
+    private ?string $descriptiton = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $time = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $status = null;
-
-    #[ORM\ManyToOne]
-    private ?Users $created_by = null;
-
-    #[ORM\ManyToMany(targetEntity: Members::class, inversedBy: 'activities')]
-    private Collection $members;
-
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $location = null;
-
-    public function __construct()
-    {
-        $this->members = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -62,14 +46,14 @@ class Activities
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getDescriptiton(): ?string
     {
-        return $this->description;
+        return $this->descriptiton;
     }
 
-    public function setDescription(?string $description): static
+    public function setDescriptiton(?string $descriptiton): static
     {
-        $this->description = $description;
+        $this->descriptiton = $descriptiton;
 
         return $this;
     }
@@ -79,7 +63,7 @@ class Activities
         return $this->date;
     }
 
-    public function setDate(\DateTimeInterface $date): static
+    public function setDate(?\DateTimeInterface $date): static
     {
         $this->date = $date;
 
@@ -96,59 +80,6 @@ class Activities
         $this->time = $time;
 
         return $this;
-    }
-
-    public function getStatus(): ?string
-    {
-        return $this->status;
-    }
-
-    public function setStatus(string $status): static
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    public function getCreatedBy(): ?Users
-    {
-        return $this->created_by;
-    }
-
-    public function setCreatedBy(?Users $created_by): static
-    {
-        $this->created_by = $created_by;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Members>
-     */
-    public function getMembers(): Collection
-    {
-        return $this->members;
-    }
-
-    public function addMember(Members $member): static
-    {
-        if (!$this->members->contains($member)) {
-            $this->members->add($member);
-        }
-
-        return $this;
-    }
-
-    public function removeMember(Members $member): static
-    {
-        $this->members->removeElement($member);
-
-        return $this;
-    }
-
-    public function getParticipantCount(): int
-    {
-        return $this->members->count();
     }
 
     public function getLocation(): ?string
