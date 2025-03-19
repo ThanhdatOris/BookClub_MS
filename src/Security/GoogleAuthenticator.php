@@ -47,16 +47,18 @@ class GoogleAuthenticator extends AbstractAuthenticator
         $client->setClientId($_ENV['GOOGLE_CLIENT_ID']);
         $client->setClientSecret($_ENV['GOOGLE_CLIENT_SECRET']);
         $client->setRedirectUri($_ENV['GOOGLE_REDIRECT_URI']);
-        $client->setScopes(['openid', 'email', 'profile']);
+        $client->setScopes(['openid', 'email', 'profile']); // Thêm scope openid
 
         try {
             // Lấy access token từ code
             $token = $client->fetchAccessTokenWithAuthCode($code);
             if (isset($token['error'])) {
-                if ($token['error'] === 'idpiframe_initialization_failed') {
-                    throw new AuthenticationException('Lỗi từ Google: idpiframe_initialization_failed. Vui lòng kiểm tra third-party cookies trong trình duyệt hoặc cấu hình HTTPS.');
-                }
-                throw new AuthenticationException('Lỗi từ Google: ' . $token['error'] . ' - ' . ($token['error_description'] ?? 'Không có mô tả lỗi'));
+                $errorMessage = sprintf(
+                    'Lỗi từ Google: %s - %s',
+                    $token['error'],
+                    $token['error_description'] ?? 'Không có mô tả lỗi'
+                );
+                throw new AuthenticationException($errorMessage);
             }
 
             $client->setAccessToken($token['access_token']);
@@ -72,14 +74,24 @@ class GoogleAuthenticator extends AbstractAuthenticator
             $user = $this->entityManager->getRepository(Users::class)->findOneBy(['email' => $email]);
 
             if (!$user) {
-                // Lưu thông tin Google vào session và yêu cầu nhập studentId
+                // Tạo user mới ngay lập tức thay vì yêu cầu nhập studentId
+                $user = new Users();
+                $user->setStudentId('TEMP_' . uniqid()); // Tạo studentId tạm thời
+                $user->setEmail($email);
+                $user->setGoogleId($googleId);
+                $user->setName($name);
+                $user->setRole('ROLE_MEMBER'); // Role mặc định
+                $user->setStatus('active');
+                $user->setClassId(null);
+                $user->setFaculty(null);
+                $user->setContactInfo(null);
+
+                $this->entityManager->persist($user);
+                $this->entityManager->flush();
+
+                // Lưu thông tin vào session để yêu cầu cập nhật studentId sau
                 $session = $this->requestStack->getSession();
-                $session->set('google_user_data', [
-                    'email' => $email,
-                    'googleId' => $googleId,
-                    'name' => $name,
-                ]);
-                throw new AuthenticationException('Yêu cầu nhập studentId');
+                $session->set('new_user_needs_student_id', true);
             }
 
             return new SelfValidatingPassport(new UserBadge($user->getUserIdentifier()));
@@ -90,6 +102,17 @@ class GoogleAuthenticator extends AbstractAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+        // Thêm thông báo đăng nhập thành công
+        $request->getSession()->getFlashBag()->add('success', 'Đăng nhập thành công! Chào mừng ' . $token->getUser()->getName());
+
+        // Kiểm tra xem user có cần cập nhật studentId không
+        $session = $request->getSession();
+        if ($session->has('new_user_needs_student_id')) {
+            $session->remove('new_user_needs_student_id');
+            return new RedirectResponse($this->urlGenerator->generate('app_update_student_id'));
+        }
+
+        // Chuyển hướng đến target path hoặc dashboard
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             return new RedirectResponse($targetPath);
         }
@@ -99,10 +122,6 @@ class GoogleAuthenticator extends AbstractAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        if ($exception->getMessage() === 'Yêu cầu nhập studentId') {
-            return new RedirectResponse($this->urlGenerator->generate('app_student_id_form'));
-        }
-
         $request->getSession()->set('login_error', $exception->getMessage());
         return new RedirectResponse($this->urlGenerator->generate('app_login'));
     }

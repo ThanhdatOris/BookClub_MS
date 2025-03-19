@@ -93,4 +93,42 @@ class SecurityController extends AbstractController
             'error' => null,
         ]);
     }
+    
+    #[Route(path: '/update-student-id', name: 'app_update_student_id', methods: ['GET', 'POST'])]
+    public function updateStudentId(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        // Nếu studentId không bắt đầu bằng TEMP_, không cần cập nhật
+        if (!str_starts_with($user->getStudentId(), 'TEMP_')) {
+            return $this->redirectToRoute('app_dashboard');
+        }
+
+        if ($request->isMethod('POST')) {
+            $studentId = $request->request->get('student_id');
+
+            // Kiểm tra studentId đã tồn tại chưa
+            $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['studentId' => $studentId]);
+            if ($existingUser) {
+                return $this->render('security/update_student_id.html.twig', [
+                    'error' => 'Mã sinh viên đã tồn tại. Vui lòng thử mã khác.',
+                ]);
+            }
+
+            // Cập nhật studentId
+            $user->setStudentId($studentId);
+            $entityManager->flush();
+
+            // Thêm thông báo thành công
+            $this->addFlash('success', 'Cập nhật mã sinh viên thành công!');
+            return $this->redirectToRoute('app_dashboard');
+        }
+
+        return $this->render('security/update_student_id.html.twig', [
+            'error' => null,
+        ]);
+    }
 }
