@@ -13,23 +13,27 @@ use Symfony\Component\Routing\Annotation\Route;
 class DashboardController extends AbstractController
 {
     #[Route('/', name: 'app_dashboard')]
-    public function index(
-        FundTransactionsRepository $fundTransactionsRepository,
-        MembersRepository $membersRepository,
-        ActivitiesRepository $activitiesRepository,
-        AttendanceRepository $attendanceRepository
-    ): Response {
-        // Fetch data from the repositories
-        $totalFunds = $fundTransactionsRepository->getTotalFunds();
-        $totalMembers = $membersRepository->count([]);
-        $newActivities = $activitiesRepository->getNewActivitiesCount();
-        $participationCount = $attendanceRepository->getTotalAttendanceCount();
+    // public function index(
+    //     FundTransactionsRepository $fundTransactionsRepository,
+    //     MembersRepository $membersRepository,
+    //     ActivitiesRepository $activitiesRepository,
+    //     AttendanceRepository $attendanceRepository
+    // ): Response {
+    //     // Fetch data from the repositories
+    //     $totalFunds = $fundTransactionsRepository->getTotalFunds();
+    //     $totalMembers = $membersRepository->count([]);
+    //     $newActivities = $activitiesRepository->getNewActivitiesCount();
+    //     $participationCount = $attendanceRepository->getTotalAttendanceCount();
 
-        return $this->render('dashboard/index.html.twig', [
-            'totalFunds' => $totalFunds,
-            'totalMembers' => $totalMembers,
-            'newActivities' => $newActivities,
-            'participationCount' => $participationCount,
-        ]);
+    //     return $this->render('dashboard/index.html.twig', [
+    //         'totalFunds' => $totalFunds,
+    //         'totalMembers' => $totalMembers,
+    //         'newActivities' => $newActivities,
+    //         'participationCount' => $participationCount,
+    //     ]);
+    // }
+    public function index(): Response
+    {
+        return $this->render('dashboard/index.html.twig');
     }
 }
