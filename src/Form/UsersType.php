@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Users;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -21,11 +22,16 @@ class UsersType extends AbstractType
             ->add('class_id')
             ->add('faculty')
             ->add('contact_info')
-            ->add('created_at', null, [
+            ->add('created_at', DateTimeType::class, [
                 'widget' => 'single_text',
+                'required' => false,
+                'mapped' => false,
             ])
-            ->add('updated_at', null, [
+            ->add('updated_at', DateTimeType::class, [
                 'widget' => 'single_text',
+                'required' => false,
+                'mapped' => false,
+                
             ])
         ;
     }
