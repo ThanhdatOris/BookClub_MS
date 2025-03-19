@@ -83,10 +83,6 @@
                                 </tbody>
                             </table>
                         </div>
-                        <!-- Phân trang -->
-                        <div class="navigation mt-4">
-                            {{ knp_pagination_render(funds) }}
-                        </div>
                     </div>
                 </div>
             </div>
@@ -101,7 +97,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form id="addFundForm" method="post" action="{{ path('app_funds_new') }}">
+                        <form method="post" action="{{ path('app_funds_new') }}">
                             <div class="mb-3">
                                 <label for="transaction_type" class="form-label">Loại giao dịch</label>
                                 <select id="transaction_type" name="transaction_type" class="form-select" required>
@@ -139,7 +135,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form id="editFundForm{{ fund.id }}" method="post" action="{{ path('app_funds_edit', {'id': fund.id}) }}">
+                            <form method="post" action="{{ path('app_funds_edit', {'id': fund.id}) }}">
                                 <div class="mb-3">
                                     <label for="transaction_type_{{ fund.id }}" class="form-label">Loại giao dịch</label>
                                     <select id="transaction_type_{{ fund.id }}" name="transaction_type" class="form-select" required>
@@ -168,56 +164,4 @@
             </div>
         {% endfor %}
     </div>
-
-    <!-- JavaScript để xử lý form trong modal -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Xử lý form thêm giao dịch
-            document.getElementById('addFundForm').addEventListener('submit', function (e) {
-                e.preventDefault();
-                const form = this;
-                const formData = new FormData(form);
-
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = data.redirect;
-                    } else {
-                        alert(data.error);
-                    }
-                })
-                .catch(error => {
-                    alert('Có lỗi xảy ra: ' + error.message);
-                });
-            });
-
-            // Xử lý form sửa giao dịch
-            document.querySelectorAll('[id^="editFundForm"]').forEach(form => {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    const formData = new FormData(this);
-
-                    fetch(this.action, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = data.redirect;
-                        } else {
-                            alert(data.error);
-                        }
-                    })
-                    .catch(error => {
-                        alert('Có lỗi xảy ra: ' + error.message);
-                    });
-                });
-            });
-        });
-    </script>
 {% endblock %}

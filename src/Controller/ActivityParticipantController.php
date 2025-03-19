@@ -2,92 +2,154 @@
 
 namespace App\Controller;
 
-use App\Entity\ActivityParticipants;
-use App\Form\ActivityParticipantsType;
-use App\Repository\ActivityParticipantsRepository;
+use App\Entity\Activities;
+use App\Entity\ActivityParticipant;
+use App\Repository\ActivityParticipantRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
-#[Route('/activity/participant')]
+#[Route('/activity_participant')]
 final class ActivityParticipantController extends AbstractController
 {
-    // note: Giữ nguyên action index để hiển thị danh sách thành viên tham gia hoạt động
-    #[Route(name: 'app_activity_participant_index', methods: ['GET'])]
-    public function index(ActivityParticipantsRepository $activityParticipantsRepository): Response
+    #[Route('/{activityId}', name: 'app_activity_participant_index', methods: ['GET'])]
+    public function index(int $activityId, Request $request, ActivityParticipantRepository $participantRepository, PaginatorInterface $paginator): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được quản lý người tham gia.');
+        $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được quản lý người tham gia.');
+
+        $activity = $this->getDoctrine()->getRepository(Activities::class)->find($activityId);
+        if (!$activity) {
+            throw $this->createNotFoundException('Hoạt động không tồn tại.');
+        }
+
+        $query = $participantRepository->createQueryBuilder('ap')
+            ->where('ap.activityId = :activityId')
+            ->setParameter('activityId', $activityId)
+            ->orderBy('ap.joinedAt', 'DESC')
+            ->getQuery();
+
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            10 // Số bản ghi mỗi trang
+        );
+
         return $this->render('activity_participant/index.html.twig', [
-            'activity_participants' => $activityParticipantsRepository->findAll(),
+            'activity' => $activity,
+            'participants' => $pagination,
         ]);
     }
-    // end note
 
-    // note: Giữ nguyên action new để tạo thành viên tham gia mới
-    #[Route('/new', name: 'app_activity_participant_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/join/{activityId}', name: 'app_activity_participant_join', methods: ['POST'])]
+    public function join(int $activityId, Request $request, EntityManagerInterface $entityManager, ActivityParticipantRepository $participantRepository): Response
     {
-        $activityParticipant = new ActivityParticipants();
-        $form = $this->createForm(ActivityParticipantsType::class, $activityParticipant);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($activityParticipant);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_activity_participant_index', [], Response::HTTP_SEE_OTHER);
+        $activity = $entityManager->getRepository(Activities::class)->find($activityId);
+        if (!$activity) {
+            throw $this->createNotFoundException('Hoạt động không tồn tại.');
         }
 
-        return $this->render('activity_participant/new.html.twig', [
-            'activity_participant' => $activityParticipant,
-            'form' => $form,
-        ]);
-    }
-    // end note
-
-    // note: Giữ nguyên action show để hiển thị chi tiết thành viên tham gia
-    #[Route('/{id}', name: 'app_activity_participant_show', methods: ['GET'])]
-    public function show(ActivityParticipants $activityParticipant): Response
-    {
-        return $this->render('activity_participant/show.html.twig', [
-            'activity_participant' => $activityParticipant,
-        ]);
-    }
-    // end note
-
-    #[Route('/{id}/edit', name: 'app_activity_participant_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, ActivityParticipants $activityParticipant, EntityManagerInterface $entityManager): Response
-    {
-        // Kiểm tra quyền chỉnh sửa
-        $this->denyAccessUnlessGranted('EDIT', $activityParticipant, 'Bạn không có quyền chỉnh sửa thành viên tham gia này.');
-
-        $form = $this->createForm(ActivityParticipantsType::class, $activityParticipant);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_activity_participant_index', [], Response::HTTP_SEE_OTHER);
+        $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('Bạn cần đăng nhập để tham gia hoạt động.');
         }
 
-        return $this->render('activity_participant/edit.html.twig', [
-            'activity_participant' => $activityParticipant,
-            'form' => $form,
-        ]);
-    }
-
-    #[Route('/{id}', name: 'app_activity_participant_delete', methods: ['POST'])]
-    public function delete(Request $request, ActivityParticipants $activityParticipant, EntityManagerInterface $entityManager): Response
-    {
-        // Kiểm tra quyền xóa
-        $this->denyAccessUnlessGranted('DELETE', $activityParticipant, 'Bạn không có quyền xóa thành viên tham gia này.');
-
-        if ($this->isCsrfTokenValid('delete'.$activityParticipant->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($activityParticipant);
-            $entityManager->flush();
+        // Kiểm tra xem user đã tham gia chưa
+        $existingParticipant = $participantRepository->findByActivityAndUser($activityId, $user->getId());
+        if ($existingParticipant) {
+            $this->addFlash('error', 'Bạn đã tham gia hoạt động này rồi.');
+            return $this->redirectToRoute('app_activities_show', ['id' => $activityId]);
         }
 
-        return $this->redirectToRoute('app_activity_participant_index', [], Response::HTTP_SEE_OTHER);
+        // Kiểm tra CSRF token
+        if (!$this->isCsrfTokenValid('join' . $activityId, $request->request->get('_token'))) {
+            $this->addFlash('error', 'CSRF token không hợp lệ.');
+            return $this->redirectToRoute('app_activities_show', ['id' => $activityId]);
+        }
+
+        // Tạo bản ghi tham gia
+        $participant = new ActivityParticipant();
+        $participant->setActivityId($activity);
+        $participant->setUserId($user);
+        $participant->setJoinedAt(new \DateTime());
+        $participant->setStatus('confirmed');
+
+        try {
+            $entityManager->persist($participant);
+            $entityManager->flush();
+            $this->addFlash('success', 'Tham gia hoạt động thành công!');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Có lỗi xảy ra khi tham gia hoạt động: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_activities_show', ['id' => $activityId]);
+    }
+
+    #[Route('/leave/{activityId}', name: 'app_activity_participant_leave', methods: ['POST'])]
+    public function leave(int $activityId, Request $request, EntityManagerInterface $entityManager, ActivityParticipantRepository $participantRepository): Response
+    {
+        $activity = $entityManager->getRepository(Activities::class)->find($activityId);
+        if (!$activity) {
+            throw $this->createNotFoundException('Hoạt động không tồn tại.');
+        }
+
+        $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('Bạn cần đăng nhập để hủy tham gia hoạt động.');
+        }
+
+        // Kiểm tra xem user đã tham gia chưa
+        $participant = $participantRepository->findByActivityAndUser($activityId, $user->getId());
+        if (!$participant) {
+            $this->addFlash('error', 'Bạn chưa tham gia hoạt động này.');
+            return $this->redirectToRoute('app_activities_show', ['id' => $activityId]);
+        }
+
+        // Kiểm tra CSRF token
+        if (!$this->isCsrfTokenValid('leave' . $activityId, $request->request->get('_token'))) {
+            $this->addFlash('error', 'CSRF token không hợp lệ.');
+            return $this->redirectToRoute('app_activities_show', ['id' => $activityId]);
+        }
+
+        try {
+            $entityManager->remove($participant);
+            $entityManager->flush();
+            $this->addFlash('success', 'Hủy tham gia hoạt động thành công!');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Có lỗi xảy ra khi hủy tham gia: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_activities_show', ['id' => $activityId]);
+    }
+
+    #[Route('/delete/{id}', name: 'app_activity_participant_delete', methods: ['POST'])]
+    public function delete(int $id, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được xóa người tham gia.');
+        $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được xóa người tham gia.');
+
+        $participant = $entityManager->getRepository(ActivityParticipant::class)->find($id);
+        if (!$participant) {
+            throw $this->createNotFoundException('Người tham gia không tồn tại.');
+        }
+
+        if ($this->isCsrfTokenValid('delete' . $id, $request->request->get('_token'))) {
+            try {
+                $activityId = $participant->getActivityId()->getId();
+                $entityManager->remove($participant);
+                $entityManager->flush();
+                $this->addFlash('success', 'Xóa người tham gia thành công!');
+                return $this->redirectToRoute('app_activity_participant_index', ['activityId' => $activityId]);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Có lỗi xảy ra khi xóa người tham gia: ' . $e->getMessage());
+            }
+        } else {
+            $this->addFlash('error', 'CSRF token không hợp lệ.');
+        }
+
+        return $this->redirectToRoute('app_activity_participant_index', ['activityId' => $participant->getActivityId()->getId()]);
     }
 }

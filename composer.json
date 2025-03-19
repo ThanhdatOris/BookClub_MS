@@ -13,6 +13,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^3.3",
         "google/apiclient": "^2.18",
+        "knplabs/knp-paginator-bundle": "^6.7",
         "knpuniversity/oauth2-client-bundle": "^2.18",
         "league/oauth2-google": "^4.0",
         "paragonie/sodium_compat": "^2.1",

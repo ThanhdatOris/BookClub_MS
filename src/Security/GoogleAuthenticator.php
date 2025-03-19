@@ -114,9 +114,9 @@ class GoogleAuthenticator extends AbstractAuthenticator
         }
 
         // Chuyển hướng đến target path hoặc dashboard
-        if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
-            return new RedirectResponse($targetPath);
-        }
+        // if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
+        //     return new RedirectResponse($targetPath);
+        // }
 
         return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));
     }

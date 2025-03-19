@@ -16,28 +16,14 @@ class ActivityParticipantRepository extends ServiceEntityRepository
         parent::__construct($registry, ActivityParticipant::class);
     }
 
-    //    /**
-    //     * @return ActivityParticipant[] Returns an array of ActivityParticipant objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?ActivityParticipant
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findByActivityAndUser(int $activityId, int $userId): ?ActivityParticipant
+    {
+        return $this->createQueryBuilder('ap')
+            ->where('ap.activityId = :activityId')
+            ->andWhere('ap.userId = :userId')
+            ->setParameter('activityId', $activityId)
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

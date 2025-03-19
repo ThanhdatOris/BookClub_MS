@@ -14,55 +14,66 @@ class ActivityParticipant
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'participants')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?activities $activity_id = null;
+    private ?Activities $activityId = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'participatedActivities')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?users $user_id = null;
+    private ?Users $userId = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $joined_at = null;
+    private ?\DateTimeInterface $joinedAt = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $status = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getActivityId(): ?activities
+    public function getActivityId(): ?Activities
     {
-        return $this->activity_id;
+        return $this->activityId;
     }
 
-    public function setActivityId(?activities $activity_id): static
+    public function setActivityId(?Activities $activityId): static
     {
-        $this->activity_id = $activity_id;
-
+        $this->activityId = $activityId;
         return $this;
     }
 
-    public function getUserId(): ?users
+    public function getUserId(): ?Users
     {
-        return $this->user_id;
+        return $this->userId;
     }
 
-    public function setUserId(?users $user_id): static
+    public function setUserId(?Users $userId): static
     {
-        $this->user_id = $user_id;
-
+        $this->userId = $userId;
         return $this;
     }
 
     public function getJoinedAt(): ?\DateTimeInterface
     {
-        return $this->joined_at;
+        return $this->joinedAt;
     }
 
-    public function setJoinedAt(\DateTimeInterface $joined_at): static
+    public function setJoinedAt(\DateTimeInterface $joinedAt): static
     {
-        $this->joined_at = $joined_at;
+        $this->joinedAt = $joinedAt;
+        return $this;
+    }
 
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
         return $this;
     }
 }

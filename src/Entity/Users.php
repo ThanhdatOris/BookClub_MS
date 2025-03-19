@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\UsersRepository;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -214,5 +216,42 @@ class Users implements UserInterface
 
     public function eraseCredentials(): void
     {
+    }
+
+    #[ORM\OneToMany(mappedBy: 'userId', targetEntity: ActivityParticipant::class, cascade: ['remove'])]
+    private Collection $participatedActivities;
+
+    public function __construct()
+    {
+        $this->participatedActivities = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, ActivityParticipant>
+     */
+    public function getParticipatedActivities(): Collection
+    {
+        return $this->participatedActivities;
+    }
+
+    public function addParticipatedActivity(ActivityParticipant $participatedActivity): static
+    {
+        if (!$this->participatedActivities->contains($participatedActivity)) {
+            $this->participatedActivities->add($participatedActivity);
+            $participatedActivity->setUserId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeParticipatedActivity(ActivityParticipant $participatedActivity): static
+    {
+        if ($this->participatedActivities->removeElement($participatedActivity)) {
+            if ($participatedActivity->getUserId() === $this) {
+                $participatedActivity->setUserId(null);
+            }
+        }
+
+        return $this;
     }
 }

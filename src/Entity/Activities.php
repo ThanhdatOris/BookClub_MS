@@ -172,4 +172,40 @@ class Activities
         $this->image = $image;
         return $this;
     }
+
+    private Collection $participants;
+
+    public function __construct()
+    {
+        $this->participants = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, ActivityParticipant>
+     */
+    public function getParticipants(): Collection
+    {
+        return $this->participants;
+    }
+
+    public function addParticipant(ActivityParticipant $participant): static
+    {
+        if (!$this->participants->contains($participant)) {
+            $this->participants->add($participant);
+            $participant->setActivityId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeParticipant(ActivityParticipant $participant): static
+    {
+        if ($this->participants->removeElement($participant)) {
+            if ($participant->getActivityId() === $this) {
+                $participant->setActivityId(null);
+            }
+        }
+
+        return $this;
+    }
 }
