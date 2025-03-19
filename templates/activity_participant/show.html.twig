@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ActivityParticipant{% endblock %}
+
+{% block body %}
+    <h1>ActivityParticipant</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ activity_participant.id }}</td>
+            </tr>
+            <tr>
+                <th>Joined_at</th>
+                <td>{{ activity_participant.joinedAt ? activity_participant.joinedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_activity_participant_index') }}">back to list</a>
+
+    <a href="{{ path('app_activity_participant_edit', {'id': activity_participant.id}) }}">edit</a>
+
+    {{ include('activity_participant/_delete_form.html.twig') }}
+{% endblock %}
