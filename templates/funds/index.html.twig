@@ -15,7 +15,7 @@
                 <th>Description</th>
                 <th>Created_at</th>
                 <th>Updated_at</th>
-                <th>actions</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -30,7 +30,17 @@
                 <td>{{ fund.updatedAt ? fund.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
                 <td>
                     <a href="{{ path('app_funds_show', {'id': fund.id}) }}">show</a>
-                    <a href="{{ path('app_funds_edit', {'id': fund.id}) }}">edit</a>
+                    {# Chỉ hiển thị nút "edit" nếu user có quyền chỉnh sửa #}
+                    {% if is_granted('EDIT', fund) %}
+                        <a href="{{ path('app_funds_edit', {'id': fund.id}) }}">edit</a>
+                    {% endif %}
+                    {# Chỉ hiển thị nút "delete" nếu user có quyền xóa #}
+                    {% if is_granted('DELETE', fund) %}
+                        <form method="post" action="{{ path('app_funds_delete', {'id': fund.id}) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this fund?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ fund.id) }}">
+                            <button type="submit" class="btn btn-danger btn-sm">delete</button>
+                        </form>
+                    {% endif %}
                 </td>
             </tr>
         {% else %}

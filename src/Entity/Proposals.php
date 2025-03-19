@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProposalsRepository::class)]
+#[ORM\HasLifecycleCallbacks] // Thêm annotation để hỗ trợ lifecycle callbacks
 class Proposals
 {
     #[ORM\Id]
@@ -16,7 +17,7 @@ class Proposals
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?users $user_id = null;
+    private ?Users $user_id = null; // Sửa tên class từ "users" thành "Users"
 
     #[ORM\Column(length: 255)]
     private ?string $type = null;
@@ -33,17 +34,18 @@ class Proposals
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updated_at = null;
 
+    // note: Giữ nguyên các getter và setter hiện có
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUserId(): ?users
+    public function getUserId(): ?Users
     {
         return $this->user_id;
     }
 
-    public function setUserId(?users $user_id): static
+    public function setUserId(?Users $user_id): static
     {
         $this->user_id = $user_id;
 
@@ -108,5 +110,20 @@ class Proposals
         $this->updated_at = $updated_at;
 
         return $this;
+    }
+    // end note
+
+    // Thêm lifecycle callbacks để tự động cập nhật created_at và updated_at
+    #[ORM\PrePersist]
+    public function onPrePersist(): void
+    {
+        $this->created_at = new \DateTime();
+        $this->updated_at = new \DateTime();
+    }
+
+    #[ORM\PreUpdate]
+    public function onPreUpdate(): void
+    {
+        $this->updated_at = new \DateTime();
     }
 }

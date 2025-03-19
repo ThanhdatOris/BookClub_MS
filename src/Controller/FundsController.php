@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/funds')]
 final class FundsController extends AbstractController
 {
+    // note: Giữ nguyên action index để hiển thị danh sách quỹ
     #[Route(name: 'app_funds_index', methods: ['GET'])]
     public function index(FundsRepository $fundsRepository): Response
     {
@@ -21,7 +22,9 @@ final class FundsController extends AbstractController
             'funds' => $fundsRepository->findAll(),
         ]);
     }
+    // end note
 
+    // note: Giữ nguyên action new để tạo quỹ mới
     #[Route('/new', name: 'app_funds_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -41,7 +44,9 @@ final class FundsController extends AbstractController
             'form' => $form,
         ]);
     }
+    // end note
 
+    // note: Giữ nguyên action show để hiển thị chi tiết quỹ
     #[Route('/{id}', name: 'app_funds_show', methods: ['GET'])]
     public function show(Funds $fund): Response
     {
@@ -49,10 +54,14 @@ final class FundsController extends AbstractController
             'fund' => $fund,
         ]);
     }
+    // end note
 
     #[Route('/{id}/edit', name: 'app_funds_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Funds $fund, EntityManagerInterface $entityManager): Response
     {
+        // Kiểm tra quyền chỉnh sửa
+        $this->denyAccessUnlessGranted('EDIT', $fund, 'Chỉ có Treasurer mới được chỉnh sửa quỹ này.');
+
         $form = $this->createForm(FundsType::class, $fund);
         $form->handleRequest($request);
 
@@ -71,6 +80,9 @@ final class FundsController extends AbstractController
     #[Route('/{id}', name: 'app_funds_delete', methods: ['POST'])]
     public function delete(Request $request, Funds $fund, EntityManagerInterface $entityManager): Response
     {
+        // Kiểm tra quyền xóa
+        $this->denyAccessUnlessGranted('DELETE', $fund, 'Chỉ có Treasurer mới được xóa quỹ này.');
+
         if ($this->isCsrfTokenValid('delete'.$fund->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($fund);
             $entityManager->flush();

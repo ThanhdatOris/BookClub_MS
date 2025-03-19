@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/attendances')]
 final class AttendancesController extends AbstractController
 {
+    // note: Giữ nguyên action index để hiển thị danh sách điểm danh
     #[Route(name: 'app_attendances_index', methods: ['GET'])]
     public function index(AttendancesRepository $attendancesRepository): Response
     {
@@ -21,7 +22,9 @@ final class AttendancesController extends AbstractController
             'attendances' => $attendancesRepository->findAll(),
         ]);
     }
+    // end note
 
+    // note: Giữ nguyên action new để tạo điểm danh mới
     #[Route('/new', name: 'app_attendances_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -41,7 +44,9 @@ final class AttendancesController extends AbstractController
             'form' => $form,
         ]);
     }
+    // end note
 
+    // note: Giữ nguyên action show để hiển thị chi tiết điểm danh
     #[Route('/{id}', name: 'app_attendances_show', methods: ['GET'])]
     public function show(Attendances $attendance): Response
     {
@@ -49,10 +54,14 @@ final class AttendancesController extends AbstractController
             'attendance' => $attendance,
         ]);
     }
+    // end note
 
     #[Route('/{id}/edit', name: 'app_attendances_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Attendances $attendance, EntityManagerInterface $entityManager): Response
     {
+        // Kiểm tra quyền chỉnh sửa
+        $this->denyAccessUnlessGranted('EDIT', $attendance, 'Bạn không có quyền chỉnh sửa điểm danh này.');
+
         $form = $this->createForm(AttendancesType::class, $attendance);
         $form->handleRequest($request);
 
@@ -71,6 +80,9 @@ final class AttendancesController extends AbstractController
     #[Route('/{id}', name: 'app_attendances_delete', methods: ['POST'])]
     public function delete(Request $request, Attendances $attendance, EntityManagerInterface $entityManager): Response
     {
+        // Kiểm tra quyền xóa
+        $this->denyAccessUnlessGranted('DELETE', $attendance, 'Bạn không có quyền xóa điểm danh này.');
+
         if ($this->isCsrfTokenValid('delete'.$attendance->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($attendance);
             $entityManager->flush();

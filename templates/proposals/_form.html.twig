@@ -1,4 +1,27 @@
-{{ form_start(form) }}
+{# {{ form_start(form) }}
     {{ form_widget(form) }}
     <button class="btn">{{ button_label|default('Save') }}</button>
-{{ form_end(form) }}
+{{ form_end(form) }} #}
+
+<div class="card">
+    <div class="card-header pb-0">
+        <h6>{{ button_label|default('Save') }}</h6>
+    </div>
+    <div class="card-body">
+        {{ form_start(form, {'attr': {'class': 'form-horizontal'}}) }}
+        
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.vars.id }}" class="form-control-label">{{ field.vars.label|default(field.vars.name|capitalize) }}</label>
+                {{ form_widget(field, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(field) }}
+            </div>
+        {% endfor %}
+        
+        <div class="text-center">
+            <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+        </div>
+        
+        {{ form_end(form) }}
+    </div>
+</div>
