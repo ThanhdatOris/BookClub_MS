@@ -30,7 +30,7 @@
                 <td>{{ activity.time ? activity.time|date('H:i:s') : '' }}</td>
                 <td>{{ activity.location }}</td>
                 <td>{{ activity.status }}</td>
-                <td>{{ activity.createdAt }}</td>
+                <td>{{ activity.createdAt ? activity.createdAt|date('Y-m-d H:i:s') : '' }}</td>
                 <td>{{ activity.updatedAt ? activity.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
                 <td>
                     <a href="{{ path('app_activities_show', {'id': activity.id}) }}">show</a>
