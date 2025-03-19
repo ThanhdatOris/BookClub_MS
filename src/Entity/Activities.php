@@ -38,7 +38,7 @@ class Activities
     #[ORM\Column(length: 50)]
     private ?string $status = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $created_at = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
