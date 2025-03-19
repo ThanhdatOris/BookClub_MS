@@ -29,6 +29,21 @@ class Activities
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $location = null;
 
+    #[ORM\ManyToOne(inversedBy: 'activities')]
+    private ?users $created_by_id = null;
+
+    #[ORM\ManyToOne]
+    private ?users $created_by = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $status = null;
+
+    #[ORM\Column]
+    private ?\DateTimeInterface $created_at = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $updated_at = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -90,6 +105,66 @@ class Activities
     public function setLocation(?string $location): static
     {
         $this->location = $location;
+
+        return $this;
+    }
+
+    public function getCreatedById(): ?users
+    {
+        return $this->created_by_id;
+    }
+
+    public function setCreatedById(?users $created_by_id): static
+    {
+        $this->created_by_id = $created_by_id;
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?users
+    {
+        return $this->created_by;
+    }
+
+    public function setCreatedBy(?users $created_by): static
+    {
+        $this->created_by = $created_by;
+
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->created_at;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $created_at): static
+    {
+        $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updated_at;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updated_at): static
+    {
+        $this->updated_at = $updated_at;
 
         return $this;
     }
