@@ -15,19 +15,17 @@
                             <div class="alert alert-success">{{ message }}</div>
                         {% endfor %}
 
-                        {% if error %}
-                            <div class="alert alert-danger">{{ error }}</div>
-                        {% endif %}
+                        {% for message in app.flashes('error') %}
+                            <div class="alert alert-danger">{{ message }}</div>
+                        {% endfor %}
 
                         <p>Chào {{ app.user.name }}, bạn cần cập nhật mã sinh viên để tiếp tục sử dụng hệ thống.</p>
+                        <p>Mã sinh viên hiện tại: <strong>{{ app.user.studentId }}</strong></p>
 
-                        <form method="post">
-                            <div class="mb-3">
-                                <label for="student_id" class="form-label">Mã sinh viên</label>
-                                <input type="text" id="student_id" name="student_id" class="form-control" required>
-                            </div>
+                        {{ form_start(form) }}
+                            {{ form_row(form.student_id) }}
                             <button type="submit" class="btn btn-primary">Cập nhật</button>
-                        </form>
+                        {{ form_end(form) }}
                     </div>
                 </div>
             </div>

@@ -40,4 +40,12 @@ class ActivitiesRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+    public function findByMonth($month)
+        {
+            return $this->createQueryBuilder('a')
+                ->where('EXTRACT(MONTH FROM a.dateField) = :month')
+                ->setParameter('month', $month)
+                ->getQuery()
+                ->getResult();
+        }
 }

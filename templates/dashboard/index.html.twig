@@ -3,10 +3,29 @@
 {% block title %}Trang chủ{% endblock %}
 
 {% block body %}
-    {% for message in app.flashes('success') %}
-        <div class="alert alert-success">{{ message }}</div>
-    {% endfor %}
     <div class="container-fluid py-4">
+        <!-- Thông báo flash -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        <!-- Chào user -->
+        <div class="mb-4">
+            <h3>Chào {{ user.name }} ({{ user.studentId }})!</h3>
+            <p>Vai trò: {{ user.role|replace({'ROLE_': ''})|capitalize }}</p>
+            {% if user.role in ['ROLE_ADMIN', 'ROLE_TREASURER'] %}
+                <a href="{{ path('app_funds_index') }}" class="btn btn-primary">Quản lý quỹ</a>
+            {% endif %}
+            {% if user.role == 'ROLE_ADMIN' %}
+                <a href="{{ path('app_users_index') }}" class="btn btn-primary">Quản lý thành viên</a>
+                <a href="{{ path('app_activities_index') }}" class="btn btn-primary">Quản lý hoạt động</a>
+            {% endif %}
+        </div>
+
+        <!-- Thống kê nhanh -->
         <div class="row">
             <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
                 <div class="card">
@@ -16,7 +35,7 @@
                                 <div class="numbers">
                                     <p class="text-sm mb-0 text-uppercase font-weight-bold">Tiền quỹ</p>
                                     <h5 class="font-weight-bolder">
-                                        {{ totalFunds|format_currency('VND') }}
+                                        {{ totalFunds|round(0, 'floor')|format_currency('VND') }}
                                     </h5>
                                 </div>
                             </div>
@@ -94,6 +113,7 @@
             </div>
         </div>
 
+        <!-- Biểu đồ và carousel -->
         <div class="row mt-4">
             <div class="col-lg-7 mb-lg-0 mb-4">
                 <div class="card z-index-2 h-100">
@@ -112,17 +132,17 @@
                     <div id="carouselExampleCaptions" class="carousel slide h-100" data-bs-ride="carousel">
                         <div class="carousel-inner border-radius-lg h-100">
                             {% for activity in recentActivities %}
-                                <div class="carousel-item h-100 {{ loop.first ? 'active' : '' }}" style="background-image: url('{{ asset('assets/img/carousel-' ~ loop.index ~ '-vTgg7eK.jpg') }}'); background-size: cover;">
+                                <div class="carousel-item h-100 {{ loop.first ? 'active' : '' }}" style="background-image: url('{{ activity.image ?? asset('assets/img/default-activity.jpg') }}'); background-size: cover;">
                                     <div class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
                                         <div class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
                                             <i class="fas fa-calendar-alt text-dark opacity-10"></i>
                                         </div>
                                         <h5 class="text-white mb-1">{{ activity.title }}</h5>
-                                        <p>{{ activity.descriptiton|length > 100 ? activity.descriptiton|slice(0, 100) ~ '...' : activity.descriptiton }}</p>
+                                        <p>{{ activity.description|length > 100 ? activity.description|slice(0, 100) ~ '...' : activity.description }}</p>
                                     </div>
                                 </div>
                             {% else %}
-                                <div class="carousel-item h-100 active" style="background-image: url('{{ asset('assets/img/carousel-1-ulFicF9.jpg') }}'); background-size: cover;">
+                                <div class="carousel-item h-100 active" style="background-image: url('{{ asset('assets/img/default-activity.jpg') }}'); background-size: cover;">
                                     <div class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
                                         <div class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
                                             <i class="fas fa-calendar-alt text-dark opacity-10"></i>
@@ -183,10 +203,12 @@
                                             <td>
                                                 <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-sm btn-info">Xem</a>
                                                 <a href="{{ path('app_proposals_edit', {'id': proposal.id}) }}" class="btn btn-sm btn-primary">Sửa</a>
-                                                <form method="post" action="{{ path('app_proposals_delete', {'id': proposal.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đề xuất này?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ proposal.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                                                </form>
+                                                {% if is_granted('ROLE_ADMIN') %}
+                                                    <form method="post" action="{{ path('app_proposals_delete', {'id': proposal.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đề xuất này?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ proposal.id) }}">
+                                                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                                                    </form>
+                                                {% endif %}
                                             </td>
                                         </tr>
                                     {% else %}

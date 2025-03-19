@@ -18,7 +18,7 @@ class Activities
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $descriptiton = null;
+    private ?string $description = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $date = null;
@@ -44,6 +44,9 @@ class Activities
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updated_at = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null; // Thêm thuộc tính image
+
     public function getId(): ?int
     {
         return $this->id;
@@ -57,19 +60,17 @@ class Activities
     public function setTitle(string $title): static
     {
         $this->title = $title;
-
         return $this;
     }
 
-    public function getDescriptiton(): ?string
+    public function getDescription(): ?string
     {
-        return $this->descriptiton;
+        return $this->description;
     }
 
-    public function setDescriptiton(?string $descriptiton): static
+    public function setDescription(?string $description): static
     {
-        $this->descriptiton = $descriptiton;
-
+        $this->description = $description;
         return $this;
     }
 
@@ -81,7 +82,6 @@ class Activities
     public function setDate(?\DateTimeInterface $date): static
     {
         $this->date = $date;
-
         return $this;
     }
 
@@ -93,7 +93,6 @@ class Activities
     public function setTime(?\DateTimeInterface $time): static
     {
         $this->time = $time;
-
         return $this;
     }
 
@@ -105,7 +104,6 @@ class Activities
     public function setLocation(?string $location): static
     {
         $this->location = $location;
-
         return $this;
     }
 
@@ -117,7 +115,6 @@ class Activities
     public function setCreatedById(?Users $created_by_id): static
     {
         $this->created_by_id = $created_by_id;
-
         return $this;
     }
 
@@ -129,7 +126,6 @@ class Activities
     public function setCreatedBy(?Users $created_by): static
     {
         $this->created_by = $created_by;
-
         return $this;
     }
 
@@ -141,7 +137,6 @@ class Activities
     public function setStatus(string $status): static
     {
         $this->status = $status;
-
         return $this;
     }
 
@@ -153,7 +148,6 @@ class Activities
     public function setCreatedAt(\DateTimeInterface $created_at): static
     {
         $this->created_at = $created_at;
-
         return $this;
     }
 
@@ -165,7 +159,17 @@ class Activities
     public function setUpdatedAt(\DateTimeInterface $updated_at): static
     {
         $this->updated_at = $updated_at;
+        return $this;
+    }
 
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
         return $this;
     }
 }

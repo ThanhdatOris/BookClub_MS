@@ -1,5 +1,4 @@
 security:
-
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
@@ -8,7 +7,7 @@ security:
         app_user_provider:
             entity:
                 class: App\Entity\Users
-                property: mail
+                property: student_id # Sửa từ 'mail' thành 'student_id' (hoặc 'email' nếu bạn muốn dùng email)
 
     # Định nghĩa firewall
     firewalls:
@@ -23,36 +22,36 @@ security:
             logout:
                 path: logout
                 target: app_login
-            # remember_me:
-            #     secret: '%kernel.secret%'
-            #     lifetime: 604800 # 1 tuần
-            #     path: /
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800 # 1 tuần
+                path: /
+                always_remember_me: true # Tự động nhớ user
 
     # Phân quyền
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/connect/google, roles: PUBLIC_ACCESS }
+        - { path: ^/student-id, roles: PUBLIC_ACCESS } # Cho phép truy cập để nhập studentId ban đầu
+        - { path: ^/update-student-id, roles: ROLE_MEMBER } # Chỉ user đã đăng nhập mới cập nhật studentId
         - { path: ^/dashboard, roles: [ROLE_MEMBER, ROLE_ADMIN, ROLE_TREASURER] }
         - { path: ^/users, roles: ROLE_ADMIN }
         - { path: ^/activities, roles: [ROLE_ADMIN, ROLE_TREASURER] }
         - { path: ^/attendances, roles: [ROLE_ADMIN, ROLE_TREASURER] }
         - { path: ^/activity_participant, roles: [ROLE_ADMIN, ROLE_TREASURER] }
-        - { path: ^/funds, roles: ROLE_TREASURER }
+        - { path: ^/funds, roles: [ROLE_ADMIN, ROLE_TREASURER] } # Cho phép cả ROLE_ADMIN truy cập quỹ
         - { path: ^/proposals, roles: [ROLE_MEMBER, ROLE_ADMIN, ROLE_TREASURER] }
+        - { path: ^/proposals/delete, roles: ROLE_ADMIN, methods: [POST] } # Chỉ ROLE_ADMIN được xóa đề xuất
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
 
     role_hierarchy:
-        ROLE_ADMIN: [ROLE_MEMBER]
+        ROLE_ADMIN: [ROLE_MEMBER, ROLE_TREASURER] # ROLE_ADMIN kế thừa cả ROLE_TREASURER
         ROLE_TREASURER: [ROLE_MEMBER]
 
 when@test:
     security:
         password_hashers:
-            # By default, password hashers are resource intensive and take time. This is
-            # important to generate secure password hashes. In tests however, secure hashes
-            # are not important, waste resources and increase test times. The following
-            # reduces the work factor to the lowest possible values.
             Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
                 algorithm: auto
                 cost: 4 # Lowest possible value for bcrypt
