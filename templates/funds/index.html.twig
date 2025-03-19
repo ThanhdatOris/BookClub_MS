@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Funds index{% endblock %}
+
+{% block body %}
+    <h1>Funds index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Transaction_type</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Created_at</th>
+                <th>Updated_at</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for fund in funds %}
+            <tr>
+                <td>{{ fund.id }}</td>
+                <td>{{ fund.transactionType }}</td>
+                <td>{{ fund.amount }}</td>
+                <td>{{ fund.date ? fund.date|date('Y-m-d') : '' }}</td>
+                <td>{{ fund.description }}</td>
+                <td>{{ fund.createdAt ? fund.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ fund.updatedAt ? fund.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_funds_show', {'id': fund.id}) }}">show</a>
+                    <a href="{{ path('app_funds_edit', {'id': fund.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="8">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_funds_new') }}">Create new</a>
+{% endblock %}

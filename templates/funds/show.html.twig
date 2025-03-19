@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Funds{% endblock %}
+
+{% block body %}
+    <h1>Funds</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ fund.id }}</td>
+            </tr>
+            <tr>
+                <th>Transaction_type</th>
+                <td>{{ fund.transactionType }}</td>
+            </tr>
+            <tr>
+                <th>Amount</th>
+                <td>{{ fund.amount }}</td>
+            </tr>
+            <tr>
+                <th>Date</th>
+                <td>{{ fund.date ? fund.date|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ fund.description }}</td>
+            </tr>
+            <tr>
+                <th>Created_at</th>
+                <td>{{ fund.createdAt ? fund.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Updated_at</th>
+                <td>{{ fund.updatedAt ? fund.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_funds_index') }}">back to list</a>
+
+    <a href="{{ path('app_funds_edit', {'id': fund.id}) }}">edit</a>
+
+    {{ include('funds/_delete_form.html.twig') }}
+{% endblock %}

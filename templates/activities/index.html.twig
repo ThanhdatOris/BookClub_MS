@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Activities index{% endblock %}
+
+{% block body %}
+    <h1>Activities index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Title</th>
+                <th>Descriptiton</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Created_at</th>
+                <th>Updated_at</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for activity in activities %}
+            <tr>
+                <td>{{ activity.id }}</td>
+                <td>{{ activity.title }}</td>
+                <td>{{ activity.descriptiton }}</td>
+                <td>{{ activity.date ? activity.date|date('Y-m-d') : '' }}</td>
+                <td>{{ activity.time ? activity.time|date('H:i:s') : '' }}</td>
+                <td>{{ activity.location }}</td>
+                <td>{{ activity.status }}</td>
+                <td>{{ activity.createdAt }}</td>
+                <td>{{ activity.updatedAt ? activity.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_activities_show', {'id': activity.id}) }}">show</a>
+                    <a href="{{ path('app_activities_edit', {'id': activity.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="10">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_activities_new') }}">Create new</a>
+{% endblock %}

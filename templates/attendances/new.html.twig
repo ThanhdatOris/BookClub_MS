@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Attendances{% endblock %}
+
+{% block body %}
+    <h1>Create new Attendances</h1>
+
+    {{ include('attendances/_form.html.twig') }}
+
+    <a href="{{ path('app_attendances_index') }}">back to list</a>
+{% endblock %}
