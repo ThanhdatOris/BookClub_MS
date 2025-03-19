@@ -1,43 +1,57 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Proposals index{% endblock %}
+{% block title %}Proposals Index{% endblock %}
 
 {% block body %}
-    <h1>Proposals index</h1>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Type</th>
-                <th>Content</th>
-                <th>Status</th>
-                <th>Created_at</th>
-                <th>Updated_at</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for proposal in proposals %}
-            <tr>
-                <td>{{ proposal.id }}</td>
-                <td>{{ proposal.type }}</td>
-                <td>{{ proposal.content }}</td>
-                <td>{{ proposal.status }}</td>
-                <td>{{ proposal.createdAt ? proposal.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ proposal.updatedAt ? proposal.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}">show</a>
-                    <a href="{{ path('app_proposals_edit', {'id': proposal.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="7">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ path('app_proposals_new') }}">Create new</a>
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <h6>Proposals Index</h6>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Id</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Content</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Created At</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Updated At</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for proposal in proposals %}
+                                    <tr>
+                                        <td>{{ proposal.id }}</td>
+                                        <td>{{ proposal.type }}</td>
+                                        <td>{{ proposal.content|length > 50 ? proposal.content|slice(0, 50) ~ '...' : proposal.content }}</td>
+                                        <td>{{ proposal.status }}</td>
+                                        <td>{{ proposal.createdAt ? proposal.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                                        <td>{{ proposal.updatedAt ? proposal.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+                                        <td>
+                                            <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-info btn-sm">Show</a>
+                                            <a href="{{ path('app_proposals_edit', {'id': proposal.id}) }}" class="btn btn-primary btn-sm">Edit</a>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center">No records found</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ path('app_proposals_new') }}" class="btn btn-success btn-sm">Create New</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

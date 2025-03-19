@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/activities')]
 final class ActivitiesController extends AbstractController
 {
+    // note: Giữ nguyên action index để hiển thị danh sách hoạt động
     #[Route(name: 'app_activities_index', methods: ['GET'])]
     public function index(ActivitiesRepository $activitiesRepository): Response
     {
@@ -21,7 +22,9 @@ final class ActivitiesController extends AbstractController
             'activities' => $activitiesRepository->findAll(),
         ]);
     }
+    // end note
 
+    // note: Giữ nguyên action new để tạo hoạt động mới
     #[Route('/new', name: 'app_activities_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -41,7 +44,9 @@ final class ActivitiesController extends AbstractController
             'form' => $form,
         ]);
     }
+    // end note
 
+    // note: Giữ nguyên action show để hiển thị chi tiết hoạt động
     #[Route('/{id}', name: 'app_activities_show', methods: ['GET'])]
     public function show(Activities $activity): Response
     {
@@ -49,10 +54,14 @@ final class ActivitiesController extends AbstractController
             'activity' => $activity,
         ]);
     }
+    // end note
 
     #[Route('/{id}/edit', name: 'app_activities_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Activities $activity, EntityManagerInterface $entityManager): Response
     {
+        // Kiểm tra quyền chỉnh sửa
+        $this->denyAccessUnlessGranted('EDIT', $activity, 'Bạn không có quyền chỉnh sửa hoạt động này.');
+
         $form = $this->createForm(ActivitiesType::class, $activity);
         $form->handleRequest($request);
 
@@ -71,6 +80,9 @@ final class ActivitiesController extends AbstractController
     #[Route('/{id}', name: 'app_activities_delete', methods: ['POST'])]
     public function delete(Request $request, Activities $activity, EntityManagerInterface $entityManager): Response
     {
+        // Kiểm tra quyền xóa
+        $this->denyAccessUnlessGranted('DELETE', $activity, 'Bạn không có quyền xóa hoạt động này.');
+
         if ($this->isCsrfTokenValid('delete'.$activity->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($activity);
             $entityManager->flush();
