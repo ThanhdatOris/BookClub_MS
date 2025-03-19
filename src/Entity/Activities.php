@@ -30,10 +30,10 @@ class Activities
     private ?string $location = null;
 
     #[ORM\ManyToOne(inversedBy: 'activities')]
-    private ?users $created_by_id = null;
+    private ?Users $created_by_id = null;
 
     #[ORM\ManyToOne]
-    private ?users $created_by = null;
+    private ?Users $created_by = null;
 
     #[ORM\Column(length: 50)]
     private ?string $status = null;
@@ -109,24 +109,24 @@ class Activities
         return $this;
     }
 
-    public function getCreatedById(): ?users
+    public function getCreatedById(): ?Users
     {
         return $this->created_by_id;
     }
 
-    public function setCreatedById(?users $created_by_id): static
+    public function setCreatedById(?Users $created_by_id): static
     {
         $this->created_by_id = $created_by_id;
 
         return $this;
     }
 
-    public function getCreatedBy(): ?users
+    public function getCreatedBy(): ?Users
     {
         return $this->created_by;
     }
 
-    public function setCreatedBy(?users $created_by): static
+    public function setCreatedBy(?Users $created_by): static
     {
         $this->created_by = $created_by;
 

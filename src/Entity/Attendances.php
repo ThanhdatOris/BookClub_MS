@@ -16,11 +16,11 @@ class Attendances
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?users $user_id = null;
+    private ?Users $user_id = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?activities $activity_id = null;
+    private ?Activities $activity_id = null;
 
     #[ORM\Column(length: 50)]
     private ?string $status = null;
@@ -33,31 +33,31 @@ class Attendances
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?users $marked_by = null;
+    private ?Users $marked_by = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUserId(): ?users
+    public function getUserId(): ?Users
     {
         return $this->user_id;
     }
 
-    public function setUserId(?users $user_id): static
+    public function setUserId(?Users $user_id): static
     {
         $this->user_id = $user_id;
 
         return $this;
     }
 
-    public function getActivityId(): ?activities
+    public function getActivityId(): ?Activities
     {
         return $this->activity_id;
     }
 
-    public function setActivityId(?activities $activity_id): static
+    public function setActivityId(?Activities $activity_id): static
     {
         $this->activity_id = $activity_id;
 
@@ -100,12 +100,12 @@ class Attendances
         return $this;
     }
 
-    public function getMarkedBy(): ?users
+    public function getMarkedBy(): ?Users
     {
         return $this->marked_by;
     }
 
-    public function setMarkedBy(?users $marked_by): static
+    public function setMarkedBy(?Users $marked_by): static
     {
         $this->marked_by = $marked_by;
 

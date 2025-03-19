@@ -28,7 +28,7 @@ class Funds
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?users $created_by = null;
+    private ?Users $created_by = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $created_at = null;
@@ -89,12 +89,12 @@ class Funds
         return $this;
     }
 
-    public function getCreatedBy(): ?users
+    public function getCreatedBy(): ?Users
     {
         return $this->created_by;
     }
 
-    public function setCreatedBy(?users $created_by): static
+    public function setCreatedBy(?Users $created_by): static
     {
         $this->created_by = $created_by;
 
