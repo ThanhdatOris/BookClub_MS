@@ -51,7 +51,7 @@
                     <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Quản lý</h6>
                 </li>
                 {# Liên kết đến Users - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
-                {% if is_granted('EDIT', 'App\\Entity\\Users') %}
+                {% if is_granted('ROLE_ADMIN') %}
                     <li class="nav-item">
                         <a class="nav-link {{ app.request.attributes.get('_route') == 'app_users_index' ? 'active' : '' }}" href="{{ path('app_users_index') }}">
                             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
@@ -62,7 +62,7 @@
                     </li>
                 {% endif %}
                 {# Liên kết đến Activities - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
-                {% if is_granted('EDIT', 'App\\Entity\\Activities') %}
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
                     <li class="nav-item">
                         <a class="nav-link {{ app.request.attributes.get('_route') == 'app_activities_index' ? 'active' : '' }}" href="{{ path('app_activities_index') }}">
                             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
@@ -71,9 +71,6 @@
                             <span class="nav-link-text ms-1">Hoạt động</span>
                         </a>
                     </li>
-                {% endif %}
-                {# Liên kết đến Attendances - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
-                {% if is_granted('EDIT', 'App\\Entity\\Attendances') %}
                     <li class="nav-item">
                         <a class="nav-link {{ app.request.attributes.get('_route') == 'app_attendances_index' ? 'active' : '' }}" href="{{ path('app_attendances_index') }}">
                             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
@@ -84,7 +81,7 @@
                     </li>
                 {% endif %}
                 {# Liên kết đến Funds - Chỉ hiển thị nếu user có quyền chỉnh sửa (role Treasurer) #}
-                {% if is_granted('EDIT', 'App\\Entity\\Funds') %}
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
                     <li class="nav-item">
                         <a class="nav-link {{ app.request.attributes.get('_route') == 'app_funds_index' ? 'active' : '' }}" href="{{ path('app_funds_index') }}">
                             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
@@ -104,7 +101,7 @@
                     </a>
                 </li>
                 {# Liên kết đến ActivityParticipants - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
-                {% if is_granted('EDIT', 'App\\Entity\\ActivityParticipants') %}
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
                     <li class="nav-item">
                         <a class="nav-link {{ app.request.attributes.get('_route') == 'app_activity_participant_index' ? 'active' : '' }}" href="{{ path('app_activity_participant_index') }}">
                             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">

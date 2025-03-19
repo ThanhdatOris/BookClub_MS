@@ -12,9 +12,11 @@ use App\Entity\ActivityParticipants;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+    private UserPasswordHasherInterface $passwordHasher;
     public function load(ObjectManager $manager): void
     {
         $faker = Factory::create();
@@ -112,6 +114,27 @@ class AppFixtures extends Fixture
             $manager->persist($attendance);
         }
         // end note
+
+        // Tạo user admin
+        $admin = new Users();
+        $admin->setUsername('admin');
+        $admin->setRole('ROLE_ADMIN');
+        $admin->setPassword($this->passwordHasher->hashPassword($admin, 'admin123'));
+        $manager->persist($admin);
+
+        // Tạo user treasurer
+        $treasurer = new Users();
+        $treasurer->setUsername('treasurer');
+        $treasurer->setRole('ROLE_TREASURER');
+        $treasurer->setPassword($this->passwordHasher->hashPassword($treasurer, 'treasurer123'));
+        $manager->persist($treasurer);
+
+        // Tạo user member
+        $member = new Users();
+        $member->setUsername('member');
+        $member->setRole('ROLE_MEMBER');
+        $member->setPassword($this->passwordHasher->hashPassword($member, 'member123'));
+        $manager->persist($member);
 
         $manager->flush();
     }
