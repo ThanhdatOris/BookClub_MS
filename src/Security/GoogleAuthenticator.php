@@ -17,7 +17,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
-
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
 
 class GoogleAuthenticator extends AbstractAuthenticator
 {
@@ -73,12 +73,17 @@ class GoogleAuthenticator extends AbstractAuthenticator
 
             // Tìm user trong cơ sở dữ liệu bằng email
             $user = $this->entityManager->getRepository(Users::class)->findOneBy(['email' => $email]);
-
+            // dump($user);
+            // die();
+    
             if (!$user) {
+                // dump('1');
+                // die();
                 // Tạo user mới ngay lập tức thay vì yêu cầu nhập studentId
                 $user = new Users();
                 $user->setStudentId('TEMP_' . uniqid()); // Tạo studentId tạm thời
                 $user->setEmail($email);
+                $user->setPassword($this->passwordHasher->hashPassword($user, '123456'));
                 $user->setGoogleId($googleId);
                 $user->setName($name);
                 $user->setRole('ROLE_MEMBER'); // Role mặc định
@@ -94,8 +99,17 @@ class GoogleAuthenticator extends AbstractAuthenticator
                 $session = $this->requestStack->getSession();
                 $session->set('new_user_needs_student_id', true);
             }
+            // dump('2');
+            // die();
 
-            return new SelfValidatingPassport(new UserBadge($user->getUserIdentifier()));
+            // return new SelfValidatingPassport(new UserBadge($user->getUserIdentifier()));
+            return new SelfValidatingPassport(
+                userBadge: new UserBadge($user->getUserIdentifier(), fn () => $user),
+                badges: [
+                    new RememberMeBadge(),
+                ]
+            );
+
         } catch (\Exception $e) {
             throw new AuthenticationException('Lỗi xác thực Google: ' . $e->getMessage());
         }
@@ -103,6 +117,8 @@ class GoogleAuthenticator extends AbstractAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+        // dump();
+        // die();
         // Thêm thông báo đăng nhập thành công
         $request->getSession()->getFlashBag()->add('success', 'Đăng nhập thành công! Chào mừng ' . $token->getUser()->getName());
 
@@ -114,15 +130,17 @@ class GoogleAuthenticator extends AbstractAuthenticator
         }
 
         // Chuyển hướng đến target path hoặc dashboard
-        // if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
-        //     return new RedirectResponse($targetPath);
-        // }
+        if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
+            return new RedirectResponse($targetPath);
+        }
 
         return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
+        dump("onAuthenticationFailure", $exception);
+        die();
         $request->getSession()->set('login_error', $exception->getMessage());
         return new RedirectResponse($this->urlGenerator->generate('app_login'));
     }

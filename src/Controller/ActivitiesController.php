@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Activities;
 use App\Repository\ActivitiesRepository;
+use App\Repository\ActivityParticipantRepository; // Thêm import này
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -102,10 +103,10 @@ final class ActivitiesController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được xem chi tiết hoạt động.');
         $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được xem chi tiết hoạt động.');
-    
+
         $user = $this->getUser();
         $hasJoined = $user ? $participantRepository->findByActivityAndUser($activity->getId(), $user->getId()) !== null : false;
-    
+
         return $this->render('activities/show.html.twig', [
             'activity' => $activity,
             'hasJoined' => $hasJoined,

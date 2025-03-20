@@ -46,7 +46,7 @@ class BookClubVoter extends Voter
         switch (true) {
             // note: Quyền chỉnh sửa/xóa cho bảng Funds
             case $subject instanceof Funds:
-                return $userRole === 'Treasurer';
+                return $userRole === 'ROLE_TREASURER';
             // end note
 
             // note: Quyền chỉnh sửa/xóa cho bảng Proposals
@@ -56,7 +56,7 @@ class BookClubVoter extends Voter
 
             // note: Quyền chỉnh sửa/xóa cho các bảng còn lại (Activities, Users, Attendances, ActivityParticipants)
             default:
-                return $userRole !== 'member'; // Role member không được chỉnh sửa/xóa
+                return $userRole !== 'ROLE_MEMBER'; // Role member không được chỉnh sửa/xóa
             // end note
         }
     }

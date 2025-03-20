@@ -14,8 +14,8 @@
 
         <!-- Chào user -->
         <div class="mb-4">
-            <h3>Chào {{ user.name }} ({{ user.studentId }})!</h3>
-            <p>Vai trò: {{ user.role|replace({'ROLE_': ''})|capitalize }}</p>
+            <h3 class="text-white">Chào {{ user.name }} ({{ user.studentId }})!</h3>
+            <p class="text-white">Vai trò: {{ user.role|replace({'ROLE_': ''})|capitalize }}</p>
             {% if user.role in ['ROLE_ADMIN', 'ROLE_TREASURER'] %}
                 <a href="{{ path('app_funds_index') }}" class="btn btn-primary">Quản lý quỹ</a>
             {% endif %}

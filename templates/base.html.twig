@@ -101,7 +101,7 @@
                     </a>
                 </li>
                 {# Liên kết đến ActivityParticipants - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
-                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                {# {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
                     <li class="nav-item">
                         <a class="nav-link {{ app.request.attributes.get('_route') == 'app_activity_participant_index' ? 'active' : '' }}" href="{{ path('app_activity_participant_index') }}">
                             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
@@ -110,7 +110,7 @@
                             <span class="nav-link-text ms-1">Tham gia hoạt động</span>
                         </a>
                     </li>
-                {% endif %}
+                {% endif %} #}
                 <li class="nav-item mt-3">
                     <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>
                 </li>

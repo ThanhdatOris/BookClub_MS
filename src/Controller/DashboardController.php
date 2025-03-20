@@ -15,7 +15,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    #[IsGranted('ROLE_MEMBER')] // Chỉ cho phép user có role ROLE_MEMBER trở lên
+    // #[IsGranted('ROLE_MEMBER')] // Chỉ cho phép user có role ROLE_MEMBER trở lên
     public function index(
         UsersRepository $usersRepository,
         ActivitiesRepository $activitiesRepository,

@@ -8,3 +8,18 @@ knp_paginator:
     template:
         pagination: '@KnpPaginator/Pagination/twitter_bootstrap_v4_pagination.html.twig' # Template phân trang
         sortable: '@KnpPaginator/Pagination/sortable_link.html.twig'                     # Template cho cột sắp xếp
+    # language:
+    #     search: "🔍 Tìm kiếm "
+    #     lengthMenu: "Hiển thị _MENU_ mục"
+    #     info: "Hiển thị _START_ đến _END_ trong _TOTAL_ mục"
+    #     paginate:
+    #         first: "<i class='fas fa-angle-double-left'></i>"
+    #         previous: "<i class='fas fa-angle-left'></i>"
+    #         next: "<i class='fas fa-angle-right'></i>"
+    #         last: "<i class='fas fa-angle-double-right'></i>"
+    #     infoEmpty: "Không có mục nào để hiển thị"
+    #     zeroRecords: "Không tìm thấy kết quả phù hợp"
+    #     emptyTable: "Không có dữ liệu trong bảng"
+    #     infoFiltered: "(được lọc từ _MAX_ mục)"
+    #     loadingRecords: "Đang tải..."
+    #     processing: "Đang xử lý..."
