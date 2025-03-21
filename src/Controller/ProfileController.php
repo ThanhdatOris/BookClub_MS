@@ -7,14 +7,16 @@ use App\Form\UserEditType;
 use App\Repository\ActivityParticipantRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Filesystem\Filesystem;
+use Knp\Component\Pager\PaginatorInterface;
 
 class ProfileController extends AbstractController
 {
+    #[Route('/profile/{studentId}', name: 'profile')]
     public function index(string $studentId, ActivityParticipantRepository $activityParticipantRepository, ManagerRegistry $doctrine): Response
     {
         $user = $doctrine->getRepository(Users::class)->findOneBy(['student_id' => $studentId]);
@@ -33,6 +35,7 @@ class ProfileController extends AbstractController
         ]);
     }
 
+    #[Route('/profile/{studentId}/edit', name: 'profile_edit')]
     public function edit(string $studentId, Request $request, ManagerRegistry $doctrine): Response
     {
         $user = $doctrine->getRepository(Users::class)->findOneBy(['student_id' => $studentId]);
@@ -58,8 +61,7 @@ class ProfileController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $doctrine->getManager()->flush();
-            $doctrine->getManager()->flush();
-
+            
             $this->addFlash('success', 'Cập nhật thông tin thành công!');
             return $this->redirectToRoute('profile', ['studentId' => $user->getStudentId()]);
         }
@@ -70,6 +72,7 @@ class ProfileController extends AbstractController
         ]);
     }
 
+    #[Route('/profile/{studentId}/suggest', name: 'profile_suggest')]
     public function suggest(string $studentId, Request $request, ManagerRegistry $doctrine): Response
     {
         $user = $doctrine->getRepository(Users::class)->findOneBy(['student_id' => $studentId]);
@@ -114,7 +117,7 @@ class ProfileController extends AbstractController
     }
 
     #[Route('/admin/suggestions', name: 'admin_suggestions')]
-    public function viewSuggestions(): Response
+    public function viewSuggestions(Request $request, PaginatorInterface $paginator): Response
     {
         if (!$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('Chỉ admin mới có quyền truy cập trang này.');
@@ -128,8 +131,28 @@ class ProfileController extends AbstractController
             $suggestions = json_decode(file_get_contents($suggestionsFile), true);
         }
 
+        // Tìm kiếm
+        $search = $request->query->get('search', '');
+        if ($search) {
+            $suggestions = array_filter($suggestions, function ($suggestion) use ($search) {
+                return stripos($suggestion['suggestedBy'], $search) !== false ||
+                       stripos($suggestion['user'], $search) !== false ||
+                       stripos($suggestion['suggestion'], $search) !== false;
+            });
+            // Đặt lại chỉ số mảng sau khi lọc
+            $suggestions = array_values($suggestions);
+        }
+
+        // Phân trang mảng dữ liệu
+        $pagination = $paginator->paginate(
+            $suggestions,
+            $request->query->getInt('page', 1),
+            10 // Số bản ghi trên mỗi trang
+        );
+
         return $this->render('profile/suggestions.html.twig', [
-            'suggestions' => $suggestions,
+            'suggestions' => $pagination,
+            'search' => $search,
         ]);
     }
 

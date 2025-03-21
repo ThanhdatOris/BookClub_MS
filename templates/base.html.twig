@@ -123,9 +123,6 @@
                             </a>
                         </li>
                     {% endif %} #}
-                    <li class="nav-item mt-3">
-                        <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>
-                    </li>
                     {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
                         <li class="nav-item">
                             <a class="nav-link {{ app.request.attributes.get('_route') == 'app_funds_index' ? 'active' : '' }}" href="{{ path('app_funds_index') }}">
@@ -133,6 +130,19 @@
                                     <i class="fas fa-money-bill-wave text-dark text-sm opacity-10"></i>
                                 </div>
                                 <span class="nav-link-text ms-1">Quỹ</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% if app.user %}
+                        <li class="nav-item mt-3">
+                            <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'profile' ? 'active' : '' }}" href="{{ path('profile', { studentId: app.user.studentId}) }}">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-user text-dark text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Hồ sơ</span>
                             </a>
                         </li>
                     {% endif %}

@@ -3,14 +3,14 @@
 {% block title %}Danh sách đề xuất chỉnh sửa{% endblock %}
 
 {% block body %}
-<div class="container">
+<div class="container-fluid py-4">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-lg-12">
             <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Danh sách đề xuất chỉnh sửa</h3>
+                <div class="card-header pb-0">
+                    <h6>Danh sách đề xuất chỉnh sửa</h6>
                 </div>
-                <div class="card-body">
+                <div class="card-body px-0 pt-0 pb-2">
                     {% for flash_message in app.flashes('success') %}
                         <div class="alert alert-success">{{ flash_message }}</div>
                     {% endfor %}
@@ -18,39 +18,52 @@
                         <div class="alert alert-danger">{{ flash_message }}</div>
                     {% endfor %}
 
-                    {% if suggestions|length > 0 %}
-                        <table class="table table-striped">
+                    <!-- Form tìm kiếm -->
+                    <form method="get" class="mb-4">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Tìm kiếm..." value="{{ search }}">
+                            <button type="submit" class="btn btn-primary">Tìm</button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive p-0" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th>Người đề xuất</th>
-                                    <th>Người dùng</th>
-                                    <th>Đề xuất</th>
-                                    <th>Thời gian</th>
-                                    <th>Trạng thái</th>
-                                    <th>Hành động</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Người đề xuất</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Người dùng</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Đề xuất</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for index, suggestion in suggestions %}
+                                {% for suggestion in suggestions %}
                                     <tr>
-                                        <td>{{ suggestion.suggestedBy }}</td>
-                                        <td>{{ suggestion.user }}</td>
-                                        <td>{{ suggestion.suggestion }}</td>
-                                        <td>{{ suggestion.createdAt }}</td>
+                                        <td>{{ suggestion.suggestedBy|length > 20 ? suggestion.suggestedBy|slice(0, 20) ~ '...' : suggestion.suggestedBy }}</td>
+                                        <td>{{ suggestion.user|length > 20 ? suggestion.user|slice(0, 20) ~ '...' : suggestion.user }}</td>
+                                        <td>{{ suggestion.suggestion|length > 50 ? suggestion.suggestion|slice(0, 50) ~ '...' : suggestion.suggestion }}</td>
                                         <td>{{ suggestion.status }}</td>
                                         <td>
                                             {% if suggestion.status == 'pending' %}
-                                                <a href="{{ path('admin_suggestions_approve', {'index': index}) }}" class="btn btn-sm btn-success">Phê duyệt</a>
-                                                <a href="{{ path('admin_suggestions_reject', {'index': index}) }}" class="btn btn-sm btn-danger">Từ chối</a>
+                                                <a href="{{ path('admin_suggestions_approve', {'index': suggestions.getCurrentPageNumber * 10 - 10 + loop.index0}) }}" class="btn btn-sm btn-success">Phê duyệt</a>
+                                                <a href="{{ path('admin_suggestions_reject', {'index': suggestions.getCurrentPageNumber * 10 - 10 + loop.index0}) }}" class="btn btn-sm btn-danger">Từ chối</a>
                                             {% endif %}
                                         </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">Chưa có đề xuất chỉnh sửa nào.</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-                    {% else %}
-                        <p>Chưa có đề xuất chỉnh sửa nào.</p>
-                    {% endif %}
+                    </div>
+
+                    <!-- Phân trang -->
+                    <div class="navigation mt-4">
+                        {{ knp_pagination_render(suggestions, null, {'search': search}) }}
+                    </div>
                 </div>
             </div>
         </div>
