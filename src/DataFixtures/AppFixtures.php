@@ -73,20 +73,112 @@ class AppFixtures extends Fixture
 
         $users = [$admin, $treasurer, $member];
 
+        $classID = [
+            // CNCD
+            "CNCD2211", "CNCD2311", "CNCD2411",
+            
+            // CNĐĐ
+            "CNĐĐ2211", "CNĐĐ2311", "CNĐĐ2411",
+            
+            // CNĐT
+            "CNĐT2211", "CNĐT2311", "CNĐT2411",
+            
+            // CNSH
+            "CNSH2211", "CNSH2311", "CNSH2411",
+            
+            // CNTP
+            "CNTP2211", "CNTP2311", "CNTP2411",
+            
+            // CNTT
+            "CNTT2211", "CNTT2311", "CNTT2411",
+            
+            // CNXD
+            "CNXD2211", "CNXD2311", "CNXD2411",
+            
+            // CNHH
+            "CNHH2211", "CNHH2311", "CNHH2411",
+            
+            // HTTT
+            "HTTT2211", "HTTT2311", "HTTT2411",
+            
+            // KETO
+            "KETO2211", "KETO2311", "KETO2411",
+            
+            // KTNL
+            "KTNL2211", "KTNL2311", "KTNL2411",
+            
+            // KTPM
+            "KTPM2211", "KTPM2311", "KTPM2411",
+            
+            // KTHC
+            "KTHC2211", "KTHC2311", "KTHC2411",
+            
+            // KHDL
+            "KHDL2211", "KHDL2311", "KHDL2411",
+            
+            // KHMT
+            "KHMT2211", "KHMT2311", "KHMT2411",
+            
+            // LQCC
+            "LQCC2211", "LQCC2311", "LQCC2411",
+            
+            // LUAT
+            "LUAT2211", "LUAT2311", "LUAT2411",
+            
+            // NGNA
+            "NGNA2211", "NGNA2311", "NGNA2411",
+            
+            // QLCN
+            "QLCN2211", "QLCN2311", "QLCN2411",
+            
+            // QLXD
+            "QLXD2211", "QLXD2311", "QLXD2411",
+            
+            // QTKD
+            "QTKD2211", "QTKD2311", "QTKD2411",
+            
+            // TCNH
+            "TCNH2211", "TCNH2311", "TCNH2411",
+
+        ];
+
+        $facultyMapping = [
+            'Công nghệ thông tin' => ['HTTT', 'CNTT', 'KTPM', 'KHMT', 'KHDL'],
+            'Khoa học xã hội' => ['LUAT', 'NGNA'],
+            'Công nghệ Sinh - Hóa - Thực Phẩm' => ['CNSH', 'CNTP', 'CNHH', 'KTHC', 'KTNL'],
+            'Kinh tế - Quản lý công nghiệp' => ['KETO', 'LQCC', 'QLCN', 'QTKD', 'TCNH'],
+            'Kỹ thuật cơ khí' => ['CNCD'],
+            'Kỹ thuật xây dựng' => ['CNXD', 'QLXD'],
+            'Điện - Điện tử' => ['CNĐĐ', 'CNĐT'],
+        ];
+
         $userss = [];
         for ($i = 0; $i < 48; $i++) {
             $user = new Users();
-            $user->setEmail($faker->unique()->email());
             $user->setPassword($this->passwordHasher->hashPassword($user, '123456'));
             $user->setName($faker->name());
-            $user->setRoles(['ROLE_USER']);
-            $user->setStudentId('STU' . $faker->unique()->numberBetween(1000, 9999));
+            $user->setRoles(['ROLE_MEMBER']);
             $user->setStatus($faker->randomElement(['active', 'inactive']));
-            $user->setClassId('CLASS' . $faker->numberBetween(1, 5));
-            $user->setFaculty($faker->randomElement(['CNTT', 'KT-QLNC', 'KHXH']));
+            $user->setClassId($faker->randomElement($classID));
+            $user->setStudentId($faker->unique()->regexify($user->getClassId() . '[0-9]{3}'));
+            $user->setEmail('user'.$user->getStudentId()."@student.ctuet.edu.vn");
+            // Lấy tiền tố từ ClassId
+            $classPrefix = substr($user->getClassId(), 0, 4);
+            // Tìm Faculty dựa trên mảng ánh xạ
+            $faculty = 'CTUT'; // Giá trị mặc định
+            foreach ($facultyMapping as $facultyName => $prefixes) {
+                if (in_array($classPrefix, $prefixes)) {
+                    $faculty = $facultyName;
+                    break;
+                }
+            }
+            // Gán Faculty cho user
+            $user->setFaculty($faculty);
             $user->setContactInfo('Phone: ' . $faker->phoneNumber() . ', Address: ' . $faker->address());
-            $user->setCreateAt(new \DateTime());
-            $user->setUpdateAt(new \DateTime());
+            $createdAt = $faker->dateTimeThisYear();
+            $updatedAt = $faker->dateTimeBetween($createdAt, 'now');
+            $user->setCreateAt($createdAt);
+            $user->setUpdateAt($updatedAt);
             $user->setGoogleId('google_id_' . $faker->uuid());
             $users[] = $user;
             $manager->persist($user);
@@ -115,8 +207,10 @@ class AppFixtures extends Fixture
                 $activity->setTime(\DateTime::createFromFormat('H:i:s', $faker->time('H:i:s')));
                 $activity->setLocation($faker->address());
                 $activity->setStatus($faker->randomElement(['planned', 'ongoing', 'completed', 'cancelled']));
-                $activity->setCreatedAt(new \DateTime());
-                $activity->setUpdatedAt(new \DateTime());
+                $createdAt = $faker->dateTimeThisYear();
+                $updatedAt = $faker->dateTimeBetween($createdAt, 'now');
+                $activity->setCreatedAt($createdAt);
+                $activity->setUpdatedAt($updatedAt);
                 $activities[] = $activity;
                 $manager->persist($activity);
             }
@@ -186,15 +280,6 @@ class AppFixtures extends Fixture
             ['type' => 'expense', 'amount' => 2700000, 'desc' => 'Chi phí tổ chức ngày hội'],
             ['type' => 'income', 'amount' => 5400000, 'desc' => 'Tài trợ từ công ty'],
             ['type' => 'expense', 'amount' => 2800000, 'desc' => 'Chi phí mua quà tặng cho khách mời'],
-            ['type' => 'income', 'amount' => 5600000, 'desc' => 'Thu từ bán vé tham quan'],
-            ['type' => 'expense', 'amount' => 2900000, 'desc' => 'Chi phí tổ chức ngày hội'],
-            ['type' => 'income', 'amount' => 5800000, 'desc' => 'Tài trợ từ công ty'],
-            ['type' => 'expense', 'amount' => 3000000, 'desc' => 'Chi phí mua quà tặng cho khách mời'],
-            ['type' => 'income', 'amount' => 6000000, 'desc' => 'Thu từ bán vé tham quan'],
-            ['type' => 'expense', 'amount' => 3100000, 'desc' => 'Chi phí tổ chức ngày hội'],
-            ['type' => 'income', 'amount' => 6200000, 'desc' => 'Tài trợ từ công ty'],
-            ['type' => 'expense', 'amount' => 3200000, 'desc' => 'Chi phí mua quà tặng cho khách mời'],
-            ['type' => 'income', 'amount' => 6400000, 'desc' => 'Thu từ bán vé tham quan'],
         ];
 
         foreach ($fundSamples as $sample) {
@@ -229,8 +314,10 @@ class AppFixtures extends Fixture
                 $proposal->setType($sample['type']);
                 $proposal->setContent($sample['content']);
                 $proposal->setStatus($faker->randomElement(['pending', 'approved', 'rejected']));
-                $proposal->setCreatedAt(new \DateTime());
-                $proposal->setUpdatedAt(new \DateTime());
+                $createdAt = $faker->dateTimeThisYear();
+                $updatedAt = $faker->dateTimeBetween($createdAt, 'now');
+                $proposal->setCreatedAt($createdAt);
+                $proposal->setUpdatedAt($updatedAt);
                 $manager->persist($proposal);
             }
         }
