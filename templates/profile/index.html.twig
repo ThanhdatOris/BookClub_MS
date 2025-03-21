@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tài khoản cá nhân - {{ user.name }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Tài khoản cá nhân - {{ user.name }}</h3>
+                </div>
+                <div class="card-body">
+                    {% if is_granted('ROLE_ADMIN') or (app.user and app.user.id == user.id and (is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER'))) %}
+                        <a href="{{ path('profile_edit', {'studentId': user.studentId}) }}" class="btn btn-primary mb-3">Chỉnh sửa thông tin</a>
+                    {% elseif is_granted('ROLE_USER') %}
+                        <a href="{{ path('profile_suggest', {'studentId': user.studentId}) }}" class="btn btn-warning mb-3">Đề xuất chỉnh sửa</a>
+                    {% endif %}
+
+                    <h4>Thông tin cá nhân</h4>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Tên</th>
+                            <td>{{ user.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ user.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Mã sinh viên</th>
+                            <td>{{ user.studentId }}</td>
+                        </tr>
+                        <tr>
+                            <th>Lớp</th>
+                            <td>{{ user.classId ?: 'Chưa có thông tin' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Khoa</th>
+                            <td>{{ user.faculty ?: 'Chưa có thông tin' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Thông tin liên hệ</th>
+                            <td>{{ user.contactInfo ?: 'Chưa có thông tin' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Trạng thái</th>
+                            <td>{{ user.status }}</td>
+                        </tr>
+                        <tr>
+                            <th>Ngày tạo</th>
+                            <td>{{ user.createdAt ? user.createdAt|date('d/m/Y H:i:s') : 'Chưa có thông tin' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Ngày cập nhật</th>
+                            <td>{{ user.updatedAt ? user.updatedAt|date('d/m/Y H:i:s') : 'Chưa có thông tin' }}</td>
+                        </tr>
+                    </table>
+
+                    <h4>Thống kê</h4>
+                    <p><strong>Số hoạt động đã tham gia:</strong> {{ activityCount }}</p>
+
+                    <h4>Lịch sử hoạt động</h4>
+                    {% if participatedActivities|length > 0 %}
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Tiêu đề</th>
+                                    <th>Ngày diễn ra</th>
+                                    <th>Thời gian</th>
+                                    <th>Địa điểm</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thời gian tham gia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participant in participatedActivities %}
+                                    <tr>
+                                        <td>{{ participant.activityId.title }}</td>
+                                        <td>{{ participant.activityId.date ? participant.activityId.date|date('d/m/Y') : 'Chưa xác định' }}</td>
+                                        <td>{{ participant.activityId.time ? participant.activityId.time|date('H:i') : 'Chưa xác định' }}</td>
+                                        <td>{{ participant.activityId.location ?: 'Chưa xác định' }}</td>
+                                        <td>{{ participant.activityId.status }}</td>
+                                        <td>{{ participant.joinedAt|date('d/m/Y H:i:s') }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Chưa tham gia hoạt động nào.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

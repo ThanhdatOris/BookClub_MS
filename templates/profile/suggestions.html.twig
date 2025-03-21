@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Danh sách đề xuất chỉnh sửa{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Danh sách đề xuất chỉnh sửa</h3>
+                </div>
+                <div class="card-body">
+                    {% for flash_message in app.flashes('success') %}
+                        <div class="alert alert-success">{{ flash_message }}</div>
+                    {% endfor %}
+                    {% for flash_message in app.flashes('error') %}
+                        <div class="alert alert-danger">{{ flash_message }}</div>
+                    {% endfor %}
+
+                    {% if suggestions|length > 0 %}
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Người đề xuất</th>
+                                    <th>Người dùng</th>
+                                    <th>Đề xuất</th>
+                                    <th>Thời gian</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for index, suggestion in suggestions %}
+                                    <tr>
+                                        <td>{{ suggestion.suggestedBy }}</td>
+                                        <td>{{ suggestion.user }}</td>
+                                        <td>{{ suggestion.suggestion }}</td>
+                                        <td>{{ suggestion.createdAt }}</td>
+                                        <td>{{ suggestion.status }}</td>
+                                        <td>
+                                            {% if suggestion.status == 'pending' %}
+                                                <a href="{{ path('admin_suggestions_approve', {'index': index}) }}" class="btn btn-sm btn-success">Phê duyệt</a>
+                                                <a href="{{ path('admin_suggestions_reject', {'index': index}) }}" class="btn btn-sm btn-danger">Từ chối</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Chưa có đề xuất chỉnh sửa nào.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

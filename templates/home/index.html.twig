@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Trang chủ{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Chào mừng đến với BookClub MS</h3>
+                </div>
+                <div class="card-body">
+                    <p>Đây là hệ thống quản lý câu lạc bộ sách, nơi bạn có thể tham gia các hoạt động, quản lý quỹ, và kết nối với các thành viên khác.</p>
+                    
+                    {% if app.user %}
+                        <p>Xin chào, <strong>{{ app.user.name }}</strong>! Bạn đã đăng nhập.</p>
+                        <a href="{{ path('logout') }}" class="btn btn-danger">Đăng xuất</a>
+                    {% else %}
+                        <p>Bạn chưa đăng nhập. Vui lòng đăng nhập để sử dụng hệ thống.</p>
+                        <a href="{{ path('app_login') }}" class="btn btn-primary">Đăng nhập</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

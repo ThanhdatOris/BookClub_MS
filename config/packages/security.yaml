@@ -26,6 +26,11 @@ security:
                 secret: '%kernel.secret%'
                 lifetime: 604800 # 1 tuần
                 path: /
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                default_target_path: app_dashboard  # Điều hướng đến /dashboard sau khi đăng nhập
+                always_use_default_target_path: true
 
     # Phân quyền
     access_control:
@@ -41,7 +46,8 @@ security:
         - { path: ^/activity_participant, roles: [ROLE_ADMIN, ROLE_TREASURER] }
         - { path: ^/funds, roles: ROLE_TREASURER }
         - { path: ^/proposals, roles: [ROLE_MEMBER, ROLE_ADMIN, ROLE_TREASURER] }
-        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/profile, roles: IS_AUTHENTICATED_FULLY }
+        # - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
         
     role_hierarchy:
         ROLE_ADMIN: [ROLE_MEMBER]

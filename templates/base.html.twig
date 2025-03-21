@@ -40,88 +40,112 @@
         <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link {{ app.request.attributes.get('_route') == 'app_dashboard' ? 'active' : '' }}" href="{{ path('app_dashboard') }}">
+                    <a class="nav-link {{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}" href="{{ path('app_home') }}">
                         <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-tachometer-alt text-dark text-sm opacity-10"></i>
+                            <i class="fas fa-home text-dark text-sm opacity-10"></i>
                         </div>
-                        <span class="nav-link-text ms-1">Dashboard</span>
+                        <span class="nav-link-text ms-1">Home</span>
                     </a>
                 </li>
-                <li class="nav-item mt-3">
-                    <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Quản lý</h6>
-                </li>
-                {# Liên kết đến Users - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
-                {% if is_granted('ROLE_ADMIN') %}
+                {% if app.user %}
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_dashboard' ? 'active' : '' }}" href="{{ path('app_dashboard') }}">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-tachometer-alt text-dark text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Dashboard</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item mt-3">
+                        <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Quản lý</h6>
+                    </li>
+                    {# Liên kết đến Users - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_users_index' ? 'active' : '' }}" href="{{ path('app_users_index') }}">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-users text-dark text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Thành viên</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {# Liên kết đến Activities - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
+                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_activities_index' ? 'active' : '' }}" href="{{ path('app_activities_index') }}">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-calendar-alt text-dark text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Hoạt động</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_attendances_index' ? 'active' : '' }}" href="{{ path('app_attendances_index') }}">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-check-square text-dark text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Điểm danh</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {# Liên kết đến Funds - Chỉ hiển thị nếu user có quyền chỉnh sửa (role Treasurer) #}
+                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_funds_index' ? 'active' : '' }}" href="{{ path('app_funds_index') }}">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-money-bill-wave text-dark text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Đóng quỹ</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {# Liên kết đến Proposals - Hiển thị cho tất cả user vì tất cả role đều có quyền chỉnh sửa #}
                     <li class="nav-item">
-                        <a class="nav-link {{ app.request.attributes.get('_route') == 'app_users_index' ? 'active' : '' }}" href="{{ path('app_users_index') }}">
+                        <a class="nav-link {{ app.request.attributes.get('_route') == 'app_proposals_index' ? 'active' : '' }}" href="{{ path('app_proposals_index') }}">
                             <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                <i class="fas fa-users text-dark text-sm opacity-10"></i>
+                                <i class="fas fa-file-alt text-dark text-sm opacity-10"></i>
                             </div>
-                            <span class="nav-link-text ms-1">Thành viên</span>
+                            <span class="nav-link-text ms-1">Đề xuất</span>
                         </a>
                     </li>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_suggestions' ? 'active' : '' }}" href="{{ path('admin_suggestions') }}">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-file-alt text-dark text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Đề xuất chỉnh sửa</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {# Liên kết đến ActivityParticipants - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
+                    {# {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_activity_participant_index' ? 'active' : '' }}" href="{{ path('app_activity_participant_index') }}">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-user-friends text-dark text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Tham gia hoạt động</span>
+                            </a>
+                        </li>
+                    {% endif %} #}
+                    <li class="nav-item mt-3">
+                        <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>
+                    </li>
+                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_funds_index' ? 'active' : '' }}" href="{{ path('app_funds_index') }}">
+                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-money-bill-wave text-dark text-sm opacity-10"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Quỹ</span>
+                            </a>
+                        </li>
+                    {% endif %}
                 {% endif %}
-                {# Liên kết đến Activities - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
-                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
-                    <li class="nav-item">
-                        <a class="nav-link {{ app.request.attributes.get('_route') == 'app_activities_index' ? 'active' : '' }}" href="{{ path('app_activities_index') }}">
-                            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                <i class="fas fa-calendar-alt text-dark text-sm opacity-10"></i>
-                            </div>
-                            <span class="nav-link-text ms-1">Hoạt động</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ app.request.attributes.get('_route') == 'app_attendances_index' ? 'active' : '' }}" href="{{ path('app_attendances_index') }}">
-                            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                <i class="fas fa-check-square text-dark text-sm opacity-10"></i>
-                            </div>
-                            <span class="nav-link-text ms-1">Điểm danh</span>
-                        </a>
-                    </li>
-                {% endif %}
-                {# Liên kết đến Funds - Chỉ hiển thị nếu user có quyền chỉnh sửa (role Treasurer) #}
-                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
-                    <li class="nav-item">
-                        <a class="nav-link {{ app.request.attributes.get('_route') == 'app_funds_index' ? 'active' : '' }}" href="{{ path('app_funds_index') }}">
-                            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                <i class="fas fa-money-bill-wave text-dark text-sm opacity-10"></i>
-                            </div>
-                            <span class="nav-link-text ms-1">Đóng quỹ</span>
-                        </a>
-                    </li>
-                {% endif %}
-                {# Liên kết đến Proposals - Hiển thị cho tất cả user vì tất cả role đều có quyền chỉnh sửa #}
-                <li class="nav-item">
-                    <a class="nav-link {{ app.request.attributes.get('_route') == 'app_proposals_index' ? 'active' : '' }}" href="{{ path('app_proposals_index') }}">
-                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-file-alt text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Đề xuất</span>
-                    </a>
-                </li>
-                {# Liên kết đến ActivityParticipants - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
-                {# {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
-                    <li class="nav-item">
-                        <a class="nav-link {{ app.request.attributes.get('_route') == 'app_activity_participant_index' ? 'active' : '' }}" href="{{ path('app_activity_participant_index') }}">
-                            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                <i class="fas fa-user-friends text-dark text-sm opacity-10"></i>
-                            </div>
-                            <span class="nav-link-text ms-1">Tham gia hoạt động</span>
-                        </a>
-                    </li>
-                {% endif %} #}
-                <li class="nav-item mt-3">
-                    <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>
-                </li>
-                {# <li class="nav-item">
-                    <a class="nav-link" href="{{ path('profile') }}">
-                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-user text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Profile</span>
-                    </a>
-                </li> #}
             </ul>
         </div>
         <div class="sidenav-footer mx-3">

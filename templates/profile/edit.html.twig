@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chỉnh sửa thông tin - {{ user.name }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Chỉnh sửa thông tin - {{ user.name }}</h3>
+                </div>
+                <div class="card-body">
+                    {% for flash_message in app.flashes('success') %}
+                        <div class="alert alert-success">{{ flash_message }}</div>
+                    {% endfor %}
+                    {% for flash_message in app.flashes('error') %}
+                        <div class="alert alert-danger">{{ flash_message }}</div>
+                    {% endfor %}
+
+                    {{ form_start(form) }}
+                        {{ form_row(form.name) }}
+                        {{ form_row(form.email) }}
+                        {{ form_row(form.studentId) }}
+                        {{ form_row(form.classId) }}
+                        {{ form_row(form.faculty) }}
+                        {{ form_row(form.contactInfo) }}
+                        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                        <a href="{{ path('profile', {'studentId': user.studentId}) }}" class="btn btn-secondary">Hủy</a>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
