@@ -12,80 +12,89 @@
             <div class="alert alert-danger">{{ message }}</div>
         {% endfor %}
 
-        <!-- Header -->
-        <div class="row mb-4">
+        <!-- Header và Danh sách giao dịch trong một card -->
+        <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h6>Quản lý quỹ</h6>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFundModal">
-                                Thêm giao dịch
-                            </button>
+                            <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý quỹ</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center me-2 mb-0">
+                                    <input type="text" id="searchInput" class="form-control me-2" placeholder="Tìm kiếm giao dịch..." style="max-width: 300px;">
+                                    <button type="button" id="clearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                                </div>
+                                {% if is_granted('ROLE_TREASURER') %}
+                                    <button type="button" class="btn btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addFundModal">
+                                        <i class="fas fa-plus me-1"></i> Thêm giao dịch
+                                    </button>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Danh sách giao dịch -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
                     <div class="card-body px-0 pt-0 pb-2">
-                        <div class="table-responsive p-0">
-                            <table class="table align-items-center mb-0">
+                        <div class="table-responsive p-0 px-3" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover align-items-center mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Loại giao dịch</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Số tiền</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="date">Ngày</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="transactionType">Loại giao dịch</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="amount">Số tiền</a>
+                                        </th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mô tả</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Người tạo</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="createdBy">Người tạo</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="fundsTableBody">
                                     {% for fund in funds %}
-                                        <tr>
+                                        <tr data-url="{{ path('app_funds_show', {'id': fund.id, 'referer': app.request.uri}) }}" style="cursor: pointer;">
                                             <td>
-                                                <div class="d-flex px-2 py-1">
-                                                    <div class="d-flex flex-column justify-content-center">
-                                                        <h6 class="mb-0 text-sm">{{ fund.transactionType }}</h6>
-                                                    </div>
+                                                <p class="text-xs font-weight-bold mb-0 text-center">{{ fund.date|date('Y-m-d') }}</p>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-column justify-content-center text-center">
+                                                    <h6 class="mb-0 text-sm text-{{ fund.transactionType == 'income' ? 'success' : 'danger' }}">
+                                                        {{ fund.transactionType == 'income' ? 'Thu' : 'Chi' }}
+                                                    </h6>
                                                 </div>
                                             </td>
                                             <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ fund.amount|format_currency('VND') }}</p>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ fund.date|date('Y-m-d') }}</p>
+                                                <p class="text-xs font-weight-bold mb-0 text-center">{{ fund.amount|format_currency('VND') }}</p>
                                             </td>
                                             <td>
                                                 <p class="text-xs font-weight-bold mb-0">{{ fund.description|length > 50 ? fund.description|slice(0, 50) ~ '...' : fund.description }}</p>
                                             </td>
                                             <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ fund.createdBy.name }}</p>
+                                                <p class="text-xs font-weight-bold mb-0 text-center">{{ fund.createdBy.name }}</p>
                                             </td>
-                                            <td>
-                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editFundModal{{ fund.id }}">Sửa</button>
-                                                <form method="post" action="{{ path('app_funds_delete', {'id': fund.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa giao dịch này?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ fund.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                                                </form>
+                                            <td class="text-center">
+                                                {% if is_granted('ROLE_TREASURER') %}
+                                                    <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editFundModal{{ fund.id }}" onclick="event.stopPropagation();">Sửa</button>
+                                                    <button type="button" class="btn btn-sm btn-danger mb-0 delete-fund" data-id="{{ fund.id }}" data-csrf-token="{{ csrf_token('delete' ~ fund.id) }}" onclick="event.stopPropagation();">Xóa</button>
+                                                {% elseif is_granted('ROLE_ADMIN') %}
+                                                    <a href="{{ path('app_funds_show', {'id': fund.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem chi tiết</a>
+                                                {% endif %}
                                             </td>
-                                        </tr>
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="6" class="text-center">Không có giao dịch nào.</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                        <!-- Phân trang -->
-                        <div class="navigation mt-4">
-                            {{ knp_pagination_render(funds) }}
+                        <!-- Phân trang client-side -->
+                        <div class="navigation mt-4 d-flex justify-content-center">
+                            <nav>
+                                <ul class="pagination" id="pagination">
+                                    <!-- Phân trang sẽ được tạo bằng JavaScript -->
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                 </div>
@@ -101,29 +110,34 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form id="addFundForm" method="post" action="{{ path('app_funds_new') }}">
+                        <div id="addFundError" class="alert alert-danger d-none"></div>
+                        {{ form_start(addFundForm, {'attr': {'id': 'addFundForm'}}) }}
                             <div class="mb-3">
-                                <label for="transaction_type" class="form-label">Loại giao dịch</label>
-                                <select id="transaction_type" name="transaction_type" class="form-select" required>
-                                    <option value="income">Thu</option>
-                                    <option value="expense">Chi</option>
-                                </select>
+                                {{ form_label(addFundForm.transaction_type) }}
+                                {{ form_widget(addFundForm.transaction_type, {'attr': {'class': 'form-select'}}) }}
+                                <div class="text-danger">{{ form_errors(addFundForm.transaction_type) }}</div>
                             </div>
                             <div class="mb-3">
-                                <label for="amount" class="form-label">Số tiền</label>
-                                <input type="number" id="amount" name="amount" class="form-control" step="0.001" required>
+                                {{ form_label(addFundForm.amount) }}
+                                {{ form_widget(addFundForm.amount, {'attr': {'class': 'form-control'}}) }}
+                                <div class="text-danger">{{ form_errors(addFundForm.amount) }}</div>
                             </div>
                             <div class="mb-3">
-                                <label for="date" class="form-label">Ngày</label>
-                                <input type="date" id="date" name="date" class="form-control" required>
+                                {{ form_label(addFundForm.date) }}
+                                {{ form_widget(addFundForm.date, {'attr': {'class': 'form-control'}}) }}
+                                <div class="text-danger">{{ form_errors(addFundForm.date) }}</div>
                             </div>
                             <div class="mb-3">
-                                <label for="description" class="form-label">Mô tả</label>
-                                <textarea id="description" name="description" class="form-control"></textarea>
+                                {{ form_label(addFundForm.description) }}
+                                {{ form_widget(addFundForm.description, {'attr': {'class': 'form-control'}}) }}
+                                <div class="text-danger">{{ form_errors(addFundForm.description) }}</div>
                             </div>
-                            <input type="hidden" name="_token" value="{{ csrf_token('fund_new') }}">
-                            <button type="submit" class="btn btn-primary">Lưu</button>
-                        </form>
+                            {{ form_row(addFundForm._token) }}
+                            <button type="submit" class="btn btn-primary" id="addFundSubmitBtn">
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="addFundSpinner"></span>
+                                Lưu
+                            </button>
+                        {{ form_end(addFundForm) }}
                     </div>
                 </div>
             </div>
@@ -139,29 +153,34 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form id="editFundForm{{ fund.id }}" method="post" action="{{ path('app_funds_edit', {'id': fund.id}) }}">
+                            <div id="editFundError{{ fund.id }}" class="alert alert-danger d-none"></div>
+                            {{ form_start(editFundForms[fund.id], {'attr': {'id': 'editFundForm' ~ fund.id}}) }}
                                 <div class="mb-3">
-                                    <label for="transaction_type_{{ fund.id }}" class="form-label">Loại giao dịch</label>
-                                    <select id="transaction_type_{{ fund.id }}" name="transaction_type" class="form-select" required>
-                                        <option value="income" {{ fund.transactionType == 'income' ? 'selected' : '' }}>Thu</option>
-                                        <option value="expense" {{ fund.transactionType == 'expense' ? 'selected' : '' }}>Chi</option>
-                                    </select>
+                                    {{ form_label(editFundForms[fund.id].transaction_type) }}
+                                    {{ form_widget(editFundForms[fund.id].transaction_type, {'attr': {'class': 'form-select'}}) }}
+                                    <div class="text-danger">{{ form_errors(editFundForms[fund.id].transaction_type) }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="amount_{{ fund.id }}" class="form-label">Số tiền</label>
-                                    <input type="number" id="amount_{{ fund.id }}" name="amount" class="form-control" step="0.001" value="{{ fund.amount }}" required>
+                                    {{ form_label(editFundForms[fund.id].amount) }}
+                                    {{ form_widget(editFundForms[fund.id].amount, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(editFundForms[fund.id].amount) }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="date_{{ fund.id }}" class="form-label">Ngày</label>
-                                    <input type="date" id="date_{{ fund.id }}" name="date" class="form-control" value="{{ fund.date|date('Y-m-d') }}" required>
+                                    {{ form_label(editFundForms[fund.id].date) }}
+                                    {{ form_widget(editFundForms[fund.id].date, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(editFundForms[fund.id].date) }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="description_{{ fund.id }}" class="form-label">Mô tả</label>
-                                    <textarea id="description_{{ fund.id }}" name="description" class="form-control">{{ fund.description }}</textarea>
+                                    {{ form_label(editFundForms[fund.id].description) }}
+                                    {{ form_widget(editFundForms[fund.id].description, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(editFundForms[fund.id].description) }}</div>
                                 </div>
-                                <input type="hidden" name="_token" value="{{ csrf_token('fund_edit' ~ fund.id) }}">
-                                <button type="submit" class="btn btn-primary">Cập nhật</button>
-                            </form>
+                                {{ form_row(editFundForms[fund.id]._token) }}
+                                <button type="submit" class="btn btn-primary" id="editFundSubmitBtn{{ fund.id }}">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="editFundSpinner{{ fund.id }}"></span>
+                                    Cập nhật
+                                </button>
+                            {{ form_end(editFundForms[fund.id]) }}
                         </div>
                     </div>
                 </div>
@@ -169,55 +188,6 @@
         {% endfor %}
     </div>
 
-    <!-- JavaScript để xử lý form trong modal -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Xử lý form thêm giao dịch
-            document.getElementById('addFundForm').addEventListener('submit', function (e) {
-                e.preventDefault();
-                const form = this;
-                const formData = new FormData(form);
-
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = data.redirect;
-                    } else {
-                        alert(data.error);
-                    }
-                })
-                .catch(error => {
-                    alert('Có lỗi xảy ra: ' + error.message);
-                });
-            });
-
-            // Xử lý form sửa giao dịch
-            document.querySelectorAll('[id^="editFundForm"]').forEach(form => {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    const formData = new FormData(this);
-
-                    fetch(this.action, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = data.redirect;
-                        } else {
-                            alert(data.error);
-                        }
-                    })
-                    .catch(error => {
-                        alert('Có lỗi xảy ra: ' + error.message);
-                    });
-                });
-            });
-        });
-    </script>
+    <!-- Include JavaScript -->
+    <script src="{{ asset('js/funds.js') }}"></script>
 {% endblock %}
