@@ -111,16 +111,7 @@
                             <span class="nav-link-text ms-1">Đề xuất</span>
                         </a>
                     </li>
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <li class="nav-item">
-                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_suggestions' ? 'active' : '' }}" href="{{ path('admin_suggestions') }}">
-                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-file-alt text-dark text-sm opacity-10"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">Đề xuất chỉnh sửa</span>
-                            </a>
-                        </li>
-                    {% endif %}
+                    
                     {# Liên kết đến ActivityParticipants - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
                     {# {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
                         <li class="nav-item">

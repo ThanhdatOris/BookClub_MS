@@ -49,6 +49,9 @@ class GoogleAuthenticator extends AbstractAuthenticator
         $client->setClientSecret($_ENV['GOOGLE_CLIENT_SECRET']);
         $client->setRedirectUri($_ENV['GOOGLE_REDIRECT_URI']);
         $client->setScopes(['openid', 'email', 'profile']); // Thêm scope openid
+        
+        // dump($client);
+        // die();
 
         try {
             // Lấy access token từ code
@@ -71,33 +74,37 @@ class GoogleAuthenticator extends AbstractAuthenticator
             $googleId = $googleUser->id;
             $name = $googleUser->name;
 
+            // dump($googleUser);
+            // die();
+
             // Tìm user trong cơ sở dữ liệu bằng email
             $user = $this->entityManager->getRepository(Users::class)->findOneBy(['email' => $email]);
             // dump($user);
             // die();
     
             if (!$user) {
-                // dump('1');
-                // die();
-                // Tạo user mới ngay lập tức thay vì yêu cầu nhập studentId
-                $user = new Users();
-                $user->setStudentId('TEMP_' . uniqid()); // Tạo studentId tạm thời
-                $user->setEmail($email);
-                $user->setPassword($this->passwordHasher->hashPassword($user, '123456'));
-                $user->setGoogleId($googleId);
-                $user->setName($name);
-                $user->setRole('ROLE_MEMBER'); // Role mặc định
-                $user->setStatus('active');
-                $user->setClassId(null);
-                $user->setFaculty(null);
-                $user->setContactInfo(null);
+            //     // dump('1');
+            //     // die();
+            //     // Tạo user mới ngay lập tức thay vì yêu cầu nhập studentId
+            //     $user = new Users();
+            //     $user->setStudentId('TEMP_' . uniqid()); // Tạo studentId tạm thời
+            //     $user->setEmail($email);
+            //     $user->setPassword($this->passwordHasher->hashPassword($user, '123456'));
+            //     $user->setGoogleId($googleId);
+            //     $user->setName($name);
+            //     $user->setRole('ROLE_MEMBER'); // Role mặc định
+            //     $user->setStatus('active');
+            //     $user->setClassId(null);
+            //     $user->setFaculty(null);
+            //     $user->setContactInfo(null);
 
-                $this->entityManager->persist($user);
-                $this->entityManager->flush();
+            //     $this->entityManager->persist($user);
+            //     $this->entityManager->flush();
 
-                // Lưu thông tin vào session để yêu cầu cập nhật studentId sau
-                $session = $this->requestStack->getSession();
-                $session->set('new_user_needs_student_id', true);
+            //     // Lưu thông tin vào session để yêu cầu cập nhật studentId sau
+            //     $session = $this->requestStack->getSession();
+            //     $session->set('new_user_needs_student_id', true);
+                throw new AuthenticationException('Không thể truy cập thông tin người dùng từ Google.');
             }
             // dump('2');
             // die();
@@ -139,9 +146,11 @@ class GoogleAuthenticator extends AbstractAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        dump("onAuthenticationFailure", $exception);
-        die();
+        // dump("onAuthenticationFailure", $exception);
+        // die();
         $request->getSession()->set('login_error', $exception->getMessage());
-        return new RedirectResponse($this->urlGenerator->generate('app_login'));
+        return new RedirectResponse($this->urlGenerator->generate('error'));
+
+        //return new RedirectResponse($this->urlGenerator->generate('app_login'));
     }
 }

@@ -3,26 +3,72 @@
 {% block title %}Trang chủ{% endblock %}
 
 {% block body %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Chào mừng đến với BookClub MS</h3>
-                </div>
-                <div class="card-body">
-                    <p>Đây là hệ thống quản lý câu lạc bộ sách, nơi bạn có thể tham gia các hoạt động, quản lý quỹ, và kết nối với các thành viên khác.</p>
-                    
-                    {% if app.user %}
-                        <p>Xin chào, <strong>{{ app.user.name }}</strong>! Bạn đã đăng nhập.</p>
-                        <a href="{{ path('logout') }}" class="btn btn-danger">Đăng xuất</a>
-                    {% else %}
-                        <p>Bạn chưa đăng nhập. Vui lòng đăng nhập để sử dụng hệ thống.</p>
-                        <a href="{{ path('app_login') }}" class="btn btn-primary">Đăng nhập</a>
-                    {% endif %}
+    <main class="main-content mt-0">
+        <section>
+            <div class="page-header min-vh-100">
+                <div class="container">
+                    <div class="row">
+                        <!-- Nội dung chính bên trái -->
+                        <div class="d-flex flex-column mx-lg-0 mx-auto">
+                            <div class="card card-plain shadow-lg bg-white border-radius-xl p-4">
+                                <div class="card-header pb-0 text-start">
+                                    <h3 class="font-weight-bolder text-primary text-gradient">Chào mừng đến với BookClub MS</h3>
+                                    <p class="text-muted mb-0">Hệ thống quản lý câu lạc bộ sách dành cho sinh viên</p>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <img src="{{ asset('assets/img/dhdb.png') }}" class="img-fluid rounded" alt="BookClub Logo">
+                                    </div>
+
+                                    {% if app.user %}
+                                        <div class="alert alert-success text-white">
+                                            <i class="fas fa-user-check me-2"></i> Xin chào, <strong>{{ app.user.name }}</strong>! Bạn đã đăng nhập với mã sinh viên: <strong>{{ app.user.studentId }}</strong>.
+                                        </div>
+                                        {% if 'ROLE_ADMIN' in app.user.roles or 'ROLE_TREASURER' in app.user.roles %}
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <a href="{{ path('app_dashboard') }}" class="btn btn-primary btn-lg w-100">
+                                                        <i class="fas fa-tachometer-alt me-2"></i> Vào Dashboard
+                                                    </a>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <a href="{{ path('logout') }}" class="btn btn-danger btn-lg w-100">
+                                                        <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="alert alert-warning text-dark">
+                                            <i class="fas fa-exclamation-triangle me-2"></i> Bạn chưa đăng nhập. Hãy đăng nhập để trải nghiệm đầy đủ hệ thống!
+                                        </div>
+                                        <a href="{{ path('app_login') }}" class="btn btn-primary btn-lg w-100">
+                                            <i class="fab fa-google me-2"></i> Đăng nhập bằng Google
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="card-footer text-center pt-0 pb-3 px-lg-2 px-1">
+                            <div class="col-12 d-lg-flex d-none h-100 my-auto pe-0 position-relative text-center justify-content-center flex-column">
+                                <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-between overflow-hidden" style="background-image: url('{{ asset('assets/img/bg-iN96iui.png') }}'); background-size: cover;">
+                                    <span class="mask bg-gradient-primary opacity-6"></span>
+                                    <div class="pt-5">
+                                        <h4 class="text-white font-weight-bolder position-relative">CLB Sinh Viên Yêu Thích Sách</h4>
+                                        <p class="text-white position-relative">"Sách là ngọn đèn bất diệt của trí tuệ con người"</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-sm text-muted mx-auto">
+                                Tìm hiểu thêm về chúng tôi tại 
+                                <a href="https://www.facebook.com/profile.php?id=100048446863883" class="text-primary text-gradient font-weight-bold">CTUT'S BOOKCLUB HOMEPAGE</a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
+        </section>
+    </main>
 {% endblock %}

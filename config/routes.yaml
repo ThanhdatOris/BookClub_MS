@@ -9,10 +9,14 @@ controllers:
 #     controller: App\Controller\LoginController::new
 #     methods: ['GET', 'POST']
 
-logout:
-    path: /logout
-    controller: App\Controller\LoginController::index
+# logout:
+#     path: /logout
+#     controller: App\Controller\LoginController::index
 
 # profile:
 #     path: /profile
 #     controller: App\Controller\DefaultController::profile
+
+error:
+    path: /error
+    controller: App\Controller\SecurityController::error

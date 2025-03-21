@@ -159,4 +159,19 @@ class SecurityController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
+    #[Route(path: '/error', name: 'security_error')]
+    public function error(Request $request): Response
+    {
+        // Lấy thông báo lỗi từ session
+        $session = $request->getSession();
+        $errorMessage = $session->get('login_error', 'Có lỗi xảy ra trong quá trình xử lý.');
+
+        // Xóa lỗi khỏi session sau khi lấy
+        $session->remove('login_error');
+
+        return $this->render('security/error.html.twig', [
+            'login_error' => $errorMessage,
+        ]);
+    }
 }

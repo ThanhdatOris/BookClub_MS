@@ -5,12 +5,39 @@
 {% block body %}
     <div class="container-fluid py-4">
         <!-- Thông báo flash -->
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success">{{ message }}</div>
-        {% endfor %}
-        {% for message in app.flashes('error') %}
-            <div class="alert alert-danger">{{ message }}</div>
-        {% endfor %}
+        <div aria-live="polite" aria-atomic="true" class="position-relative">
+            <div class="toast-container position-fixed top-0 end-0 p-3">
+            {% for message in app.flashes('success') %}
+                <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                    {{ message }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                    {{ message }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+            toastElList.forEach(function (toastEl) {
+                var toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            });
+            });
+        </script>
 
         <!-- Chào user -->
         <div class="mb-4">
