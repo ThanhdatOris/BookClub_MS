@@ -3,11 +3,14 @@
 namespace App\Form;
 
 use App\Entity\Activities;
-use App\Entity\users;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\TimeType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 
 class ActivitiesType extends AbstractType
 {
@@ -15,26 +18,34 @@ class ActivitiesType extends AbstractType
     {
         $builder
             ->add('title')
-            ->add('descriptiton')
-            ->add('date', null, [
+            ->add('description')
+            ->add('date', DateType::class, [
                 'widget' => 'single_text',
+                'required' => false,
             ])
-            ->add('time', null, [
+            ->add('time', TimeType::class, [
                 'widget' => 'single_text',
+                'required' => false,
             ])
             ->add('location')
-            ->add('status')
-            ->add('created_at')
-            ->add('updated_at', null, [
-                'widget' => 'single_text',
+            ->add('status', ChoiceType::class, [
+                'choices' => [
+                    'Dự kiến' => 'planned',
+                    'Đang diễn ra' => 'ongoing',
+                    'Hoàn thành' => 'completed',
+                    'Hủy' => 'cancelled',
+                ],
             ])
-            ->add('created_by_id', EntityType::class, [
-                'class' => users::class,
-                'choice_label' => 'id',
-            ])
-            ->add('created_by', EntityType::class, [
-                'class' => users::class,
-                'choice_label' => 'id',
+            ->add('image', FileType::class, [
+                'required' => false,
+                'mapped' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '5M',
+                        'mimeTypes' => ['image/jpeg', 'image/png'],
+                        'mimeTypesMessage' => 'Vui lòng upload file ảnh (JPEG hoặc PNG).',
+                    ]),
+                ],
             ])
         ;
     }

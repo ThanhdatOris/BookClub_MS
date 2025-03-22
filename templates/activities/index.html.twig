@@ -12,42 +12,50 @@
             <div class="alert alert-danger">{{ message }}</div>
         {% endfor %}
 
-        <!-- Header -->
-        <div class="row mb-4">
+        <!-- Header và Danh sách hoạt động trong một card -->
+        <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header pb-0">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h6>Quản lý hoạt động</h6>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addActivityModal">
-                                Thêm hoạt động
-                            </button>
+                            <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý hoạt động</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center me-2 mb-0">
+                                    <input type="text" id="searchInput" class="form-control me-2" placeholder="Tìm kiếm hoạt động..." style="max-width: 300px;">
+                                    <button type="button" id="clearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                                </div>
+                                <button type="button" class="btn btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+                                    <i class="fas fa-plus me-1"></i> Thêm hoạt động
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Danh sách hoạt động -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
                     <div class="card-body px-0 pt-0 pb-2">
-                        <div class="table-responsive p-0">
-                            <table class="table align-items-center mb-0">
+                        <div class="table-responsive p-0 px-3" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover align-items-center mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tiêu đề</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Địa điểm</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Người tạo</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="#" class="sort-link" data-sort="title">Tiêu đề</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="#" class="sort-link" data-sort="date">Ngày</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="#" class="sort-link" data-sort="location">Địa điểm</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="#" class="sort-link" data-sort="status">Trạng thái</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="#" class="sort-link" data-sort="createdBy">Người tạo</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="activitiesTableBody">
                                     {% for activity in activities %}
-                                        <tr>
+                                        <tr data-url="{{ path('app_activities_show', {'id': activity.id}) }}" style="cursor: pointer;">
                                             <td>
                                                 <div class="d-flex px-2 py-1">
                                                     <div class="d-flex flex-column justify-content-center">
@@ -62,18 +70,15 @@
                                                 <p class="text-xs font-weight-bold mb-0">{{ activity.location ?? 'N/A' }}</p>
                                             </td>
                                             <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ activity.status }}</p>
+                                                <p class="text-xs font-weight-bold mb-0 text-{{ activity.status == 'planned' ? 'primary' : (activity.status == 'ongoing' ? 'success' : (activity.status == 'completed' ? 'info' : 'danger')) }}">{{ activity.status }}</p>
                                             </td>
                                             <td>
                                                 <p class="text-xs font-weight-bold mb-0">{{ activity.createdBy.name }}</p>
                                             </td>
-                                            <td>
-                                                <a href="{{ path('app_activities_show', {'id': activity.id}) }}" class="btn btn-sm btn-info">Xem</a>
-                                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}">Sửa</button>
-                                                <form method="post" action="{{ path('app_activities_delete', {'id': activity.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa hoạt động này?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ activity.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                                                </form>
+                                            <td class="text-center">
+                                                <a href="{{ path('app_activities_show', {'id': activity.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
+                                                <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}" onclick="event.stopPropagation();">Sửa</button>
+                                                <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ activity.id }}" data-csrf-token="{{ csrf_token('delete' ~ activity.id) }}" onclick="event.stopPropagation();">Xóa</button>
                                             </td>
                                         </tr>
                                     {% else %}
@@ -84,9 +89,13 @@
                                 </tbody>
                             </table>
                         </div>
-                        <!-- Phân trang -->
-                        <div class="navigation mt-4">
-                            {{ knp_pagination_render(activities) }}
+                        <!-- Phân trang client-side -->
+                        <div class="navigation mt-4 d-flex justify-content-center">
+                            <nav>
+                                <ul class="pagination" id="pagination">
+                                    <!-- Phân trang sẽ được tạo bằng JavaScript -->
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                 </div>
@@ -102,43 +111,49 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form id="addActivityForm" method="post" action="{{ path('app_activities_new') }}" enctype="multipart/form-data">
+                        <div id="addActivityError" class="alert alert-danger d-none"></div>
+                        {{ form_start(addActivityForm, {'attr': {'id': 'addActivityForm'}}) }}
                             <div class="mb-3">
-                                <label for="title" class="form-label">Tiêu đề</label>
-                                <input type="text" id="title" name="title" class="form-control" required>
+                                {{ form_label(addActivityForm.title) }}
+                                {{ form_widget(addActivityForm.title, {'attr': {'class': 'form-control'}}) }}
+                                <div class="text-danger">{{ form_errors(addActivityForm.title) }}</div>
                             </div>
                             <div class="mb-3">
-                                <label for="description" class="form-label">Mô tả</label>
-                                <textarea id="description" name="description" class="form-control"></textarea>
+                                {{ form_label(addActivityForm.description) }}
+                                {{ form_widget(addActivityForm.description, {'attr': {'class': 'form-control'}}) }}
+                                <div class="text-danger">{{ form_errors(addActivityForm.description) }}</div>
                             </div>
                             <div class="mb-3">
-                                <label for="date" class="form-label">Ngày</label>
-                                <input type="date" id="date" name="date" class="form-control">
+                                {{ form_label(addActivityForm.date) }}
+                                {{ form_widget(addActivityForm.date, {'attr': {'class': 'form-control'}}) }}
+                                <div class="text-danger">{{ form_errors(addActivityForm.date) }}</div>
                             </div>
                             <div class="mb-3">
-                                <label for="time" class="form-label">Thời gian</label>
-                                <input type="time" id="time" name="time" class="form-control">
+                                {{ form_label(addActivityForm.time) }}
+                                {{ form_widget(addActivityForm.time, {'attr': {'class': 'form-control'}}) }}
+                                <div class="text-danger">{{ form_errors(addActivityForm.time) }}</div>
                             </div>
                             <div class="mb-3">
-                                <label for="location" class="form-label">Địa điểm</label>
-                                <input type="text" id="location" name="location" class="form-control">
+                                {{ form_label(addActivityForm.location) }}
+                                {{ form_widget(addActivityForm.location, {'attr': {'class': 'form-control'}}) }}
+                                <div class="text-danger">{{ form_errors(addActivityForm.location) }}</div>
                             </div>
                             <div class="mb-3">
-                                <label for="status" class="form-label">Trạng thái</label>
-                                <select id="status" name="status" class="form-select" required>
-                                    <option value="planned">Dự kiến</option>
-                                    <option value="ongoing">Đang diễn ra</option>
-                                    <option value="completed">Hoàn thành</option>
-                                    <option value="cancelled">Hủy</option>
-                                </select>
+                                {{ form_label(addActivityForm.status) }}
+                                {{ form_widget(addActivityForm.status, {'attr': {'class': 'form-select'}}) }}
+                                <div class="text-danger">{{ form_errors(addActivityForm.status) }}</div>
                             </div>
                             <div class="mb-3">
-                                <label for="image" class="form-label">Hình ảnh</label>
-                                <input type="file" id="image" name="image" class="form-control">
+                                {{ form_label(addActivityForm.image) }}
+                                {{ form_widget(addActivityForm.image, {'attr': {'class': 'form-control'}}) }}
+                                <div class="text-danger">{{ form_errors(addActivityForm.image) }}</div>
                             </div>
-                            <input type="hidden" name="_token" value="{{ csrf_token('activity_new') }}">
-                            <button type="submit" class="btn btn-primary">Lưu</button>
-                        </form>
+                            {{ form_row(addActivityForm._token) }}
+                            <button type="submit" class="btn btn-primary" id="addActivitySubmitBtn">
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="addActivitySpinner"></span>
+                                Lưu
+                            </button>
+                        {{ form_end(addActivityForm) }}
                     </div>
                 </div>
             </div>
@@ -154,102 +169,188 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form id="editActivityForm{{ activity.id }}" method="post" action="{{ path('app_activities_edit', {'id': activity.id}) }}" enctype="multipart/form-data">
+                            <div id="editActivityError{{ activity.id }}" class="alert alert-danger d-none"></div>
+                            {{ form_start(editActivityForms[activity.id], {'attr': {'id': 'editActivityForm' ~ activity.id}}) }}
                                 <div class="mb-3">
-                                    <label for="title_{{ activity.id }}" class="form-label">Tiêu đề</label>
-                                    <input type="text" id="title_{{ activity.id }}" name="title" class="form-control" value="{{ activity.title }}" required>
+                                    {{ form_label(editActivityForms[activity.id].title) }}
+                                    {{ form_widget(editActivityForms[activity.id].title, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(editActivityForms[activity.id].title) }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="description_{{ activity.id }}" class="form-label">Mô tả</label>
-                                    <textarea id="description_{{ activity.id }}" name="description" class="form-control">{{ activity.description }}</textarea>
+                                    {{ form_label(editActivityForms[activity.id].description) }}
+                                    {{ form_widget(editActivityForms[activity.id].description, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(editActivityForms[activity.id].description) }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="date_{{ activity.id }}" class="form-label">Ngày</label>
-                                    <input type="date" id="date_{{ activity.id }}" name="date" class="form-control" value="{{ activity.date ? activity.date|date('Y-m-d') : '' }}">
+                                    {{ form_label(editActivityForms[activity.id].date) }}
+                                    {{ form_widget(editActivityForms[activity.id].date, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(editActivityForms[activity.id].date) }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="time_{{ activity.id }}" class="form-label">Thời gian</label>
-                                    <input type="time" id="time_{{ activity.id }}" name="time" class="form-control" value="{{ activity.time ? activity.time|date('H:i') : '' }}">
+                                    {{ form_label(editActivityForms[activity.id].time) }}
+                                    {{ form_widget(editActivityForms[activity.id].time, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(editActivityForms[activity.id].time) }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="location_{{ activity.id }}" class="form-label">Địa điểm</label>
-                                    <input type="text" id="location_{{ activity.id }}" name="location" class="form-control" value="{{ activity.location }}">
+                                    {{ form_label(editActivityForms[activity.id].location) }}
+                                    {{ form_widget(editActivityForms[activity.id].location, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(editActivityForms[activity.id].location) }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="status_{{ activity.id }}" class="form-label">Trạng thái</label>
-                                    <select id="status_{{ activity.id }}" name="status" class="form-select" required>
-                                        <option value="planned" {{ activity.status == 'planned' ? 'selected' : '' }}>Dự kiến</option>
-                                        <option value="ongoing" {{ activity.status == 'ongoing' ? 'selected' : '' }}>Đang diễn ra</option>
-                                        <option value="completed" {{ activity.status == 'completed' ? 'selected' : '' }}>Hoàn thành</option>
-                                        <option value="cancelled" {{ activity.status == 'cancelled' ? 'selected' : '' }}>Hủy</option>
-                                    </select>
+                                    {{ form_label(editActivityForms[activity.id].status) }}
+                                    {{ form_widget(editActivityForms[activity.id].status, {'attr': {'class': 'form-select'}}) }}
+                                    <div class="text-danger">{{ form_errors(editActivityForms[activity.id].status) }}</div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="image_{{ activity.id }}" class="form-label">Hình ảnh</label>
-                                    <input type="file" id="image_{{ activity.id }}" name="image" class="form-control">
+                                    {{ form_label(editActivityForms[activity.id].image) }}
+                                    {{ form_widget(editActivityForms[activity.id].image, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(editActivityForms[activity.id].image) }}</div>
                                     {% if activity.image %}
                                         <p class="text-xs mt-2">Hình ảnh hiện tại: <a href="{{ asset(activity.image) }}" target="_blank">Xem</a></p>
                                     {% endif %}
                                 </div>
-                                <input type="hidden" name="_token" value="{{ csrf_token('activity_edit' ~ activity.id) }}">
-                                <button type="submit" class="btn btn-primary">Cập nhật</button>
-                            </form>
+                                {{ form_row(editActivityForms[activity.id]._token) }}
+                                <button type="submit" class="btn btn-primary" id="editActivitySubmitBtn{{ activity.id }}">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="editActivitySpinner{{ activity.id }}"></span>
+                                    Cập nhật
+                                </button>
+                            {{ form_end(editActivityForms[activity.id]) }}
                         </div>
                     </div>
                 </div>
             </div>
         {% endfor %}
-    </div>
 
-    <!-- JavaScript để xử lý form trong modal -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Xử lý form thêm hoạt động
-            document.getElementById('addActivityForm').addEventListener('submit', function (e) {
-                e.preventDefault();
-                const form = this;
-                const formData = new FormData(form);
+        <!-- Include table-layout.js -->
+        <script src="{{ asset('js/table-layout.js') }}"></script>
 
-                fetch(form.action, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = data.redirect;
-                    } else {
-                        alert(data.error);
-                    }
-                })
-                .catch(error => {
-                    alert('Có lỗi xảy ra: ' + error.message);
+        <!-- JavaScript để khởi tạo TableLayout -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Khởi tạo TableLayout
+                const tableLayout = new TableLayout({
+                    data: [
+                        {% for activity in activities %}
+                            {
+                                title: '{{ activity.title|e('js') }}',
+                                date: '{{ activity.date ? activity.date|date('Y-m-d') : 'N/A' }}',
+                                location: '{{ activity.location ? activity.location|e('js') : 'N/A' }}',
+                                status: '{{ activity.status|e('js') }}',
+                                createdBy: '{{ activity.createdBy.name|e('js') }}',
+                                detailUrl: '{{ path('app_activities_show', {'id': activity.id}) }}',
+                                actions: `
+                                    <a href="{{ path('app_activities_show', {'id': activity.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
+                                    <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}" onclick="event.stopPropagation();">Sửa</button>
+                                    <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ activity.id }}" data-csrf-token="{{ csrf_token('delete' ~ activity.id) }}" onclick="event.stopPropagation();">Xóa</button>
+                                `
+                            },
+                        {% endfor %}
+                    ],
+                    tableBodyId: 'activitiesTableBody',
+                    columns: [
+                        {
+                            field: 'title',
+                            formatter: (value) => `
+                                <div class="d-flex px-2 py-1">
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <h6 class="mb-0 text-sm">${value}</h6>
+                                    </div>
+                                </div>
+                            `
+                        },
+                        { field: 'date', type: 'date' },
+                        { field: 'location' },
+                        {
+                            field: 'status',
+                            formatter: (value) => `
+                                <p class="text-xs font-weight-bold mb-0 text-${value === 'planned' ? 'primary' : (value === 'ongoing' ? 'success' : (value === 'completed' ? 'info' : 'danger'))}">${value}</p>
+                            `
+                        },
+                        { field: 'createdBy' }
+                    ],
+                    onRowClick: (row) => {
+                        const detailUrl = row.getAttribute('data-url');
+                        if (detailUrl) window.location.href = detailUrl;
+                    },
+                    onDelete: (button) => {
+                        if (!confirm('Bạn có chắc chắn muốn xóa hoạt động này?')) return;
+                        const id = button.getAttribute('data-id');
+                        const csrfToken = button.getAttribute('data-csrf-token');
+                        fetch(`/activities/${id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `_token=${csrfToken}`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) window.location.href = data.redirect;
+                            else alert(data.error);
+                        })
+                        .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+                    },
+                    scrollPositionKey: 'activities_table_scroll_position'
                 });
-            });
 
-            // Xử lý form sửa hoạt động
-            document.querySelectorAll('[id^="editActivityForm"]').forEach(form => {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    const formData = new FormData(this);
+                // Xử lý form thêm hoạt động
+                const addActivityForm = document.getElementById('addActivityForm');
+                if (addActivityForm) {
+                    const addActivitySubmitBtn = document.getElementById('addActivitySubmitBtn');
+                    const addActivitySpinner = document.getElementById('addActivitySpinner');
+                    const addActivityError = document.getElementById('addActivityError');
 
-                    fetch(this.action, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = data.redirect;
-                        } else {
-                            alert(data.error);
-                        }
-                    })
-                    .catch(error => {
-                        alert('Có lỗi xảy ra: ' + error.message);
+                    addActivityForm.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        tableLayout.showLoading(addActivitySubmitBtn, addActivitySpinner);
+                        tableLayout.hideError(addActivityError);
+
+                        fetch(this.action, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            tableLayout.hideLoading(addActivitySubmitBtn, addActivitySpinner);
+                            if (data.success) window.location.href = data.redirect;
+                            else tableLayout.showError(addActivityError, data.error);
+                        })
+                        .catch(error => {
+                            tableLayout.hideLoading(addActivitySubmitBtn, addActivitySpinner);
+                            tableLayout.showError(addActivityError, 'Có lỗi xảy ra: ' + error.message);
+                        });
+                    });
+                }
+
+                // Xử lý form sửa hoạt động
+                document.querySelectorAll('[id^="editActivityForm"]').forEach(form => {
+                    const formId = form.id;
+                    const submitBtn = document.getElementById('editActivitySubmitBtn' + formId.replace('editActivityForm', ''));
+                    const spinner = document.getElementById('editActivitySpinner' + formId.replace('editActivityForm', ''));
+                    const errorDiv = document.getElementById('editActivityError' + formId.replace('editActivityForm', ''));
+
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        tableLayout.showLoading(submitBtn, spinner);
+                        tableLayout.hideError(errorDiv);
+
+                        fetch(this.action, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            tableLayout.hideLoading(submitBtn, spinner);
+                            if (data.success) window.location.href = data.redirect;
+                            else tableLayout.showError(errorDiv, data.error);
+                        })
+                        .catch(error => {
+                            tableLayout.hideLoading(submitBtn, spinner);
+                            tableLayout.showError(errorDiv, 'Có lỗi xảy ra: ' + error.message);
+                        });
                     });
                 });
             });
-        });
-    </script>
+        </script>
+    </div>
 {% endblock %}
