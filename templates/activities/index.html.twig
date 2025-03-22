@@ -31,7 +31,7 @@
                         </div>
                     </div>
                     <div class="card-body px-0 pt-0 pb-2">
-                        <div class="table-responsive p-0 px-3" style="max-height: 400px; overflow-y: auto;">
+                        <div class="table-responsive p-0 px-3" style="max-height: 1080px; overflow-y: auto;">
                             <table class="table table-hover align-items-center mb-0">
                                 <thead>
                                     <tr>
@@ -67,7 +67,9 @@
                                                 <p class="text-xs font-weight-bold mb-0">{{ activity.date ? activity.date|date('Y-m-d') : 'N/A' }}</p>
                                             </td>
                                             <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ activity.location ?? 'N/A' }}</p>
+                                                <p class="text-xs font-weight-bold mb-0">
+                                                    {{ activity.location|length > 20 ? activity.location|slice(0, 20) ~ '...' : activity.location ?? 'N/A' }}
+                                                </p>
                                             </td>
                                             <td>
                                                 <p class="text-xs font-weight-bold mb-0 text-{{ activity.status == 'planned' ? 'primary' : (activity.status == 'ongoing' ? 'success' : (activity.status == 'completed' ? 'info' : 'danger')) }}">{{ activity.status }}</p>

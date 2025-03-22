@@ -37,8 +37,8 @@ final class ActivitiesController extends AbstractController
     #[Route('/new', name: 'app_activities_new', methods: ['POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được thêm hoạt động.');
-        $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được thêm hoạt động.');
+        // $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được thêm hoạt động.');
+        // $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được thêm hoạt động.');
 
         $activity = new Activities();
         $activity->setCreatedBy($this->getUser());
@@ -79,8 +79,8 @@ final class ActivitiesController extends AbstractController
     #[Route('/{id}', name: 'app_activities_show', methods: ['GET'])]
     public function show(Activities $activity, ActivityParticipantRepository $participantRepository): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được xem chi tiết hoạt động.');
-        $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được xem chi tiết hoạt động.');
+        // $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được xem chi tiết hoạt động.');
+        // $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được xem chi tiết hoạt động.');
 
         $user = $this->getUser();
         $hasJoined = $user ? $participantRepository->findByActivityAndUser($activity->getId(), $user->getId()) !== null : false;
@@ -94,8 +94,8 @@ final class ActivitiesController extends AbstractController
     #[Route('/{id}/edit', name: 'app_activities_edit', methods: ['POST'])]
     public function edit(Request $request, Activities $activity, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được chỉnh sửa hoạt động.');
-        $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được chỉnh sửa hoạt động.');
+        // $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được chỉnh sửa hoạt động.');
+        // $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được chỉnh sửa hoạt động.');
 
         $form = $this->createForm(ActivitiesType::class, $activity);
         $form->handleRequest($request);
@@ -132,8 +132,8 @@ final class ActivitiesController extends AbstractController
     #[Route('/{id}', name: 'app_activities_delete', methods: ['POST'])]
     public function delete(Request $request, Activities $activity, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được xóa hoạt động.');
-        $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được xóa hoạt động.');
+        // $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được xóa hoạt động.');
+        // $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được xóa hoạt động.');
 
         if ($this->isCsrfTokenValid('delete' . $activity->getId(), $request->getPayload()->getString('_token'))) {
             try {
