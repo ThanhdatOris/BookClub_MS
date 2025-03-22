@@ -3,9 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Activities;
+use App\Entity\Attendances;
 use App\Form\ActivitiesType;
+use App\Form\AttendancesType;
 use App\Repository\ActivitiesRepository;
 use App\Repository\ActivityParticipantRepository;
+use App\Repository\AttendancesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,20 +20,55 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ActivitiesController extends AbstractController
 {
     #[Route(name: 'app_activities_index', methods: ['GET'])]
-    public function index(ActivitiesRepository $activitiesRepository): Response
+    public function index(ActivitiesRepository $activitiesRepository, ActivityParticipantRepository $participantRepository, AttendancesRepository $attendancesRepository): Response
     {
         $activities = $activitiesRepository->findBy([], ['created_at' => 'DESC']);
+        $activityParticipants = [];
+        $attendances = [];
 
-        $addActivityForm = $this->createForm(ActivitiesType::class, new Activities());
+        foreach ($activities as $activity) {
+            $activityId = $activity->getId();
+            $activityParticipants[$activityId] = $participantRepository->createQueryBuilder('ap')
+                ->where('ap.activityId = :activityId')
+                ->setParameter('activityId', $activityId)
+                ->orderBy('ap.joinedAt', 'DESC')
+                ->getQuery()
+                ->getResult();
+
+            $attendances[$activityId] = $attendancesRepository->createQueryBuilder('a')
+                ->where('a.activity_id = :activityId')
+                ->setParameter('activityId', $activityId)
+                ->orderBy('a.marked_at', 'DESC')
+                ->getQuery()
+                ->getResult();
+        }
+
+        $addActivityForm = $this->createForm(ActivitiesType::class, new Activities(), [
+            'action' => $this->generateUrl('app_activities_new'),
+            'method' => 'POST',
+        ]);
+
         $editActivityForms = [];
         foreach ($activities as $activity) {
-            $editActivityForms[$activity->getId()] = $this->createForm(ActivitiesType::class, $activity)->createView();
+            $editActivityForms[$activity->getId()] = $this->createForm(ActivitiesType::class, $activity, [
+                'action' => $this->generateUrl('app_activities_edit', ['id' => $activity->getId()]),
+                'method' => 'POST',
+            ])->createView();
         }
+
+        $addAttendance = new Attendances();
+        $addAttendanceForm = $this->createForm(AttendancesType::class, $addAttendance, [
+            'action' => $this->generateUrl('app_attendances_new'),
+            'method' => 'POST',
+        ]);
 
         return $this->render('activities/index.html.twig', [
             'activities' => $activities,
+            'activityParticipants' => $activityParticipants,
+            'attendances' => $attendances,
             'addActivityForm' => $addActivityForm->createView(),
             'editActivityForms' => $editActivityForms,
+            'addAttendanceForm' => $addAttendanceForm->createView(),
         ]);
     }
 

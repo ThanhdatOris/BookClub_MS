@@ -70,7 +70,6 @@
                     <li class="nav-item mt-3">
                         <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Quản lý</h6>
                     </li>
-                    {# Liên kết đến Users - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
                     {% if is_granted('ROLE_ADMIN') %}
                         <li class="nav-item">
                             <a class="nav-link {{ app.request.attributes.get('_route') == 'app_users_index' ? 'active' : '' }}" href="{{ path('app_users_index') }}">
@@ -81,8 +80,7 @@
                             </a>
                         </li>
                     {% endif %}
-                    {# Liên kết đến Activities - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
-                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                    {% if is_granted('ROLE_ADMIN', 'ROLE_TREASURER') %}
                         <li class="nav-item">
                             <a class="nav-link {{ app.request.attributes.get('_route') == 'app_activities_index' ? 'active' : '' }}" href="{{ path('app_activities_index') }}">
                                 <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
@@ -92,48 +90,6 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_attendances_index' ? 'active' : '' }}" href="{{ path('app_attendances_index') }}">
-                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-check-square text-dark text-sm opacity-10"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">Điểm danh</span>
-                            </a>
-                        </li>
-                    {% endif %}
-                    {# Liên kết đến Funds - Chỉ hiển thị nếu user có quyền chỉnh sửa (role Treasurer) #}
-                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
-                        <li class="nav-item">
-                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_funds_index' ? 'active' : '' }}" href="{{ path('app_funds_index') }}">
-                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-money-bill-wave text-dark text-sm opacity-10"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">Đóng quỹ</span>
-                            </a>
-                        </li>
-                    {% endif %}
-                    {# Liên kết đến Proposals - Hiển thị cho tất cả user vì tất cả role đều có quyền chỉnh sửa #}
-                    <li class="nav-item">
-                        <a class="nav-link {{ app.request.attributes.get('_route') == 'app_proposals_index' ? 'active' : '' }}" href="{{ path('app_proposals_index') }}">
-                            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                <i class="fas fa-file-alt text-dark text-sm opacity-10"></i>
-                            </div>
-                            <span class="nav-link-text ms-1">Đề xuất</span>
-                        </a>
-                    </li>
-                    
-                    {# Liên kết đến ActivityParticipants - Chỉ hiển thị nếu user có quyền chỉnh sửa #}
-                    {# {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
-                        <li class="nav-item">
-                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_activity_participant_index' ? 'active' : '' }}" href="{{ path('app_activity_participant_index') }}">
-                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-user-friends text-dark text-sm opacity-10"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">Tham gia hoạt động</span>
-                            </a>
-                        </li>
-                    {% endif %} #}
-                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
-                        <li class="nav-item">
                             <a class="nav-link {{ app.request.attributes.get('_route') == 'app_funds_index' ? 'active' : '' }}" href="{{ path('app_funds_index') }}">
                                 <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                                     <i class="fas fa-money-bill-wave text-dark text-sm opacity-10"></i>
@@ -142,19 +98,25 @@
                             </a>
                         </li>
                     {% endif %}
-                    {% if app.user %}
-                        <li class="nav-item mt-3">
-                            <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ app.request.attributes.get('_route') == 'profile' ? 'active' : '' }}" href="{{ path('profile', { studentId: app.user.studentId}) }}">
-                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-user text-dark text-sm opacity-10"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">Hồ sơ</span>
-                            </a>
-                        </li>
-                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link {{ app.request.attributes.get('_route') == 'app_proposals_index' ? 'active' : '' }}" href="{{ path('app_proposals_index') }}">
+                            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-file-alt text-dark text-sm opacity-10"></i>
+                            </div>
+                            <span class="nav-link-text ms-1">Đề xuất</span>
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ app.request.attributes.get('_route') == 'profile' ? 'active' : '' }}" href="{{ path('profile', { studentId: app.user.studentId}) }}">
+                            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user text-dark text-sm opacity-10"></i>
+                            </div>
+                            <span class="nav-link-text ms-1">Hồ sơ</span>
+                        </a>
+                    </li>
                 {% endif %}
             </ul>
         </div>
@@ -180,15 +142,6 @@
 
     <!-- JavaScript Files -->
     <script src="{{ asset('assets/js/plugins/chartjs.min-_Dnnqxc.js') }}" defer></script>
-    <script>
-        var win = navigator.platform.indexOf('Win') > -1;
-        if (win && document.querySelector('#sidenav-scrollbar')) {
-            var options = {
-                damping: '0.5'
-            }
-            Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-        }
-    </script>
 </body>
 
 </html>

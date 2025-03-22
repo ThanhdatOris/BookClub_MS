@@ -12,92 +12,231 @@
             <div class="alert alert-danger">{{ message }}</div>
         {% endfor %}
 
-        <!-- Header và Danh sách hoạt động trong một card -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý hoạt động</h6>
-                            <div class="d-flex align-items-center">
-                                <div class="d-flex align-items-center me-2 mb-0">
-                                    <input type="text" id="searchInput" class="form-control me-2" placeholder="Tìm kiếm hoạt động..." style="max-width: 300px;">
-                                    <button type="button" id="clearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="activityTabContent">
+            <!-- Tab 1: Danh sách hoạt động -->
+            <div class="tab-pane fade show active" id="activities" role="tabpanel" aria-labelledby="activities-tab">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header pb-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý hoạt động</h6>
+                                    <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center me-2 mb-0">
+                                            <input type="text" id="activitiesSearchInput" class="form-control me-2" placeholder="Tìm kiếm hoạt động..." style="max-width: 300px;">
+                                            <button type="button" id="activitiesClearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                                        </div>
+                                        <button type="button" class="btn btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+                                            <i class="fas fa-plus me-1"></i> Thêm hoạt động
+                                        </button>
+                                    </div>
                                 </div>
-                                <button type="button" class="btn btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addActivityModal">
-                                    <i class="fas fa-plus me-1"></i> Thêm hoạt động
-                                </button>
+                                <!-- Tabs -->
+                                <ul class="nav nav-tabs mb-4" id="activityTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="activities-tab" data-bs-toggle="tab" data-bs-target="#activities" type="button" role="tab" aria-controls="activities" aria-selected="true">Danh sách hoạt động</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="participants-tab" data-bs-toggle="tab" data-bs-target="#participants" type="button" role="tab" aria-controls="participants" aria-selected="false">Người tham gia</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="attendances-tab" data-bs-toggle="tab" data-bs-target="#attendances" type="button" role="tab" aria-controls="attendances" aria-selected="false">Điểm danh</button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card-body px-0 pt-0 pb-2">
+                                <div class="table-responsive p-0 px-3" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-hover align-items-center mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="title">Tiêu đề</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="date">Ngày</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="location">Địa điểm</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="status">Trạng thái</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="createdBy">Người tạo</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="activitiesTableBody">
+                                            {% for activity in activities %}
+                                                <tr data-url="{{ path('app_activities_show', {'id': activity.id}) }}" style="cursor: pointer;">
+                                                    <td>
+                                                        <div class="d-flex px-2 py-1">
+                                                            <div class="d-flex flex-column justify-content-center">
+                                                                <h6 class="mb-0 text-sm">{{ activity.title }}</h6>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <p class="text-xs font-weight-bold mb-0">{{ activity.date ? activity.date|date('Y-m-d') : 'N/A' }}</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="text-xs font-weight-bold mb-0">{{ activity.location ?? 'N/A' }}</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="text-xs font-weight-bold mb-0 text-{{ activity.status == 'planned' ? 'primary' : (activity.status == 'ongoing' ? 'success' : (activity.status == 'completed' ? 'info' : 'danger')) }}">{{ activity.status }}</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="text-xs font-weight-bold mb-0">{{ activity.createdBy.name }}</p>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <a href="{{ path('app_activities_show', {'id': activity.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
+                                                        <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}" onclick="event.stopPropagation();">Sửa</button>
+                                                        <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ activity.id }}" data-csrf-token="{{ csrf_token('delete' ~ activity.id) }}" onclick="event.stopPropagation();">Xóa</button>
+                                                    </td>
+                                                </tr>
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="6" class="text-center">Không có hoạt động nào.</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="navigation mt-4 d-flex justify-content-center">
+                                    <nav>
+                                        <ul class="pagination" id="activitiesPagination"></ul>
+                                    </nav>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="card-body px-0 pt-0 pb-2">
-                        <div class="table-responsive p-0 px-3" style="max-height: 1080px; overflow-y: auto;">
-                            <table class="table table-hover align-items-center mb-0">
-                                <thead>
-                                    <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            <a href="#" class="sort-link" data-sort="title">Tiêu đề</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            <a href="#" class="sort-link" data-sort="date">Ngày</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            <a href="#" class="sort-link" data-sort="location">Địa điểm</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            <a href="#" class="sort-link" data-sort="status">Trạng thái</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            <a href="#" class="sort-link" data-sort="createdBy">Người tạo</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="activitiesTableBody">
-                                    {% for activity in activities %}
-                                        <tr data-url="{{ path('app_activities_show', {'id': activity.id}) }}" style="cursor: pointer;">
-                                            <td>
-                                                <div class="d-flex px-2 py-1">
-                                                    <div class="d-flex flex-column justify-content-center">
-                                                        <h6 class="mb-0 text-sm">{{ activity.title }}</h6>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ activity.date ? activity.date|date('Y-m-d') : 'N/A' }}</p>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">
-                                                    {{ activity.location|length > 20 ? activity.location|slice(0, 20) ~ '...' : activity.location ?? 'N/A' }}
-                                                </p>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0 text-{{ activity.status == 'planned' ? 'primary' : (activity.status == 'ongoing' ? 'success' : (activity.status == 'completed' ? 'info' : 'danger')) }}">{{ activity.status }}</p>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ activity.createdBy.name }}</p>
-                                            </td>
-                                            <td class="text-center">
-                                                <a href="{{ path('app_activities_show', {'id': activity.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
-                                                <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}" onclick="event.stopPropagation();">Sửa</button>
-                                                <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ activity.id }}" data-csrf-token="{{ csrf_token('delete' ~ activity.id) }}" onclick="event.stopPropagation();">Xóa</button>
-                                            </td>
-                                        </tr>
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="6" class="text-center">Không có hoạt động nào.</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                </div>
+            </div>
+
+            <!-- Tab 2: Người tham gia -->
+            <div class="tab-pane fade" id="participants" role="tabpanel" aria-labelledby="participants-tab">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header pb-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý người tham gia</h6>
+                                    <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center me-2 mb-0">
+                                            <select id="activitySelectForParticipants" class="form-select me-2" style="max-width: 300px;">
+                                                <option value="">Chọn hoạt động</option>
+                                                {% for activity in activities %}
+                                                    <option value="{{ activity.id }}">{{ activity.title }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <input type="text" id="participantsSearchInput" class="form-control me-2 d-none" placeholder="Tìm kiếm người tham gia..." style="max-width: 300px;">
+                                            <button type="button" id="participantsClearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body px-0 pt-0 pb-2">
+                                <div class="table-responsive p-0 px-3" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-hover align-items-center mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="userName">Tên người tham gia</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="studentId">Mã sinh viên</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="joinedAt">Ngày tham gia</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="status">Trạng thái</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="participantsTableBody">
+                                            <tr>
+                                                <td colspan="5" class="text-center">Vui lòng chọn một hoạt động để xem người tham gia.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="navigation mt-4 d-flex justify-content-center">
+                                    <nav>
+                                        <ul class="pagination" id="participantsPagination"></ul>
+                                    </nav>
+                                </div>
+                            </div>
                         </div>
-                        <!-- Phân trang client-side -->
-                        <div class="navigation mt-4 d-flex justify-content-center">
-                            <nav>
-                                <ul class="pagination" id="pagination">
-                                    <!-- Phân trang sẽ được tạo bằng JavaScript -->
-                                </ul>
-                            </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Điểm danh -->
+            <div class="tab-pane fade" id="attendances" role="tabpanel" aria-labelledby="attendances-tab">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header pb-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý điểm danh</h6>
+                                    <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center me-2 mb-0">
+                                            <select id="activitySelectForAttendances" class="form-select me-2" style="max-width: 300px;">
+                                                <option value="">Chọn hoạt động</option>
+                                                {% for activity in activities %}
+                                                    <option value="{{ activity.id }}">{{ activity.title }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <input type="text" id="attendancesSearchInput" class="form-control me-2 d-none" placeholder="Tìm kiếm điểm danh..." style="max-width: 300px;">
+                                            <button type="button" id="attendancesClearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                                        </div>
+                                        <button type="button" class="btn btn-success mb-0 d-none" id="addAttendanceBtn" data-bs-toggle="modal" data-bs-target="#addAttendanceModal">
+                                            <i class="fas fa-plus me-1"></i> Thêm điểm danh
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body px-0 pt-0 pb-2">
+                                <div class="table-responsive p-0 px-3" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-hover align-items-center mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="userName">Tên người dùng</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="status">Trạng thái</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="remark">Ghi chú</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="markedAt">Thời gian điểm danh</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                    <a href="#" class="sort-link" data-sort="markedBy">Người điểm danh</a>
+                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="attendancesTableBody">
+                                            <tr>
+                                                <td colspan="6" class="text-center">Vui lòng chọn một hoạt động để xem điểm danh.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="navigation mt-4 d-flex justify-content-center">
+                                    <nav>
+                                        <ul class="pagination" id="attendancesPagination"></ul>
+                                    </nav>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -223,14 +362,62 @@
             </div>
         {% endfor %}
 
+                <!-- Modal: Thêm điểm danh -->
+        <div class="modal fade" id="addAttendanceModal" tabindex="-1" aria-labelledby="addAttendanceModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addAttendanceModalLabel">Thêm điểm danh</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="addAttendanceError" class="alert alert-danger d-none"></div>
+                        {% if addAttendanceForm is defined %}
+                            {{ form_start(addAttendanceForm, {'attr': {'id': 'addAttendanceForm'}}) }}
+                                <div class="mb-3">
+                                    {{ form_label(addAttendanceForm.user_id) }}
+                                    {{ form_widget(addAttendanceForm.user_id, {'attr': {'class': 'form-select'}}) }}
+                                    <div class="text-danger">{{ form_errors(addAttendanceForm.user_id) }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_label(addAttendanceForm.status) }}
+                                    {{ form_widget(addAttendanceForm.status, {'attr': {'class': 'form-select'}}) }}
+                                    <div class="text-danger">{{ form_errors(addAttendanceForm.status) }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_label(addAttendanceForm.remark) }}
+                                    {{ form_widget(addAttendanceForm.remark, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(addAttendanceForm.remark) }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_label(addAttendanceForm.marked_at) }}
+                                    {{ form_widget(addAttendanceForm.marked_at, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(addAttendanceForm.marked_at) }}</div>
+                                </div>
+                                {{ form_row(addAttendanceForm.activity_id, {'attr': {'class': 'd-none'}}) }}
+                                {{ form_row(addAttendanceForm.marked_by, {'attr': {'class': 'd-none'}}) }}
+                                {{ form_row(addAttendanceForm._token) }}
+                                <button type="submit" class="btn btn-primary" id="addAttendanceSubmitBtn">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="addAttendanceSpinner"></span>
+                                    Lưu
+                                </button>
+                            {{ form_end(addAttendanceForm) }}
+                        {% else %}
+                            <p class="text-danger">Form thêm điểm danh không khả dụng.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Include table-layout.js -->
         <script src="{{ asset('js/table-layout.js') }}"></script>
 
         <!-- JavaScript để khởi tạo TableLayout -->
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                // Khởi tạo TableLayout
-                const tableLayout = new TableLayout({
+                // TableLayout cho Activities
+                const activitiesTable = new TableLayout({
                     data: [
                         {% for activity in activities %}
                             {
@@ -249,6 +436,9 @@
                         {% endfor %}
                     ],
                     tableBodyId: 'activitiesTableBody',
+                    searchInputId: 'activitiesSearchInput',
+                    clearSearchBtnId: 'activitiesClearSearchBtn',
+                    paginationId: 'activitiesPagination',
                     columns: [
                         {
                             field: 'title',
@@ -293,6 +483,186 @@
                     scrollPositionKey: 'activities_table_scroll_position'
                 });
 
+                // Dữ liệu người tham gia
+                const participantsData = {
+                    {% for activity in activities %}
+                        '{{ activity.id }}': [
+                            {% for participant in activityParticipants[activity.id] %}
+                                {
+                                    userName: '{{ participant.userId.name|e('js') }}',
+                                    studentId: '{{ participant.userId.studentId|e('js') }}',
+                                    joinedAt: '{{ participant.joinedAt|date('Y-m-d H:i:s') }}',
+                                    status: '{{ participant.status|e('js') }}',
+                                    actions: `
+                                        <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ participant.id }}" data-csrf-token="{{ csrf_token('delete' ~ participant.id) }}" onclick="event.stopPropagation();">Xóa</button>
+                                    `
+                                },
+                            {% endfor %}
+                        ],
+                    {% endfor %}
+                };
+
+                // TableLayout cho Participants
+                const participantsTable = new TableLayout({
+                    data: [],
+                    tableBodyId: 'participantsTableBody',
+                    searchInputId: 'participantsSearchInput',
+                    clearSearchBtnId: 'participantsClearSearchBtn',
+                    paginationId: 'participantsPagination',
+                    columns: [
+                        {
+                            field: 'userName',
+                            formatter: (value) => `
+                                <div class="d-flex px-2 py-1">
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <h6 class="mb-0 text-sm">${value}</h6>
+                                    </div>
+                                </div>
+                            `
+                        },
+                        { field: 'studentId' },
+                        { field: 'joinedAt', type: 'datetime' },
+                        {
+                            field: 'status',
+                            formatter: (value) => `
+                                <p class="text-xs font-weight-bold mb-0 text-${value === 'confirmed' ? 'success' : 'danger'}">${value}</p>
+                            `
+                        }
+                    ],
+                    onDelete: (button) => {
+                        if (!confirm('Bạn có chắc chắn muốn xóa người tham gia này?')) return;
+                        const id = button.getAttribute('data-id');
+                        const csrfToken = button.getAttribute('data-csrf-token');
+                        fetch(`/activity_participant/delete/${id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `_token=${csrfToken}`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const activityId = document.getElementById('activitySelectForParticipants').value;
+                                participantsTable.loadData(participantsData[activityId] || []);
+                            } else {
+                                alert(data.error);
+                            }
+                        })
+                        .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+                    },
+                    scrollPositionKey: 'participants_table_scroll_position'
+                });
+
+                // Xử lý chọn hoạt động để xem người tham gia
+                document.getElementById('activitySelectForParticipants').addEventListener('change', function () {
+                    const activityId = this.value;
+                    const searchInput = document.getElementById('participantsSearchInput');
+                    const clearSearchBtn = document.getElementById('participantsClearSearchBtn');
+                    if (activityId) {
+                        searchInput.classList.remove('d-none');
+                        clearSearchBtn.classList.remove('d-none');
+                        participantsTable.loadData(participantsData[activityId] || []);
+                    } else {
+                        searchInput.classList.add('d-none');
+                        clearSearchBtn.classList.add('d-none');
+                        participantsTable.loadData([]);
+                        participantsTable.renderEmptyMessage('Vui lòng chọn một hoạt động để xem người tham gia.');
+                    }
+                });
+
+                // Dữ liệu điểm danh
+                const attendancesData = {
+                    {% for activity in activities %}
+                        '{{ activity.id }}': [
+                            {% for attendance in attendances[activity.id] %}
+                                {
+                                    userName: '{{ attendance.userId.name|e('js') }}',
+                                    status: '{{ attendance.status|e('js') }}',
+                                    remark: '{{ attendance.remark ? attendance.remark|e('js') : 'N/A' }}',
+                                    markedAt: '{{ attendance.markedAt|date('Y-m-d H:i:s') }}',
+                                    markedBy: '{{ attendance.markedBy.name|e('js') }}',
+                                    actions: `
+                                        <a href="{{ path('app_attendances_show', {'id': attendance.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
+                                        <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ attendance.id }}" data-csrf-token="{{ csrf_token('delete' ~ attendance.id) }}" onclick="event.stopPropagation();">Xóa</button>
+                                    `
+                                },
+                            {% endfor %}
+                        ],
+                    {% endfor %}
+                };
+
+                // TableLayout cho Attendances
+                const attendancesTable = new TableLayout({
+                    data: [],
+                    tableBodyId: 'attendancesTableBody',
+                    searchInputId: 'attendancesSearchInput',
+                    clearSearchBtnId: 'attendancesClearSearchBtn',
+                    paginationId: 'attendancesPagination',
+                    columns: [
+                        {
+                            field: 'userName',
+                            formatter: (value) => `
+                                <div class="d-flex px-2 py-1">
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <h6 class="mb-0 text-sm">${value}</h6>
+                                    </div>
+                                </div>
+                            `
+                        },
+                        {
+                            field: 'status',
+                            formatter: (value) => `
+                                <p class="text-xs font-weight-bold mb-0 text-${value === 'present' ? 'success' : 'danger'}">${value}</p>
+                            `
+                        },
+                        { field: 'remark' },
+                        { field: 'markedAt', type: 'datetime' },
+                        { field: 'markedBy' }
+                    ],
+                    onDelete: (button) => {
+                        if (!confirm('Bạn có chắc chắn muốn xóa điểm danh này?')) return;
+                        const id = button.getAttribute('data-id');
+                        const csrfToken = button.getAttribute('data-csrf-token');
+                        fetch(`/attendances/${id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `_token=${csrfToken}`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const activityId = document.getElementById('activitySelectForAttendances').value;
+                                attendancesTable.loadData(attendancesData[activityId] || []);
+                            } else {
+                                alert(data.error);
+                            }
+                        })
+                        .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+                    },
+                    scrollPositionKey: 'attendances_table_scroll_position'
+                });
+
+                // Xử lý chọn hoạt động để xem điểm danh
+                document.getElementById('activitySelectForAttendances').addEventListener('change', function () {
+                    const activityId = this.value;
+                    const searchInput = document.getElementById('attendancesSearchInput');
+                    const clearSearchBtn = document.getElementById('attendancesClearSearchBtn');
+                    const addBtn = document.getElementById('addAttendanceBtn');
+                    const activityIdInput = document.querySelector('#addAttendanceForm [name="attendances[activity_id]"]');
+                    if (activityId) {
+                        searchInput.classList.remove('d-none');
+                        clearSearchBtn.classList.remove('d-none');
+                        addBtn.classList.remove('d-none');
+                        activityIdInput.value = activityId;
+                        attendancesTable.loadData(attendancesData[activityId] || []);
+                    } else {
+                        searchInput.classList.add('d-none');
+                        clearSearchBtn.classList.add('d-none');
+                        addBtn.classList.add('d-none');
+                        attendancesTable.loadData([]);
+                        attendancesTable.renderEmptyMessage('Vui lòng chọn một hoạt động để xem điểm danh.');
+                    }
+                });
+
                 // Xử lý form thêm hoạt động
                 const addActivityForm = document.getElementById('addActivityForm');
                 if (addActivityForm) {
@@ -303,8 +673,8 @@
                     addActivityForm.addEventListener('submit', function (e) {
                         e.preventDefault();
                         const formData = new FormData(this);
-                        tableLayout.showLoading(addActivitySubmitBtn, addActivitySpinner);
-                        tableLayout.hideError(addActivityError);
+                        activitiesTable.showLoading(addActivitySubmitBtn, addActivitySpinner);
+                        activitiesTable.hideError(addActivityError);
 
                         fetch(this.action, {
                             method: 'POST',
@@ -312,13 +682,13 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            tableLayout.hideLoading(addActivitySubmitBtn, addActivitySpinner);
+                            activitiesTable.hideLoading(addActivitySubmitBtn, addActivitySpinner);
                             if (data.success) window.location.href = data.redirect;
-                            else tableLayout.showError(addActivityError, data.error);
+                            else activitiesTable.showError(addActivityError, data.error);
                         })
                         .catch(error => {
-                            tableLayout.hideLoading(addActivitySubmitBtn, addActivitySpinner);
-                            tableLayout.showError(addActivityError, 'Có lỗi xảy ra: ' + error.message);
+                            activitiesTable.hideLoading(addActivitySubmitBtn, addActivitySpinner);
+                            activitiesTable.showError(addActivityError, 'Có lỗi xảy ra: ' + error.message);
                         });
                     });
                 }
@@ -333,8 +703,8 @@
                     form.addEventListener('submit', function (e) {
                         e.preventDefault();
                         const formData = new FormData(this);
-                        tableLayout.showLoading(submitBtn, spinner);
-                        tableLayout.hideError(errorDiv);
+                        activitiesTable.showLoading(submitBtn, spinner);
+                        activitiesTable.hideError(errorDiv);
 
                         fetch(this.action, {
                             method: 'POST',
@@ -342,16 +712,56 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            tableLayout.hideLoading(submitBtn, spinner);
+                            activitiesTable.hideLoading(submitBtn, spinner);
                             if (data.success) window.location.href = data.redirect;
-                            else tableLayout.showError(errorDiv, data.error);
+                            else activitiesTable.showError(errorDiv, data.error);
                         })
                         .catch(error => {
-                            tableLayout.hideLoading(submitBtn, spinner);
-                            tableLayout.showError(errorDiv, 'Có lỗi xảy ra: ' + error.message);
+                            activitiesTable.hideLoading(submitBtn, spinner);
+                            activitiesTable.showError(errorDiv, 'Có lỗi xảy ra: ' + error.message);
                         });
                     });
                 });
+
+                // Xử lý form thêm điểm danh
+                const addAttendanceForm = document.getElementById('addAttendanceForm');
+                if (addAttendanceForm) {
+                    const addAttendanceSubmitBtn = document.getElementById('addAttendanceSubmitBtn');
+                    const addAttendanceSpinner = document.getElementById('addAttendanceSpinner');
+                    const addAttendanceError = document.getElementById('addAttendanceError');
+
+                    addAttendanceForm.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        attendancesTable.showLoading(addAttendanceSubmitBtn, addAttendanceSpinner);
+                        attendancesTable.hideError(addAttendanceError);
+
+                        fetch(this.action, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            attendancesTable.hideLoading(addAttendanceSubmitBtn, addAttendanceSpinner);
+                            if (data.success) {
+                                const activityId = document.getElementById('activitySelectForAttendances').value;
+                                fetch(`/attendances/by_activity/${activityId}`)
+                                    .then(response => response.json())
+                                    .then(newData => {
+                                        attendancesData[activityId] = newData;
+                                        attendancesTable.loadData(newData);
+                                        bootstrap.Modal.getInstance(document.getElementById('addAttendanceModal')).hide();
+                                    });
+                            } else {
+                                attendancesTable.showError(addAttendanceError, data.error);
+                            }
+                        })
+                        .catch(error => {
+                            attendancesTable.hideLoading(addAttendanceSubmitBtn, addAttendanceSpinner);
+                            attendancesTable.showError(addAttendanceError, 'Có lỗi xảy ra: ' + error.message);
+                        });
+                    });
+                }
             });
         </script>
     </div>
