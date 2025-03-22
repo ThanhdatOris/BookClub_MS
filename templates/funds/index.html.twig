@@ -20,9 +20,9 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý quỹ</h6>
                             <div class="d-flex align-items-center">
-                                <div class="d-flex align-items-center me-2 mb-0">
+                                <div class="d-flex align-items-center mb-0">
                                     <input type="text" id="searchInput" class="form-control me-2" placeholder="Tìm kiếm giao dịch..." style="max-width: 300px;">
-                                    <button type="button" id="clearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                                    <button type="button" id="clearSearchBtn" class="btn btn-secondary mb-0 me-2 d-none">Hủy</button>
                                 </div>
                                 {% if is_granted('ROLE_TREASURER') %}
                                     <button type="button" class="btn btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addFundModal">
@@ -78,11 +78,15 @@
                                             <td class="text-center">
                                                 {% if is_granted('ROLE_TREASURER') %}
                                                     <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editFundModal{{ fund.id }}" onclick="event.stopPropagation();">Sửa</button>
-                                                    <button type="button" class="btn btn-sm btn-danger mb-0 delete-fund" data-id="{{ fund.id }}" data-csrf-token="{{ csrf_token('delete' ~ fund.id) }}" onclick="event.stopPropagation();">Xóa</button>
+                                                    <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ fund.id }}" data-csrf-token="{{ csrf_token('delete' ~ fund.id) }}" onclick="event.stopPropagation();">Xóa</button>
                                                 {% elseif is_granted('ROLE_ADMIN') %}
                                                     <a href="{{ path('app_funds_show', {'id': fund.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem chi tiết</a>
                                                 {% endif %}
                                             </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="6" class="text-center">Không có giao dịch nào.</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -186,8 +190,139 @@
                 </div>
             </div>
         {% endfor %}
-    </div>
 
-    <!-- Include JavaScript -->
-    <script src="{{ asset('js/funds.js') }}"></script>
+        <!-- Include table-layout.js -->
+        <script src="{{ asset('js/table-layout.js') }}"></script>
+
+        <!-- JavaScript để khởi tạo TableLayout -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Khởi tạo TableLayout
+                const tableLayout = new TableLayout({
+                    data: [
+                        {% for fund in funds %}
+                            {
+                                date: '{{ fund.date|date('Y-m-d') }}',
+                                transactionType: '{{ fund.transactionType }}',
+                                amount: {{ fund.amount }},
+                                description: '{{ fund.description|e('js') }}',
+                                createdBy: '{{ fund.createdBy.name|e('js') }}',
+                                detailUrl: '{{ path('app_funds_show', {'id': fund.id, 'referer': app.request.uri}) }}',
+                                actions: `
+                                    {% if is_granted('ROLE_TREASURER') %}
+                                        <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editFundModal{{ fund.id }}" onclick="event.stopPropagation();">Sửa</button>
+                                        <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ fund.id }}" data-csrf-token="{{ csrf_token('delete' ~ fund.id) }}" onclick="event.stopPropagation();">Xóa</button>
+                                    {% elseif is_granted('ROLE_ADMIN') %}
+                                        <a href="{{ path('app_funds_show', {'id': fund.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem chi tiết</a>
+                                    {% endif %}
+                                `
+                            },
+                        {% endfor %}
+                    ],
+                    tableBodyId: 'fundsTableBody',
+                    columns: [
+                        { field: 'date', class: 'text-center', type: 'date' },
+                        {
+                            field: 'transactionType',
+                            class: 'text-center',
+                            formatter: (value) => `
+                                <div class="d-flex flex-column justify-content-center text-center">
+                                    <h6 class="mb-0 text-sm text-${value === 'income' ? 'success' : 'danger'}">
+                                        ${value === 'income' ? 'Thu' : 'Chi'}
+                                    </h6>
+                                </div>
+                            `
+                        },
+                        { field: 'amount', class: 'text-center', type: 'currency' },
+                        {
+                            field: 'description',
+                            formatter: (value) => value.length > 50 ? value.slice(0, 50) + '...' : value
+                        },
+                        { field: 'createdBy', class: 'text-center' }
+                    ],
+                    onRowClick: (row) => {
+                        const detailUrl = row.getAttribute('data-url');
+                        if (detailUrl) window.location.href = detailUrl;
+                    },
+                    onDelete: (button) => {
+                        if (!confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) return;
+                        const id = button.getAttribute('data-id');
+                        const csrfToken = button.getAttribute('data-csrf-token');
+                        fetch(`/funds/${id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `_token=${csrfToken}`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) window.location.href = data.redirect;
+                            else alert(data.error);
+                        })
+                        .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+                    },
+                    scrollPositionKey: 'funds_table_scroll_position'
+                });
+
+                // Xử lý form thêm giao dịch
+                const addFundForm = document.getElementById('addFundForm');
+                if (addFundForm) {
+                    const addFundSubmitBtn = document.getElementById('addFundSubmitBtn');
+                    const addFundSpinner = document.getElementById('addFundSpinner');
+                    const addFundError = document.getElementById('addFundError');
+
+                    addFundForm.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        tableLayout.showLoading(addFundSubmitBtn, addFundSpinner);
+                        tableLayout.hideError(addFundError);
+
+                        fetch(this.action, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            tableLayout.hideLoading(addFundSubmitBtn, addFundSpinner);
+                            if (data.success) window.location.href = data.redirect;
+                            else tableLayout.showError(addFundError, data.error);
+                        })
+                        .catch(error => {
+                            tableLayout.hideLoading(addFundSubmitBtn, addFundSpinner);
+                            tableLayout.showError(addFundError, 'Có lỗi xảy ra: ' + error.message);
+                        });
+                    });
+                }
+
+                // Xử lý form sửa giao dịch
+                document.querySelectorAll('[id^="editFundForm"]').forEach(form => {
+                    const formId = form.id;
+                    const submitBtn = document.getElementById('editFundSubmitBtn' + formId.replace('editFundForm', ''));
+                    const spinner = document.getElementById('editFundSpinner' + formId.replace('editFundForm', ''));
+                    const errorDiv = document.getElementById('editFundError' + formId.replace('editFundForm', ''));
+
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        tableLayout.showLoading(submitBtn, spinner);
+                        tableLayout.hideError(errorDiv);
+
+                        fetch(this.action, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            tableLayout.hideLoading(submitBtn, spinner);
+                            if (data.success) window.location.href = data.redirect;
+                            else tableLayout.showError(errorDiv, data.error);
+                        })
+                        .catch(error => {
+                            tableLayout.hideLoading(submitBtn, spinner);
+                            tableLayout.showError(errorDiv, 'Có lỗi xảy ra: ' + error.message);
+                        });
+                    });
+                });
+            });
+        </script>
+    </div>
 {% endblock %}

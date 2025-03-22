@@ -1,55 +1,181 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Users index{% endblock %}
+{% block title %}Quản lý thành viên{% endblock %}
 
 {% block body %}
-    <h1>Users index</h1>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Student_id</th>
-                <th>Password</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Class_id</th>
-                <th>Faculty</th>
-                <th>Contact_info</th>
-                <th>Created_at</th>
-                <th>Updated_at</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for user in users %}
-            <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.studentId }}</td>
-                <td>{{ user.password }}</td>
-                <td>{{ user.name }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.role }}</td>
-                <td>{{ user.status }}</td>
-                <td>{{ user.classId }}</td>
-                <td>{{ user.faculty }}</td>
-                <td>{{ user.contactInfo }}</td>
-                <td>{{ user.createdAt ? user.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ user.updatedAt ? user.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_users_show', {'id': user.id}) }}">show</a>
-                    <a href="{{ path('app_users_edit', {'id': user.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="13">no records found</td>
-            </tr>
+    <div class="container-fluid py-4">
+        <!-- Thông báo flash -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
         {% endfor %}
-        </tbody>
-    </table>
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
 
-    <a href="{{ path('app_users_new') }}">Create new</a>
+        <!-- Header và Danh sách thành viên trong một card -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý thành viên</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center me-2 mb-0">
+                                    <input type="text" id="searchInput" class="form-control me-2" placeholder="Tìm kiếm thành viên..." style="max-width: 300px;">
+                                    <button type="button" id="clearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                                </div>
+                                <a href="{{ path('app_users_new') }}" class="btn btn-success mb-0">
+                                    <i class="fas fa-plus me-1"></i> Thêm thành viên
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0 px-3" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="studentId">Mã sinh viên</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="name">Tên</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="email">Email</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="role">Vai trò</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="status">Trạng thái</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="faculty">Khoa</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="contactInfo">Thông tin liên hệ</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    {% for user in users %}
+                                        <tr data-url="{{ path('app_users_show', {'id': user.id}) }}" style="cursor: pointer;">
+                                            <td class="text-center">
+                                                <p class="text-xs font-weight-bold mb-0">{{ user.studentId }}</p>
+                                            </td>
+                                            <td class="text-center">
+                                                <p class="text-xs font-weight-bold mb-0">{{ user.name }}</p>
+                                            </td>
+                                            <td class="text-center">
+                                                <p class="text-xs font-weight-bold mb-0">{{ user.email }}</p>
+                                            </td>
+                                            <td class="text-center">
+                                                <p class="text-xs font-weight-bold mb-0">{{ user.role }}</p>
+                                            </td>
+                                            <td class="text-center">
+                                                <p class="text-xs font-weight-bold mb-0 text-{{ user.status == 'active' ? 'success' : 'danger' }}">{{ user.status }}</p>
+                                            </td>
+                                            <td class="text-center">
+                                                <p class="text-xs font-weight-bold mb-0">{{ user.faculty }}</p>
+                                            </td>
+                                            <td class="text-center">
+                                                <p class="text-xs font-weight-bold mb-0">{{ user.contactInfo }}</p>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="{{ path('app_users_show', {'id': user.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
+                                                <a href="{{ path('app_users_edit', {'id': user.id}) }}" class="btn btn-sm btn-primary mb-0" onclick="event.stopPropagation();">Sửa</a>
+                                                <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ user.id }}" data-csrf-token="{{ csrf_token('delete' ~ user.id) }}" onclick="event.stopPropagation();">Xóa</button>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="8" class="text-center">Không có thành viên nào.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Phân trang client-side -->
+                        <div class="navigation mt-4 d-flex justify-content-center">
+                            <nav>
+                                <ul class="pagination" id="pagination">
+                                    <!-- Phân trang sẽ được tạo bằng JavaScript -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Include table-layout.js -->
+        <script src="{{ asset('js/table-layout.js') }}"></script>
+
+        <!-- JavaScript để khởi tạo TableLayout -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Khởi tạo TableLayout
+                const tableLayout = new TableLayout({
+                    data: [
+                        {% for user in users %}
+                            {
+                                studentId: '{{ user.studentId|e('js') }}',
+                                name: '{{ user.name|e('js') }}',
+                                email: '{{ user.email|e('js') }}',
+                                role: '{{ user.role|e('js') }}',
+                                status: '{{ user.status|e('js') }}',
+                                faculty: '{{ user.faculty|e('js') }}',
+                                contactInfo: '{{ user.contactInfo|e('js') }}',
+                                detailUrl: '{{ path('app_users_show', {'id': user.id}) }}',
+                                actions: `
+                                    <a href="{{ path('app_users_show', {'id': user.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
+                                    <a href="{{ path('app_users_edit', {'id': user.id}) }}" class="btn btn-sm btn-primary mb-0" onclick="event.stopPropagation();">Sửa</a>
+                                    <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ user.id }}" data-csrf-token="{{ csrf_token('delete' ~ user.id) }}" onclick="event.stopPropagation();">Xóa</button>
+                                `
+                            },
+                        {% endfor %}
+                    ],
+                    tableBodyId: 'usersTableBody',
+                    columns: [
+                        { field: 'studentId', class: 'text-center' },
+                        { field: 'name', class: 'text-center' },
+                        { field: 'email', class: 'text-center' },
+                        { field: 'role', class: 'text-center' },
+                        {
+                            field: 'status',
+                            class: 'text-center',
+                            formatter: (value) => `
+                                <p class="text-xs font-weight-bold mb-0 text-${value === 'active' ? 'success' : 'danger'}">${value}</p>
+                            `
+                        },
+                        { field: 'faculty', class: 'text-center' },
+                        { field: 'contactInfo', class: 'text-center' }
+                    ],
+                    onRowClick: (row) => {
+                        const detailUrl = row.getAttribute('data-url');
+                        if (detailUrl) window.location.href = detailUrl;
+                    },
+                    onDelete: (button) => {
+                        if (!confirm('Bạn có chắc chắn muốn xóa thành viên này?')) return;
+                        const id = button.getAttribute('data-id');
+                        const csrfToken = button.getAttribute('data-csrf-token');
+                        fetch(`/members/${id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `_token=${csrfToken}`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) window.location.href = data.redirect;
+                            else alert(data.error);
+                        })
+                        .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+                    },
+                    scrollPositionKey: 'users_table_scroll_position'
+                });
+            });
+        </script>
+    </div>
 {% endblock %}
