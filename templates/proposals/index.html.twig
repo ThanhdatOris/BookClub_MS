@@ -8,7 +8,7 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header pb-0">
-                    <h6>Proposals Index</h6>
+                    <h6>Danh sách đề xuất</h6>
                 </div>
                 <div class="card-body px-0 pt-0 pb-2">
                     <div class="table-responsive p-0">
@@ -16,26 +16,43 @@
                             <thead>
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Id</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Content</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Created At</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Updated At</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thể loại</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nội dung</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày tạo</th>
+                                    {# <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày sửa</th> #}
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for proposal in proposals %}
                                     <tr>
-                                        <td>{{ proposal.id }}</td>
-                                        <td>{{ proposal.type }}</td>
-                                        <td>{{ proposal.content|length > 50 ? proposal.content|slice(0, 50) ~ '...' : proposal.content }}</td>
-                                        <td>{{ proposal.status }}</td>
+                                        <td class="text-center">{{ proposal.id }}</td>
+                                        <td class="text-center">
+                                            {% if proposal.type == 'general' %}
+                                                <span class="badge bg-primary">Chung</span>
+                                            {% elseif proposal.type == 'edit_profile' %}
+                                                <span class="badge bg-info">Sửa hồ sơ</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Không xác định</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ proposal.content|length > 30 ? proposal.content|slice(0, 30) ~ '...' : proposal.content }}</td>
+                                        <td class="text-center">
+                                            {% if proposal.status == 'pending' %}
+                                                <span class="badge bg-warning text-white">Đang chờ</span>
+                                            {% elseif proposal.status == 'approved' %}
+                                                <span class="badge bg-success">Đã duyệt</span>
+                                            {% elseif proposal.status == 'rejected' %}
+                                                <span class="badge bg-danger">Đã từ chối</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Không xác định</span>
+                                            {% endif %}
+                                        </td>
                                         <td>{{ proposal.createdAt ? proposal.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                                        <td>{{ proposal.updatedAt ? proposal.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
-                                        <td>
-                                            <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-info btn-sm">Show</a>
-                                            <a href="{{ path('app_proposals_edit', {'id': proposal.id}) }}" class="btn btn-primary btn-sm">Edit</a>
+                                        {# <td>{{ proposal.updatedAt ? proposal.updatedAt|date('Y-m-d H:i:s') : '' }}</td> #}
+                                        <td class="d-flex justify-content-center">
+                                            <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-info btn-sm mb-0">Xem</a>
                                         </td>
                                     </tr>
                                 {% else %}
@@ -46,12 +63,71 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="navigation mt-4 d-flex justify-content-center">
+                        <nav>
+                            <ul class="pagination" id="attendancesPagination"></ul>
+                        </nav>
+                    </div>
                 </div>
                 <div class="card-footer">
-                    <a href="{{ path('app_proposals_new') }}" class="btn btn-success btn-sm">Create New</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<!-- Include table-layout.js -->
+<script src="{{ asset('js/table-layout.js') }}"></script>
+<script>
+const tableLayout = new TableLayout({
+    data: [
+        {% for proposal in proposals %}
+            {
+                id: '{{ proposal.id }}',
+                type: '{{ proposal.type }}',
+                content: '{{ proposal.content|e('js') }}',
+                status: '{{ proposal.status }}',
+                createdAt: '{{ proposal.createdAt ? proposal.createdAt|date('Y-m-d H:i:s') : '' }}',
+                detailUrl: '{{ path('app_proposals_show', {'id': proposal.id}) }}',
+                actions: `
+                    <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-sm btn-info mb-0">Xem</a>
+                `
+            },
+        {% endfor %}
+    ],
+    tableBodyId: 'proposalsTableBody',
+    columns: [
+        { field: 'id', class: 'text-center' },
+        {
+            field: 'type',
+            class: 'text-center',
+            formatter: (value) => {
+                if (value === 'general') return '<span class="badge bg-primary">Chung</span>';
+                if (value === 'edit_profile') return '<span class="badge bg-info">Sửa hồ sơ</span>';
+                return '<span class="badge bg-secondary">Không xác định</span>';
+            }
+        },
+        {
+            field: 'content',
+            formatter: (value) => value.length > 30 ? value.slice(0, 30) + '...' : value
+        },
+        {
+            field: 'status',
+            class: 'text-center',
+            formatter: (value) => {
+                if (value === 'pending') return '<span class="badge bg-warning text-white">Đang chờ</span>';
+                if (value === 'approved') return '<span class="badge bg-success">Đã duyệt</span>';
+                if (value === 'rejected') return '<span class="badge bg-danger">Đã từ chối</span>';
+                return '<span class="badge bg-secondary">Không xác định</span>';
+            }
+        },
+        { field: 'createdAt', class: 'text-center', type: 'date' },
+        { field: 'actions', class: 'text-center', type: 'html' }
+    ],
+    onRowClick: (row) => {
+        const detailUrl = row.getAttribute('data-url');
+        if (detailUrl) window.location.href = detailUrl;
+    },
+    scrollPositionKey: 'proposals_table_scroll_position'
+});
+</script>
 {% endblock %}

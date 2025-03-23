@@ -68,7 +68,7 @@ class DashboardController extends AbstractController
                 $fundLabels[] = (new \DateTime("$currentYear-$month-01"))->format('M');
             }
             foreach ($fundsByMonth as $fund) {
-                $fundData[$fund['month']] = $fund['total'];
+                $fundData[$fund['month']] = (float) $fund['total']; // Chuyển sang float để biểu đồ hiển thị đúng
             }
 
             // Các hoạt động gần đây (cho carousel)
@@ -78,14 +78,14 @@ class DashboardController extends AbstractController
             $pendingProposals = $proposalsRepository->findBy(['status' => 'pending'], ['created_at' => 'DESC'], 5);
 
             return $this->render('dashboard/index.html.twig', [
-                'user' => $this->getUser(), // Thêm thông tin user hiện tại
+                'user' => $this->getUser(),
                 'totalFunds' => $totalFunds,
                 'totalMembers' => $totalMembers,
-                'totalActivities' => $totalActivities, // Thêm biến này để đồng bộ với template
+                'totalActivities' => $totalActivities,
                 'newActivities' => $newActivities,
                 'participationCount' => $participationCount,
                 'fundLabels' => $fundLabels,
-                'fundData' => $fundData,
+                'fundData' => array_values($fundData), // Đảm bảo mảng là tuần tự
                 'recentActivities' => $recentActivities,
                 'pendingProposals' => $pendingProposals,
             ]);

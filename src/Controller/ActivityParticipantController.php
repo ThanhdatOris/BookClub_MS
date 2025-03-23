@@ -18,9 +18,6 @@ final class ActivityParticipantController extends AbstractController
     #[Route('/{activityId}', name: 'app_activity_participant_index', methods: ['GET'])]
     public function index(int $activityId, ActivityParticipantRepository $participantRepository, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được quản lý người tham gia.');
-        $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được quản lý người tham gia.');
-
         $activity = $entityManager->getRepository(Activities::class)->find($activityId);
         if (!$activity) {
             throw $this->createNotFoundException('Hoạt động không tồn tại.');
@@ -118,8 +115,6 @@ final class ActivityParticipantController extends AbstractController
     #[Route('/delete/{id}', name: 'app_activity_participant_delete', methods: ['POST'])]
     public function delete(int $id, Request $request, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ có Admin hoặc Treasurer mới được xóa người tham gia.');
-        $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Admin hoặc Treasurer mới được xóa người tham gia.');
 
         $participant = $entityManager->getRepository(ActivityParticipant::class)->find($id);
         if (!$participant) {

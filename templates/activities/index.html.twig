@@ -75,7 +75,7 @@
                                                     <td>
                                                         <div class="d-flex px-2 py-1">
                                                             <div class="d-flex flex-column justify-content-center">
-                                                                <h6 class="mb-0 text-sm">{{ activity.title }}</h6>
+                                                                <h6 class="mb-0 text-sm">{{ activity.title|length > 25 ? activity.title|slice(0, 25) ~ '...' : activity.title }}</h6>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -83,7 +83,7 @@
                                                         <p class="text-xs font-weight-bold mb-0">{{ activity.date ? activity.date|date('Y-m-d') : 'N/A' }}</p>
                                                     </td>
                                                     <td>
-                                                        <p class="text-xs font-weight-bold mb-0">{{ activity.location ?? 'N/A' }}</p>
+                                                        <p class="text-xs font-weight-bold mb-0">{{ activity.location|length > 20 ? activity.location|slice(0, 20) ~ '...' : activity.location }}</p>
                                                     </td>
                                                     <td>
                                                         <p class="text-xs font-weight-bold mb-0 text-{{ activity.status == 'planned' ? 'primary' : (activity.status == 'ongoing' ? 'success' : (activity.status == 'completed' ? 'info' : 'danger')) }}">{{ activity.status }}</p>

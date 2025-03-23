@@ -7,7 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProposalsRepository::class)]
-#[ORM\HasLifecycleCallbacks] // Thêm annotation để hỗ trợ lifecycle callbacks
+#[ORM\HasLifecycleCallbacks]
 class Proposals
 {
     #[ORM\Id]
@@ -17,13 +17,16 @@ class Proposals
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Users $user_id = null; // Sửa tên class từ "users" thành "Users"
+    private ?Users $user_id = null;
 
     #[ORM\Column(length: 255)]
     private ?string $type = null;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $content = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $proposed_changes = null; // Thêm trường để lưu các thay đổi đề xuất
 
     #[ORM\Column(length: 255)]
     private ?string $status = null;
@@ -34,7 +37,6 @@ class Proposals
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $updated_at = null;
 
-    // note: Giữ nguyên các getter và setter hiện có
     public function getId(): ?int
     {
         return $this->id;
@@ -48,7 +50,6 @@ class Proposals
     public function setUserId(?Users $user_id): static
     {
         $this->user_id = $user_id;
-
         return $this;
     }
 
@@ -60,7 +61,6 @@ class Proposals
     public function setType(string $type): static
     {
         $this->type = $type;
-
         return $this;
     }
 
@@ -72,7 +72,17 @@ class Proposals
     public function setContent(string $content): static
     {
         $this->content = $content;
+        return $this;
+    }
 
+    public function getProposedChanges(): ?array
+    {
+        return $this->proposed_changes;
+    }
+
+    public function setProposedChanges(?array $proposed_changes): static
+    {
+        $this->proposed_changes = $proposed_changes;
         return $this;
     }
 
@@ -84,7 +94,6 @@ class Proposals
     public function setStatus(string $status): static
     {
         $this->status = $status;
-
         return $this;
     }
 
@@ -96,7 +105,6 @@ class Proposals
     public function setCreatedAt(\DateTimeInterface $created_at): static
     {
         $this->created_at = $created_at;
-
         return $this;
     }
 
@@ -108,12 +116,9 @@ class Proposals
     public function setUpdatedAt(\DateTimeInterface $updated_at): static
     {
         $this->updated_at = $updated_at;
-
         return $this;
     }
-    // end note
 
-    // Thêm lifecycle callbacks để tự động cập nhật created_at và updated_at
     #[ORM\PrePersist]
     public function onPrePersist(): void
     {

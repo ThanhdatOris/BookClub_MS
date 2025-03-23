@@ -40,7 +40,7 @@
     <aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4" id="sidenav-main">
         <div class="sidenav-header">
             <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-            <a class="navbar-brand m-0" href="{{ path('app_dashboard') }}">
+            <a class="navbar-brand m-0" href="{{ path('app_home') }}">
                 <img src="{{ asset('assets/img/logo-ct-dark-mn76con.png')}}" width="26px" height="26px" class="navbar-brand-img h-100" alt="main_logo">
                 <span class="ms-1 font-weight-bold">BOOK CLUB CTUT</span>
             </a>
@@ -142,6 +142,42 @@
 
     <!-- JavaScript Files -->
     <script src="{{ asset('assets/js/plugins/chartjs.min-_Dnnqxc.js') }}" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Toggle sidebar on mobile
+            const iconNavbarSidenav = document.getElementById('iconNavbarSidenav');
+            const iconSidenav = document.getElementById('iconSidenav');
+            const sidenav = document.getElementById('sidenav-main');
+            const body = document.body;
+
+            if (iconNavbarSidenav) {
+                iconNavbarSidenav.addEventListener('click', function () {
+                    if (!body.classList.contains('g-sidenav-pinned')) {
+                        body.classList.add('g-sidenav-pinned');
+                        sidenav.classList.add('active');
+                    } else {
+                        body.classList.remove('g-sidenav-pinned');
+                        sidenav.classList.remove('active');
+                    }
+                });
+            }
+
+            if (iconSidenav) {
+                iconSidenav.addEventListener('click', function () {
+                    body.classList.remove('g-sidenav-pinned');
+                    sidenav.classList.remove('active');
+                });
+            }
+
+            // Đóng sidebar khi click bên ngoài trên mobile
+            document.addEventListener('click', function (event) {
+                if (body.classList.contains('g-sidenav-pinned') && !sidenav.contains(event.target) && !iconNavbarSidenav.contains(event.target)) {
+                    body.classList.remove('g-sidenav-pinned');
+                    sidenav.classList.remove('active');
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

@@ -3,248 +3,143 @@
 {% block title %}Trang chủ{% endblock %}
 
 {% block body %}
-    <div class="container-fluid py-4">
-        <!-- Thông báo flash -->
-        <div aria-live="polite" aria-atomic="true" class="position-relative">
-            <div class="toast-container position-fixed top-0 end-0 p-3">
+<div class="container-fluid py-4">
+    <!-- Thông báo flash -->
+    <div aria-live="polite" aria-atomic="true" class="position-relative">
+        <div class="toast-container position-fixed top-0 end-0 p-3">
             {% for message in app.flashes('success') %}
                 <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                    {{ message }}
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                     </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
                 </div>
             {% endfor %}
             {% for message in app.flashes('error') %}
                 <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                    {{ message }}
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                     </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
                 </div>
             {% endfor %}
-            </div>
         </div>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
             var toastElList = [].slice.call(document.querySelectorAll('.toast'));
             toastElList.forEach(function (toastEl) {
                 var toast = new bootstrap.Toast(toastEl);
                 toast.show();
             });
-            });
-        </script>
+        });
+    </script>
 
-        <!-- Chào user -->
-        <div class="mb-4">
+    <!-- Chào user -->
+    <div class="mb-4">
+        {% if user is not null %}
             <h3 class="text-white">Chào {{ user.name }} ({{ user.studentId }})!</h3>
             <p class="text-white">Vai trò: {{ user.role|replace({'ROLE_': ''})|capitalize }}</p>
-            {% if user.role in ['ROLE_ADMIN', 'ROLE_TREASURER'] %}
-                <a href="{{ path('app_funds_index') }}" class="btn btn-primary">Quản lý quỹ</a>
+        {% else %}
+            <h3 class="text-white">Chào bạn!</h3>
+            <p class="text-white">Vui lòng <a href="{{ path('app_login') }}" class="text-primary">đăng nhập</a> để tiếp tục.</p>
+        {% endif %}
+        <div class="mt-3">
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                <a href="{{ path('app_funds_index') }}" class="btn btn-primary me-2">Quản lý quỹ</a>
             {% endif %}
-            {% if user.role == 'ROLE_ADMIN' %}
-                <a href="{{ path('app_users_index') }}" class="btn btn-primary">Quản lý thành viên</a>
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('app_users_index') }}" class="btn btn-primary me-2">Quản lý thành viên</a>
                 <a href="{{ path('app_activities_index') }}" class="btn btn-primary">Quản lý hoạt động</a>
             {% endif %}
         </div>
+    </div>
 
-        <!-- Thống kê nhanh -->
-        <div class="row">
-            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                <div class="card">
-                    <div class="card-body p-3">
-                        <div class="row">
-                            <div class="col-8">
-                                <div class="numbers">
-                                    <p class="text-sm mb-0 text-uppercase font-weight-bold">Tiền quỹ</p>
-                                    <h5 class="font-weight-bolder">
-                                        {{ totalFunds|round(0, 'floor')|format_currency('VND') }}
-                                    </h5>
-                                </div>
-                            </div>
-                            <div class="col-4 text-end">
-                                <div class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle">
-                                    <i class="fas fa-money-bill-wave text-lg opacity-10" aria-hidden="true"></i>
-                                </div>
+    <!-- Thống kê nhanh -->
+    <div class="row">
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">Tiền quỹ</p>
+                                <h5 class="font-weight-bolder">
+                                    {{ totalFunds|round(0, 'floor')|format_currency('VND') }}
+                                </h5>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                <div class="card">
-                    <div class="card-body p-3">
-                        <div class="row">
-                            <div class="col-8">
-                                <div class="numbers">
-                                    <p class="text-sm mb-0 text-uppercase font-weight-bold">Thành viên</p>
-                                    <h5 class="font-weight-bolder">
-                                        {{ totalMembers }}
-                                    </h5>
-                                </div>
-                            </div>
-                            <div class="col-4 text-end">
-                                <div class="icon icon-shape bg-gradient-danger shadow-danger text-center rounded-circle">
-                                    <i class="fas fa-users text-lg opacity-10" aria-hidden="true"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                <div class="card">
-                    <div class="card-body p-3">
-                        <div class="row">
-                            <div class="col-8">
-                                <div class="numbers">
-                                    <p class="text-sm mb-0 text-uppercase font-weight-bold">Hoạt động mới</p>
-                                    <h5 class="font-weight-bolder">
-                                        +{{ newActivities }}
-                                    </h5>
-                                </div>
-                            </div>
-                            <div class="col-4 text-end">
-                                <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
-                                    <i class="fas fa-calendar-alt text-lg opacity-10" aria-hidden="true"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-sm-6">
-                <div class="card">
-                    <div class="card-body p-3">
-                        <div class="row">
-                            <div class="col-8">
-                                <div class="numbers">
-                                    <p class="text-sm mb-0 text-uppercase font-weight-bold">Lượt tham gia</p>
-                                    <h5 class="font-weight-bolder">
-                                        {{ participationCount }}
-                                    </h5>
-                                </div>
-                            </div>
-                            <div class="col-4 text-end">
-                                <div class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
-                                    <i class="fas fa-user-friends text-lg opacity-10" aria-hidden="true"></i>
-                                </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-primary shadow-primary text-center rounded-circle">
+                                <i class="fas fa-money-bill-wave text-lg opacity-10" aria-hidden="true"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Biểu đồ và carousel -->
-        <div class="row mt-4">
-            <div class="col-lg-7 mb-lg-0 mb-4">
-                <div class="card z-index-2 h-100">
-                    <div class="card-header pb-0 pt-3 bg-transparent">
-                        <h6 class="text-capitalize">Biến động quỹ</h6>
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="chart">
-                            <canvas id="chart-line" class="chart-canvas" height="300"></canvas>
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">Thành viên</p>
+                                <h5 class="font-weight-bolder">
+                                    {{ totalMembers }}
+                                </h5>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-5">
-                <div class="card card-carousel overflow-hidden h-100 p-0">
-                    <div id="carouselExampleCaptions" class="carousel slide h-100" data-bs-ride="carousel">
-                        <div class="carousel-inner border-radius-lg h-100">
-                            {% for activity in recentActivities %}
-                                <div class="carousel-item h-100 {{ loop.first ? 'active' : '' }}" style="background-image: url('{{ activity.image ?? asset('assets/bg-laPfGiy.jpg') }}'); background-size: cover;">
-                                    <div class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
-                                        <div class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
-                                            <i class="fas fa-calendar-alt text-dark opacity-10"></i>
-                                        </div>
-                                        <h5 class="text-white mb-1">{{ activity.title }}</h5>
-                                        <p>{{ activity.description|length > 100 ? activity.description|slice(0, 100) ~ '...' : activity.description }}</p>
-                                    </div>
-                                </div>
-                            {% else %}
-                                <div class="carousel-item h-100 active" style="background-image: url('{{ asset('assets/img/bg-laPfGiy.jpg') }}'); background-size: cover;">
-                                    <div class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
-                                        <div class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
-                                            <i class="fas fa-calendar-alt text-dark opacity-10"></i>
-                                        </div>
-                                        <h5 class="text-white mb-1">Chưa có hoạt động</h5>
-                                        <p>Không có hoạt động nào để hiển thị.</p>
-                                    </div>
-                                </div>
-                            {% endfor %}
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-danger shadow-danger text-center rounded-circle">
+                                <i class="fas fa-users text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
                         </div>
-                        <button class="carousel-control-prev w-5 me-3" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next w-5 me-3" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
-                        </button>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Bảng: Đề xuất đang chờ xử lý -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <h6>Đề xuất đang chờ xử lý</h6>
+        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">Hoạt động mới</p>
+                                <h5 class="font-weight-bolder">
+                                    +{{ newActivities }}
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-success shadow-success text-center rounded-circle">
+                                <i class="fas fa-calendar-alt text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body px-0 pt-0 pb-2">
-                        <div class="table-responsive p-0">
-                            <table class="table align-items-center mb-0">
-                                <thead>
-                                    <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tiêu đề</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Người đề xuất</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày tạo</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for proposal in pendingProposals %}
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex px-2 py-1">
-                                                    <div class="d-flex flex-column justify-content-center">
-                                                        <h6 class="mb-0 text-sm">{{ proposal.type }}</h6>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ proposal.userId.name }}</p>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ proposal.createdAt|date('Y-m-d') }}</p>
-                                            </td>
-                                            <td>
-                                                <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-sm btn-info">Xem</a>
-                                                <a href="{{ path('app_proposals_edit', {'id': proposal.id}) }}" class="btn btn-sm btn-primary">Sửa</a>
-                                                {% if is_granted('ROLE_ADMIN') %}
-                                                    <form method="post" action="{{ path('app_proposals_delete', {'id': proposal.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đề xuất này?');">
-                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ proposal.id) }}">
-                                                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                                                    </form>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="4" class="text-center">Không có đề xuất nào đang chờ xử lý.</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">Lượt tham gia</p>
+                                <h5 class="font-weight-bolder">
+                                    {{ participationCount }}
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-warning shadow-warning text-center rounded-circle">
+                                <i class="fas fa-user-friends text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -252,9 +147,150 @@
         </div>
     </div>
 
-    <!-- JavaScript cho biểu đồ -->
+    <!-- Biểu đồ và carousel -->
+    <div class="row mt-4">
+        <div class="col-lg-7 mb-lg-0 mb-4">
+            <div class="card z-index-2 h-100 shadow-sm">
+                <div class="card-header pb-0 pt-3 bg-transparent">
+                    <h6 class="text-capitalize">Biến động quỹ</h6>
+                </div>
+                <div class="card-body p-3">
+                    <div class="chart">
+                        <canvas id="chart-line" class="chart-canvas" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card card-carousel overflow-hidden h-100 p-0 shadow-sm">
+                <div id="carouselExampleCaptions" class="carousel slide h-100" data-bs-ride="carousel">
+                    <div class="carousel-inner border-radius-lg h-100">
+                        {% for activity in recentActivities %}
+                            <div class="carousel-item h-100 {{ loop.first ? 'active' : '' }}" style="background-image: url('{{ activity.image ?? asset('assets/bg-laPfGiy.jpg') }}'); background-size: cover;">
+                                <div class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
+                                    <div class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
+                                        <i class="fas fa-calendar-alt text-dark opacity-10"></i>
+                                    </div>
+                                    <h5 class="text-white mb-1">{{ activity.title }}</h5>
+                                    <p>{{ activity.description|length > 100 ? activity.description|slice(0, 100) ~ '...' : activity.description }}</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="carousel-item h-100 active" style="background-image: url('{{ asset('assets/img/bg-laPfGiy.jpg') }}'); background-size: cover;">
+                                <div class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
+                                    <div class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
+                                        <i class="fas fa-calendar-alt text-dark opacity-10"></i>
+                                    </div>
+                                    <h5 class="text-white mb-1">Chưa có hoạt động</h5>
+                                    <p>Không có hoạt động nào để hiển thị.</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev w-5 me-3" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next w-5 me-3" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng: Đề xuất đang chờ xử lý -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Đề xuất đang chờ xử lý</h6>
+                        <div class="d-flex align-items-center">
+                            <input type="text" id="proposalsSearchInput" class="form-control me-2" placeholder="Tìm kiếm đề xuất..." style="max-width: 300px;">
+                            <button type="button" id="proposalsClearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0 px-3" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        <a href="#" class="sort-link" data-sort="type">Tiêu đề</a>
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        <a href="#" class="sort-link" data-sort="userName">Người đề xuất</a>
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        <a href="#" class="sort-link" data-sort="createdAt">Ngày tạo</a>
+                                    </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="proposalsTableBody">
+                                {% for proposal in pendingProposals %}
+                                    <tr data-url="{{ path('app_proposals_show', {'id': proposal.id}) }}" data-id="{{ proposal.id }}" style="cursor: pointer;">
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">{{ proposal.type }}</h6>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ proposal.userId.name }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ proposal.createdAt|date('Y-m-d') }}</p>
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
+                                            <a href="{{ path('app_proposals_edit', {'id': proposal.id}) }}" class="btn btn-sm btn-primary mb-0" onclick="event.stopPropagation();">Sửa</a>
+                                            {% if is_granted('ROLE_ADMIN') %}
+                                                <form method="post" action="{{ path('app_proposals_approve', {'id': proposal.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn phê duyệt đề xuất này?');">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ proposal.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-success mb-0" onclick="event.stopPropagation();">Phê duyệt</button>
+                                                </form>
+                                                <form method="post" action="{{ path('app_proposals_reject', {'id': proposal.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn từ chối đề xuất này?');">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ proposal.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger mb-0" onclick="event.stopPropagation();">Từ chối</button>
+                                                </form>
+                                                <form method="post" action="{{ path('app_proposals_delete', {'id': proposal.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đề xuất này?');">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ proposal.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger mb-0" onclick="event.stopPropagation();">Xóa</button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">Không có đề xuất nào đang chờ xử lý.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Phân trang client-side -->
+                    <div class="navigation mt-4 d-flex justify-content-center">
+                        <nav>
+                            <ul class="pagination" id="proposalsPagination"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include table-layout.js -->
+    <script src="{{ asset('js/table-layout.js') }}"></script>
+
+    <!-- JavaScript cho biểu đồ và bảng -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Khởi tạo biểu đồ
             var ctx = document.getElementById('chart-line').getContext('2d');
             var gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
             gradientStroke.addColorStop(1, 'rgba(94, 114, 228, 0.2)');
@@ -284,6 +320,19 @@
                     plugins: {
                         legend: {
                             display: false,
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
+                                    return label;
+                                }
+                            }
                         }
                     },
                     interaction: {
@@ -309,6 +358,9 @@
                                     style: 'normal',
                                     lineHeight: 2
                                 },
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+                                }
                             }
                         },
                         x: {
@@ -334,6 +386,80 @@
                     }
                 }
             });
+
+            // Kiểm tra quyền ROLE_ADMIN
+            const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
+
+            // Khởi tạo TableLayout cho bảng đề xuất
+            const proposalsTable = new TableLayout({
+                data: [
+                    {% for proposal in pendingProposals %}
+                        {
+                            type: '{{ proposal.type|e('js') }}',
+                            userName: '{{ proposal.userId.name|e('js') }}',
+                            createdAt: '{{ proposal.createdAt|date('Y-m-d') }}',
+                            detailUrl: '{{ path('app_proposals_show', {'id': proposal.id}) }}',
+                            editUrl: '{{ path('app_proposals_edit', {'id': proposal.id}) }}',
+                            approveUrl: '{{ path('app_proposals_approve', {'id': proposal.id}) }}',
+                            rejectUrl: '{{ path('app_proposals_reject', {'id': proposal.id}) }}',
+                            deleteUrl: '{{ path('app_proposals_delete', {'id': proposal.id}) }}',
+                            csrfTokenApprove: '{{ csrf_token('approve' ~ proposal.id)|e('js') }}',
+                            csrfTokenReject: '{{ csrf_token('reject' ~ proposal.id)|e('js') }}',
+                            csrfTokenDelete: '{{ csrf_token('delete' ~ proposal.id)|e('js') }}'
+                        },
+                    {% endfor %}
+                ],
+                tableBodyId: 'proposalsTableBody',
+                searchInputId: 'proposalsSearchInput',
+                clearSearchBtnId: 'proposalsClearSearchBtn',
+                paginationId: 'proposalsPagination',
+                columns: [
+                    {
+                        field: 'type',
+                        formatter: (value) => `
+                            <div class="d-flex px-2 py-1">
+                                <div class="d-flex flex-column justify-content-center">
+                                    <h6 class="mb-0 text-sm">${value}</h6>
+                                </div>
+                            </div>
+                        `
+                    },
+                    { field: 'userName' },
+                    { field: 'createdAt', type: 'date' },
+                    {
+                        field: 'actions',
+                        formatter: (value, rowData) => {
+                            let actions = `
+                                <a href="${rowData.detailUrl}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
+                                <a href="${rowData.editUrl}" class="btn btn-sm btn-primary mb-0" onclick="event.stopPropagation();">Sửa</a>
+                            `;
+                            if (isAdmin) {
+                                actions += `
+                                    <form method="post" action="${rowData.approveUrl}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn phê duyệt đề xuất này?');">
+                                        <input type="hidden" name="_token" value="${rowData.csrfTokenApprove}">
+                                        <button type="submit" class="btn btn-sm btn-success mb-0" onclick="event.stopPropagation();">Phê duyệt</button>
+                                    </form>
+                                    <form method="post" action="${rowData.rejectUrl}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn từ chối đề xuất này?');">
+                                        <input type="hidden" name="_token" value="${rowData.csrfTokenReject}">
+                                        <button type="submit" class="btn btn-sm btn-danger mb-0" onclick="event.stopPropagation();">Từ chối</button>
+                                    </form>
+                                    <form method="post" action="${rowData.deleteUrl}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đề xuất này?');">
+                                        <input type="hidden" name="_token" value="${rowData.csrfTokenDelete}">
+                                        <button type="submit" class="btn btn-sm btn-danger mb-0" onclick="event.stopPropagation();">Xóa</button>
+                                    </form>
+                                `;
+                            }
+                            return actions;
+                        }
+                    }
+                ],
+                onRowClick: (row) => {
+                    const detailUrl = row.getAttribute('data-url');
+                    if (detailUrl) window.location.href = detailUrl;
+                },
+                scrollPositionKey: 'proposals_table_scroll_position'
+            });
         });
     </script>
+</div>
 {% endblock %}

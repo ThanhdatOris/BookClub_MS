@@ -31,7 +31,7 @@ class AppFixtures extends Fixture
         $admin->setPassword($this->passwordHasher->hashPassword($admin, '123456'));
         $admin->setName('Nguyễn Thành Đạt');
         $admin->setRoles(['ROLE_ADMIN']);
-        $admin->setStudentId('HTTT2211003'); // Giả định mã sinh viên
+        $admin->setStudentId('HTTT2211003');
         $admin->setStatus('active');
         $admin->setClassId('HTTT2211');
         $admin->setFaculty('Công nghệ Thông tin');
@@ -60,8 +60,8 @@ class AppFixtures extends Fixture
         $member->setEmail('nguyenthanhdat.st@gmail.com');
         $member->setPassword($this->passwordHasher->hashPassword($member, '123456'));
         $member->setName('Nguyễn Trần Anh Khoa');
-        $member->setRoles(['ROLE_USER']);
-        $member->setStudentId('HTTT2211026'); // Giả định mã sinh viên
+        $member->setRoles(['ROLE_MEMBER']);
+        $member->setStudentId('HTTT2211026');
         $member->setStatus('active');
         $member->setClassId('HTTT2211');
         $member->setFaculty('Hệ thống thông tin');
@@ -74,72 +74,28 @@ class AppFixtures extends Fixture
         $users = [$admin, $treasurer, $member];
 
         $classID = [
-            // CNCD
             "CNCD2211", "CNCD2311", "CNCD2411",
-            
-            // CNĐĐ
             "CNĐĐ2211", "CNĐĐ2311", "CNĐĐ2411",
-            
-            // CNĐT
             "CNĐT2211", "CNĐT2311", "CNĐT2411",
-            
-            // CNSH
             "CNSH2211", "CNSH2311", "CNSH2411",
-            
-            // CNTP
             "CNTP2211", "CNTP2311", "CNTP2411",
-            
-            // CNTT
             "CNTT2211", "CNTT2311", "CNTT2411",
-            
-            // CNXD
             "CNXD2211", "CNXD2311", "CNXD2411",
-            
-            // CNHH
             "CNHH2211", "CNHH2311", "CNHH2411",
-            
-            // HTTT
             "HTTT2211", "HTTT2311", "HTTT2411",
-            
-            // KETO
             "KETO2211", "KETO2311", "KETO2411",
-            
-            // KTNL
             "KTNL2211", "KTNL2311", "KTNL2411",
-            
-            // KTPM
             "KTPM2211", "KTPM2311", "KTPM2411",
-            
-            // KTHC
             "KTHC2211", "KTHC2311", "KTHC2411",
-            
-            // KHDL
             "KHDL2211", "KHDL2311", "KHDL2411",
-            
-            // KHMT
             "KHMT2211", "KHMT2311", "KHMT2411",
-            
-            // LQCC
             "LQCC2211", "LQCC2311", "LQCC2411",
-            
-            // LUAT
             "LUAT2211", "LUAT2311", "LUAT2411",
-            
-            // NGNA
             "NGNA2211", "NGNA2311", "NGNA2411",
-            
-            // QLCN
             "QLCN2211", "QLCN2311", "QLCN2411",
-            
-            // QLXD
             "QLXD2211", "QLXD2311", "QLXD2411",
-            
-            // QTKD
             "QTKD2211", "QTKD2311", "QTKD2411",
-            
-            // TCNH
             "TCNH2211", "TCNH2311", "TCNH2411",
-
         ];
 
         $facultyMapping = [
@@ -149,7 +105,7 @@ class AppFixtures extends Fixture
             'Kinh tế - Quản lý công nghiệp' => ['KETO', 'LQCC', 'QLCN', 'QTKD', 'TCNH'],
             'Kỹ thuật cơ khí' => ['CNCD'],
             'Kỹ thuật xây dựng' => ['CNXD', 'QLXD'],
-            'Điện - Điện tử' => ['CNĐĐ', 'CNĐT'],
+            'Điện - Điện tử' => ['CNDD', 'CNDT'],
         ];
 
         $userss = [];
@@ -162,17 +118,14 @@ class AppFixtures extends Fixture
             $user->setClassId($faker->randomElement($classID));
             $user->setStudentId($faker->unique()->regexify($user->getClassId() . '[0-9]{3}'));
             $user->setEmail('user'.$user->getStudentId()."@student.ctuet.edu.vn");
-            // Lấy tiền tố từ ClassId
             $classPrefix = substr($user->getClassId(), 0, 4);
-            // Tìm Faculty dựa trên mảng ánh xạ
-            $faculty = 'CTUT'; // Giá trị mặc định
+            $faculty = 'CTUT';
             foreach ($facultyMapping as $facultyName => $prefixes) {
                 if (in_array($classPrefix, $prefixes)) {
                     $faculty = $facultyName;
                     break;
                 }
             }
-            // Gán Faculty cho user
             $user->setFaculty($faculty);
             $user->setContactInfo('Phone: ' . $faker->phoneNumber() . ', Address: ' . $faker->address());
             $createdAt = $faker->dateTimeThisYear();
@@ -181,8 +134,8 @@ class AppFixtures extends Fixture
             $user->setUpdateAt($updatedAt);
             $user->setGoogleId('google_id_' . $faker->uuid());
             $users[] = $user;
-            $manager->persist($user);
             $userss[] = $user;
+            $manager->persist($user);
         }
 
         // Tạo Activities (5-7 record cho mỗi user cố định, bằng tiếng Việt)
@@ -284,7 +237,7 @@ class AppFixtures extends Fixture
 
         foreach ($fundSamples as $sample) {
             $fund = new Funds();
-            $fund->setCreatedBy($treasurer); // Chỉ TREASURER tạo
+            $fund->setCreatedBy($treasurer);
             $fund->setTransactionType($sample['type']);
             $fund->setAmount($sample['amount']);
             $fund->setDate($faker->dateTimeThisYear());
@@ -296,31 +249,76 @@ class AppFixtures extends Fixture
             $manager->persist($fund);
         }
 
-        // Tạo Proposals (5-7 record cho mỗi user cố định)
+        // Tạo Proposals (5 record do user $member tạo)
         $proposalSamples = [
-            ['type' => 'event', 'content' => 'Đề xuất tổ chức ngày hội thể thao'],
-            ['type' => 'purchase', 'content' => 'Mua máy chiếu cho lớp học'],
-            ['type' => 'other', 'content' => 'Tổ chức buổi giao lưu với doanh nghiệp'],
-            ['type' => 'event', 'content' => 'Đề xuất hội thảo AI'],
-            ['type' => 'purchase', 'content' => 'Mua sách tham khảo cho thư viện'],
-            ['type' => 'other', 'content' => 'Tăng cường hoạt động ngoại khóa'],
-            ['type' => 'event', 'content' => 'Tổ chức giải chạy marathon']
+            [
+                'type' => 'general',
+                'content' => 'Đề xuất tổ chức ngày hội thể thao cho sinh viên toàn trường.',
+                'status' => 'pending',
+                'proposed_changes' => null,
+            ],
+            [
+                'type' => 'general',
+                'content' => 'Đề xuất mua thêm sách tham khảo cho thư viện khoa Hệ thống thông tin.',
+                'status' => 'pending',
+                'proposed_changes' => null,
+            ],
+            [
+                'type' => 'edit_profile',
+                'content' => 'Đề xuất chỉnh sửa thông tin cá nhân',
+                'status' => 'pending',
+                'proposed_changes' => [
+                    'name' => 'Nguyễn Trần Anh Khoa (Updated)',
+                    'email' => 'khoa.updated@gmail.com',
+                    'contact_info' => 'Phone: 0912345678, Address: 123 Nguyễn Huệ, TP.HCM',
+                ],
+            ],
+            [
+                'type' => 'edit_profile',
+                'content' => 'Đề xuất chỉnh sửa thông tin cá nhân',
+                'status' => 'pending',
+                'proposed_changes' => [
+                    'class_id' => 'HTTT2311',
+                    'faculty' => 'Công nghệ Thông tin',
+                ],
+            ],
+            [
+                'type' => 'general',
+                'content' => 'Đề xuất tổ chức hội thảo về AI và Machine Learning.',
+                'status' => 'pending',
+                'proposed_changes' => null,
+            ],
         ];
 
-        foreach ($userss as $user) {
-            foreach ($proposalSamples as $sample) {
-                $proposal = new Proposals();
-                $proposal->setUserId($user);
-                $proposal->setType($sample['type']);
-                $proposal->setContent($sample['content']);
-                $proposal->setStatus($faker->randomElement(['pending', 'approved', 'rejected']));
-                $createdAt = $faker->dateTimeThisYear();
-                $updatedAt = $faker->dateTimeBetween($createdAt, 'now');
-                $proposal->setCreatedAt($createdAt);
-                $proposal->setUpdatedAt($updatedAt);
-                $manager->persist($proposal);
-            }
+        foreach ($proposalSamples as $sample) {
+            $proposal = new Proposals();
+            $proposal->setUserId($member); // Sử dụng $member làm người đề xuất
+            $proposal->setType($sample['type']);
+            $proposal->setContent($sample['content']);
+            $proposal->setStatus($sample['status']);
+            $proposal->setProposedChanges($sample['proposed_changes']);
+            $createdAt = $faker->dateTimeThisYear();
+            $updatedAt = $faker->dateTimeBetween($createdAt, 'now');
+            $proposal->setCreatedAt($createdAt);
+            $proposal->setUpdatedAt($updatedAt);
+            $manager->persist($proposal);
         }
+
+        // Xóa phần tạo Proposals cũ
+        // foreach ($userss as $user) {
+        //     foreach ($proposalSamples as $sample) {
+        //         $proposal = new Proposals();
+        //         $proposal->setUserId($user);
+        //         $proposal->setType($sample['type']);
+        //         $proposal->setContent($sample['content']);
+        //         $proposal->setStatus($faker->randomElement(['pending', 'approved', 'rejected']));
+        //         $createdAt = $faker->dateTimeThisYear();
+        //         $updatedAt = $faker->dateTimeBetween($createdAt, 'now');
+        //         $proposal->setCreatedAt($createdAt);
+        //         $proposal->setUpdatedAt($updatedAt);
+        //         $manager->persist($proposal);
+        //     }
+        // }
 
         // Tạo Attendances (5-7 record cho mỗi user cố định)
         foreach ($users as $user) {
@@ -354,21 +352,19 @@ class AppFixtures extends Fixture
             $manager->persist($activity);
         }
 
-        // note: Tạo dữ liệu mẫu cho bảng Proposals
-        for ($i = 0; $i < 15; $i++) {
-            $proposal = new Proposals();
-            $proposal->setUserId($faker->randomElement($users));
-            $proposal->setType($faker->randomElement(['event', 'purchase', 'other']));
-            $proposal->setContent($faker->paragraph());
-            $proposal->setStatus($faker->randomElement(['pending', 'approved', 'rejected']));
-            $proposal->setCreatedAt(new \DateTime());
-            $proposal->setUpdatedAt(new \DateTime());
+        // Xóa phần tạo Proposals mẫu cũ
+        // for ($i = 0; $i < 15; $i++) {
+        //     $proposal = new Proposals();
+        //     $proposal->setUserId($faker->randomElement($users));
+        //     $proposal->setType($faker->randomElement(['event', 'purchase', 'other']));
+        //     $proposal->setContent($faker->paragraph());
+        //     $proposal->setStatus($faker->randomElement(['pending', 'approved', 'rejected']));
+        //     $proposal->setCreatedAt(new \DateTime());
+        //     $proposal->setUpdatedAt(new \DateTime());
+        //     $manager->persist($proposal);
+        // }
 
-            $manager->persist($proposal);
-        }
-        // end note
-
-        // note: Tạo dữ liệu mẫu cho bảng Attendances
+        // Tạo dữ liệu mẫu cho bảng Attendances
         for ($i = 0; $i < 100; $i++) {
             $attendance = new Attendances();
             $attendance->setUserId($faker->randomElement($userss));
@@ -377,10 +373,8 @@ class AppFixtures extends Fixture
             $attendance->setStatus($faker->randomElement(['present', 'absent', 'late']));
             $attendance->setRemark($faker->sentence());
             $attendance->setMarkedAt(new \DateTime());
-
             $manager->persist($attendance);
         }
-        // end note
 
         $manager->flush();
     }
