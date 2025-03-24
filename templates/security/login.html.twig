@@ -50,11 +50,12 @@
                                         <div class="mb-3">
                                             Bạn đã đăng nhập với tài khoản {{ app.user.studentId }}. 
                                             <a href="{{ path('logout') }}">Đăng xuất</a>
+                                            <a href="{{ path('home') }}" class="btn btn-sm btn-secondary">Về trang chủ</a>
                                         </div>
                                     {% else %}
                                         <form role="form">
                                             <div class="text-center">
-                                                <a href="{{ path('connect_google_start') }}" class="btn btn-lg btn-primary w-100 my-2 mb-2">
+                                                <a href="{{ path('connect_google_start') }}" class="btn btn-lg btn-primary btn-lg w-100">
                                                     <i class="fab fa-google me-2"></i> Đăng nhập bằng Google
                                                 </a>
                                             </div>
