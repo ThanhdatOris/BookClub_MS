@@ -22,12 +22,21 @@
                 </div> #}
                 <ul class="navbar-nav justify-content-end">
                     <li class="nav-item d-flex align-items-center">
-                            <button class="btn btn-success text-light font-weight-bold me-2 mb-0 d-none d-lg-flex">
-                                <i class="fa fa-user me-sm-1"></i>
-                                {{ app.user.name }} ({{ app.user.role|replace({'ROLE_': ''})|capitalize }})
-                            </button>
+                            <a href="{{ path('profile', { studentId: app.user.studentId}) }}" class="btn btn-success text-light font-weight-bold me-2 mb-0 d-none d-lg-flex">
+                                <div class="pe-1">
+                                    <i class="fa fa-user me-sm-1"></i>
+                                </div>
+                                <span>
+                                    {{ app.user.name }} ({{ app.user.role|replace({'ROLE_': ''})|capitalize }})
+                                </span>
+                            </a>
                             <a href="{{ path('logout') }}" class="btn btn-danger font-weight-bold mb-0 d-none d-lg-flex">
-                                Đăng xuất
+                                <div class"pe-1">
+                                    <i class="fa fa-sign-out-alt me-sm-1"></i>
+                                </div>
+                                <span>
+                                    Đăng xuất
+                                </span>
                             </a>
                     </li>
                     <li class="nav-item d-xl-none ps-3 d-flex align-items-center">

@@ -1,15 +1,10 @@
 {% block head %}
-    <title>
-        {% block title %}Đăng nhập{% endblock %}
-    </title>
+    <title>{% block title %}Đăng nhập{% endblock %}</title>
     <!-- Fonts and icons -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-    <!-- Nucleo Icons -->
     <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-icons.css" rel="stylesheet" />
     <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-svg.css" rel="stylesheet" />
-    <!-- Font Awesome Icons -->
     <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-    <!-- CSS Files -->
     <link id="pagestyle" href="{{ asset('assets/styles/argon-dashboard-SIGT4pJ.css') }}" rel="stylesheet" />
     <style>
         .svg-bg {
@@ -26,10 +21,11 @@
             <div class="page-header min-vh-100">
                 <div class="container">
                     <div class="row">
-                        <div class="col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-lg-0 mx-auto">
+                        <!-- Login Form Section -->
+                        <div class="col-lg-6 col-md-8 col-sm-12 d-flex flex-column mx-lg-0 mx-auto">
                             <div class="card card-plain">
                                 <div class="card-header pb-0 text-start">
-                                    <h4 class="font-weight-bolder text-center text-primary ">Đăng nhập</h4>
+                                    <h4 class="font-weight-bolder text-center text-primary">Đăng nhập</h4>
                                     <div class="d-flex justify-content-center">
                                         <img class="w-50" src="{{ asset('assets/img/illustrations/icon-documentation-DcItuRq.svg') }}" alt="sidebar_illustration">
                                     </div>
@@ -52,13 +48,14 @@
 
                                     {% if app.user %}
                                         <div class="mb-3">
-                                            Bạn đã đăng nhập với tài khoản {{ app.user.studentId }}. <a href="{{ path('logout') }}">Đăng xuất</a>
+                                            Bạn đã đăng nhập với tài khoản {{ app.user.studentId }}. 
+                                            <a href="{{ path('logout') }}">Đăng xuất</a>
                                         </div>
                                     {% else %}
                                         <form role="form">
                                             <div class="text-center">
                                                 <a href="{{ path('connect_google_start') }}" class="btn btn-lg btn-primary w-100 my-2 mb-2">
-                                                    <i class="fab fa-google me-22"></i> Đăng nhập bằng Google
+                                                    <i class="fab fa-google me-2"></i> Đăng nhập bằng Google
                                                 </a>
                                             </div>
                                         </form>
@@ -71,9 +68,10 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 end-0 text-center justify-content-center flex-column">
-                            {# <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden" style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/signin-ill.jpg'); background-size: cover;"> #}
-                            <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden svg-bg" style="background-size: cover;">
+
+                        <!-- Illustration Section -->
+                        <div class="col-lg-6 d-lg-flex d-none h-100 my-auto pe-0 position-absolute top-0 end-0 text-center justify-content-center flex-column">
+                            <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-center overflow-hidden svg-bg">
                                 <span class="mask bg-gradient-primary opacity-6"></span>
                                 <h4 class="mt-5 text-white font-weight-bolder position-relative">CLB Sinh Viên Yêu Thích Sách</h4>
                                 <p class="text-white position-relative">"Sách là ngọn đèn bất diệt của trí tuệ con người"</p>
@@ -84,6 +82,7 @@
             </div>
         </section>
     </main>
+
     <!-- Core JS Files -->
     <script src="../assets/js/core/popper.min-Dg1zdfO.js"></script>
     <script src="../assets/js/core/bootstrap.min-mJlmV6i.js"></script>
@@ -92,16 +91,10 @@
     <script>
         var win = navigator.platform.indexOf('Win') > -1;
         if (win && document.querySelector('#sidenav-scrollbar')) {
-            var options = {
-                damping: '0.5'
-            }
+            var options = { damping: '0.5' };
             Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
         }
     </script>
-    <!-- Github buttons -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <!-- Control Center for Argon Dashboard -->
     <script src="../assets/js/argon-dashboard.min-9OEnVK4.js?v=2.1.0"></script>
 {% endblock %}
-
-</html>

@@ -1,8 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Trang chủ{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block body %}
+
 <div class="container-fluid py-4">
     <!-- Thông báo flash -->
     <div aria-live="polite" aria-atomic="true" class="position-relative">
@@ -166,7 +167,7 @@
                 <div id="carouselExampleCaptions" class="carousel slide h-100" data-bs-ride="carousel">
                     <div class="carousel-inner border-radius-lg h-100">
                         {% for activity in recentActivities %}
-                            <div class="carousel-item h-100 {{ loop.first ? 'active' : '' }}" style="background-image: url('{{ activity.image ?? asset('assets/bg-laPfGiy.jpg') }}'); background-size: cover;">
+                            <div class="carousel-item h-100 {{ loop.first ? 'active' : '' }}" style="background-image: url('{{ activity.image ?? asset('assets/img/bg-laPfGiy.jpg') }}'); background-size: cover;">
                                 <div class="carousel-caption d-none d-md-block bottom-0 text-start start-0 ms-5">
                                     <div class="icon icon-shape icon-sm bg-white text-center border-radius-md mb-3">
                                         <i class="fas fa-calendar-alt text-dark opacity-10"></i>
@@ -202,7 +203,8 @@
 
     <!-- Bảng: Đề xuất đang chờ xử lý -->
     <div class="row mt-4">
-        <div class="col-12">
+        <!-- Bảng đề xuất -->
+        <div class="col-lg-8">
             <div class="card shadow-sm">
                 <div class="card-header pb-0">
                     <div class="d-flex justify-content-between align-items-center">
@@ -218,51 +220,20 @@
                         <table class="table table-hover align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <a href="#" class="sort-link" data-sort="type">Tiêu đề</a>
-                                    </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <a href="#" class="sort-link" data-sort="userName">Người đề xuất</a>
-                                    </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                        <a href="#" class="sort-link" data-sort="createdAt">Ngày tạo</a>
-                                    </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center" style="width: 25%;">Tiêu đề</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center" style="width: 25%;">Người đề xuất</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center" style="width: 25%;">Ngày tạo</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center" style="width: 25%;">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody id="proposalsTableBody">
                                 {% for proposal in pendingProposals %}
-                                    <tr data-url="{{ path('app_proposals_show', {'id': proposal.id}) }}" data-id="{{ proposal.id }}" style="cursor: pointer;">
-                                        <td>
-                                            <div class="d-flex px-2 py-1">
-                                                <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-sm">{{ proposal.type }}</h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <p class="text-xs font-weight-bold mb-0">{{ proposal.userId.name }}</p>
-                                        </td>
-                                        <td>
-                                            <p class="text-xs font-weight-bold mb-0">{{ proposal.createdAt|date('Y-m-d') }}</p>
-                                        </td>
-                                        <td>
-                                            <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
-                                            <a href="{{ path('app_proposals_edit', {'id': proposal.id}) }}" class="btn btn-sm btn-primary mb-0" onclick="event.stopPropagation();">Sửa</a>
-                                            {% if is_granted('ROLE_ADMIN') %}
-                                                <form method="post" action="{{ path('app_proposals_approve', {'id': proposal.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn phê duyệt đề xuất này?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ proposal.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-success mb-0" onclick="event.stopPropagation();">Phê duyệt</button>
-                                                </form>
-                                                <form method="post" action="{{ path('app_proposals_reject', {'id': proposal.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn từ chối đề xuất này?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ proposal.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-danger mb-0" onclick="event.stopPropagation();">Từ chối</button>
-                                                </form>
-                                                <form method="post" action="{{ path('app_proposals_delete', {'id': proposal.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đề xuất này?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ proposal.id) }}">
-                                                    <button type="submit" class="btn btn-sm btn-danger mb-0" onclick="event.stopPropagation();">Xóa</button>
-                                                </form>
-                                            {% endif %}
+                                    <tr>
+                                        <td class="text-center text-nowrap">{{ proposal.type }}</td>
+                                        <td class="text-center text-nowrap">{{ proposal.userId.name }}</td>
+                                        <td class="text-center text-nowrap">{{ proposal.createdAt|date('Y-m-d') }}</td>
+                                        <td class="text-center">
+                                            <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-sm btn-info mb-0">Xem</a>
                                         </td>
                                     </tr>
                                 {% else %}
@@ -273,17 +244,27 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- Phân trang client-side -->
-                    <div class="navigation mt-4 d-flex justify-content-center">
-                        <nav>
-                            <ul class="pagination" id="proposalsPagination"></ul>
-                        </nav>
-                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
+        <!-- Nội dung bên phải -->
+        <div class="col-lg-4">
+            <div class="col-12 h-100 my-auto pe-0 position-relative text-center justify-content-center flex-column">
+                <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-between overflow-hidden" style="background-image: url('{{ asset('assets/img/bg-iN96iui.png') }}'); background-size: cover;">
+                    <span class="mask bg-gradient-primary opacity-6"></span>
+                    <div class="pt-5">
+                        <h4 class="text-white font-weight-bolder position-relative">CLB Sinh Viên Yêu Thích Sách</h4>
+                        <p class="text-white position-relative">"Sách là ngọn đèn bất diệt của trí tuệ con người"</p>
+                    </div>
+                </div>
+            </div>
+            <p class="text-sm text-muted mx-auto">
+                Tìm hiểu thêm về chúng tôi tại 
+                <a href="https://www.facebook.com/profile.php?id=100048446863883" class="text-primary text-gradient font-weight-bold">CTUT'S BOOKCLUB HOMEPAGE</a>
+            </p>
+        </div>
+    </div>
     <!-- Include table-layout.js -->
     <script src="{{ asset('js/table-layout.js') }}"></script>
 
@@ -351,7 +332,7 @@
                             ticks: {
                                 display: true,
                                 padding: 10,
-                                color: '#fbfbfb',
+                                color: '#000',
                                 font: {
                                     size: 11,
                                     family: 'Open Sans',
@@ -398,14 +379,7 @@
                             type: '{{ proposal.type|e('js') }}',
                             userName: '{{ proposal.userId.name|e('js') }}',
                             createdAt: '{{ proposal.createdAt|date('Y-m-d') }}',
-                            detailUrl: '{{ path('app_proposals_show', {'id': proposal.id}) }}',
-                            editUrl: '{{ path('app_proposals_edit', {'id': proposal.id}) }}',
-                            approveUrl: '{{ path('app_proposals_approve', {'id': proposal.id}) }}',
-                            rejectUrl: '{{ path('app_proposals_reject', {'id': proposal.id}) }}',
-                            deleteUrl: '{{ path('app_proposals_delete', {'id': proposal.id}) }}',
-                            csrfTokenApprove: '{{ csrf_token('approve' ~ proposal.id)|e('js') }}',
-                            csrfTokenReject: '{{ csrf_token('reject' ~ proposal.id)|e('js') }}',
-                            csrfTokenDelete: '{{ csrf_token('delete' ~ proposal.id)|e('js') }}'
+                            detailUrl: '{{ path('app_proposals_show', {'id': proposal.id}) }}'
                         },
                     {% endfor %}
                 ],
@@ -431,24 +405,7 @@
                         formatter: (value, rowData) => {
                             let actions = `
                                 <a href="${rowData.detailUrl}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
-                                <a href="${rowData.editUrl}" class="btn btn-sm btn-primary mb-0" onclick="event.stopPropagation();">Sửa</a>
                             `;
-                            if (isAdmin) {
-                                actions += `
-                                    <form method="post" action="${rowData.approveUrl}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn phê duyệt đề xuất này?');">
-                                        <input type="hidden" name="_token" value="${rowData.csrfTokenApprove}">
-                                        <button type="submit" class="btn btn-sm btn-success mb-0" onclick="event.stopPropagation();">Phê duyệt</button>
-                                    </form>
-                                    <form method="post" action="${rowData.rejectUrl}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn từ chối đề xuất này?');">
-                                        <input type="hidden" name="_token" value="${rowData.csrfTokenReject}">
-                                        <button type="submit" class="btn btn-sm btn-danger mb-0" onclick="event.stopPropagation();">Từ chối</button>
-                                    </form>
-                                    <form method="post" action="${rowData.deleteUrl}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đề xuất này?');">
-                                        <input type="hidden" name="_token" value="${rowData.csrfTokenDelete}">
-                                        <button type="submit" class="btn btn-sm btn-danger mb-0" onclick="event.stopPropagation();">Xóa</button>
-                                    </form>
-                                `;
-                            }
                             return actions;
                         }
                     }
