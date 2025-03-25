@@ -49,15 +49,6 @@
             <h3 class="text-white">Chào bạn!</h3>
             <p class="text-white">Vui lòng <a href="{{ path('app_login') }}" class="text-primary">đăng nhập</a> để tiếp tục.</p>
         {% endif %}
-        <div class="mt-3">
-            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
-                <a href="{{ path('app_funds_index') }}" class="btn btn-primary me-2">Quản lý quỹ</a>
-            {% endif %}
-            {% if is_granted('ROLE_ADMIN') %}
-                <a href="{{ path('app_users_index') }}" class="btn btn-primary me-2">Quản lý thành viên</a>
-                <a href="{{ path('app_activities_index') }}" class="btn btn-primary">Quản lý hoạt động</a>
-            {% endif %}
-        </div>
     </div>
 
     <!-- Thống kê nhanh -->
@@ -243,6 +234,11 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <div class="navigation mt-4 d-flex justify-content-center">
+                            <nav>
+                                <ul class="pagination" id="attendancesPagination"></ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -250,30 +246,19 @@
 
         <!-- Nội dung bên phải -->
         <div class="col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-header pb-0">
-                    <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Thông tin</h6>
+            <div class="col-12 h-100 my-auto pe-0 position-relative text-center d-flex justify-content-center flex-column">
+                <div class="mx-0 my-0 h-100 m-3 px-7 border-radius-lg overflow-hidden" style="background-image: url('{{ asset('assets/img/curved-images/curved5-small-dDvJ5up.jpg') }}'); background-size: cover;">
+                    <div class="pt-5">
+                        <h4 class="text-white font-weight-bolder position-relative">CLB Sinh Viên Yêu Thích Sách</h4>
+                        <p class="text-white position-relative">"Sách là ngọn đèn bất diệt của trí tuệ con người"</p>
+                    </div>
                 </div>
-                <div class="card-body p-3">
-                    <p class="text-sm text-muted">Để xem chi tiết hoặc xử lý đề xuất, vui lòng chọn một đề xuất từ bảng bên trái.</p>
-                </div>
+                <p class="text-sm text-muted mt-3">
+                    Tìm hiểu thêm về chúng tôi tại 
+                    <a href="https://www.facebook.com/profile.php?id=100048446863883" class="text-primary text-gradient font-weight-bold">CTUT'S BOOKCLUB HOMEPAGE</a>
+                </p>
             </div>
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <div class="col-12 h-100 my-auto pe-0 position-relative text-center d-flex justify-content-center flex-column">
-            <div class="position-relative bg-gradient-primary h-100 m-3 px-7 border-radius-lg d-flex flex-column justify-content-between overflow-hidden" style="background-image: url('{{ asset('assets/img/bg-iN96iui.png') }}'); background-size: cover;">
-                <span class="mask bg-gradient-primary opacity-6"></span>
-                <div class="pt-5">
-                    <h4 class="text-white font-weight-bolder position-relative">CLB Sinh Viên Yêu Thích Sách</h4>
-                    <p class="text-white position-relative">"Sách là ngọn đèn bất diệt của trí tuệ con người"</p>
-                </div>
-            </div>
-            <p class="text-sm text-muted mt-3">
-                Tìm hiểu thêm về chúng tôi tại 
-                <a href="https://www.facebook.com/profile.php?id=100048446863883" class="text-primary text-gradient font-weight-bold">CTUT'S BOOKCLUB HOMEPAGE</a>
-            </p>
-        </div>
+        </div>  
     </div>
     <!-- Include table-layout.js -->
     <script src="{{ asset('js/table-layout.js') }}"></script>
