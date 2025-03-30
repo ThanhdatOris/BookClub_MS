@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Proposals Index{% endblock %}
+{% block title %}Đề xuấtxuất{% endblock %}
 
 {% block body %}
 <div class="container-fluid py-4">
@@ -8,7 +8,10 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header pb-0">
-                    <h6>Danh sách đề xuất</h6>
+                    <h6 class="d-inline-block">Danh sách đề xuất</h6>
+                    {% if is_granted('ROLE_MEMBER') and not is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_proposals_new') }}" class="btn btn-primary btn-sm d-inline-block ms-3">Tạo đề xuất mới</a>
+                    {% endif %}
                 </div>
                 <div class="card-body px-0 pt-0 pb-2">
                     <div class="table-responsive p-0">
@@ -52,12 +55,16 @@
                                         <td>{{ proposal.createdAt ? proposal.createdAt|date('Y-m-d H:i:s') : '' }}</td>
                                         {# <td>{{ proposal.updatedAt ? proposal.updatedAt|date('Y-m-d H:i:s') : '' }}</td> #}
                                         <td class="d-flex justify-content-center">
-                                            <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-info btn-sm mb-0">Xem</a>
+                                            {% if is_granted('ROLE_ADMIN') %}
+                                                <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-info btn-sm mb-0">Xem</a>
+                                            {% elseif is_granted('ROLE_MEMBER') and proposal.userId == app.user %}
+                                                <a href="{{ path('app_proposals_edit', {'id': proposal.id}) }}" class="btn btn-warning btn-sm mb-0">Sửa</a>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% else %}
                                     <tr>
-                                        <td colspan="7" class="text-center">No records found</td>
+                                        <td colspan="7" class="text-center">Không có đề xuất nào</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
