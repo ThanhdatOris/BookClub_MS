@@ -73,46 +73,11 @@ class ProfileController extends AbstractController
     }
 
     #[Route('/profile/{studentId}/suggest', name: 'profile_suggest')]
-    public function suggest(string $studentId, Request $request, ManagerRegistry $doctrine): Response
+    public function suggest(string $studentId): Response
     {
-        $user = $doctrine->getRepository(Users::class)->findOneBy(['student_id' => $studentId]);
-
-        if (!$user) {
-            throw new NotFoundHttpException('Người dùng không tồn tại.');
-        }
-
-        if (!$this->isGranted('ROLE_USER') || $this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_TREASURER') || 
-            ($this->getUser() && $this->getUser()->getId() === $user->getId())) {
-            $this->addFlash('error', 'Bạn không có quyền đề xuất chỉnh sửa cho người dùng này.');
-            return $this->redirectToRoute('profile', ['studentId' => $studentId]);
-        }
-
-        $suggestion = $request->request->get('suggestion');
-        if ($request->isMethod('POST') && $suggestion) {
-            $filesystem = new Filesystem();
-            $suggestionsFile = $this->getParameter('kernel.project_dir') . '/var/suggestions.json';
-            
-            $suggestions = [];
-            if ($filesystem->exists($suggestionsFile)) {
-                $suggestions = json_decode(file_get_contents($suggestionsFile), true);
-            }
-
-            $suggestions[] = [
-                'suggestedBy' => $this->getUser()->getStudentId(),
-                'user' => $user->getStudentId(),
-                'suggestion' => $suggestion,
-                'createdAt' => (new \DateTime())->format('Y-m-d H:i:s'),
-                'status' => 'pending',
-            ];
-
-            $filesystem->dumpFile($suggestionsFile, json_encode($suggestions, JSON_PRETTY_PRINT));
-
-            $this->addFlash('success', 'Đề xuất chỉnh sửa đã được gửi!');
-            return $this->redirectToRoute('profile', ['studentId' => $user->getStudentId()]);
-        }
-
-        return $this->render('profile/suggest.html.twig', [
-            'user' => $user,
+        return $this->redirectToRoute('app_proposals_new', [
+            'type' => 'edit_profile',
+            'studentId' => $studentId,
         ]);
     }
 

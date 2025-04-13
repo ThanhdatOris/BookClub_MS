@@ -40,4 +40,18 @@ class UsersRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    /**
+     * Find all users ordered by ID ascending and status (active first, then inactive).
+     *
+     * @return Users[]
+     */
+    public function findAllOrderedByIdAndStatus(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->orderBy('u.status', 'ASC') // active (alphabetically > inactive)
+            ->addOrderBy('u.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

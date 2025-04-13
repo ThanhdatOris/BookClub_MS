@@ -1,0 +1,48 @@
+@startuml
+' File: SequenceMarkAttendance.puml
+
+actor "Ban Chủ nhiệm" as bcn
+boundary "UI: Quản lý điểm danh" as ui_attendance
+control "Ctrl: Quản lý điểm danh" as ctrl_attendance
+database "Database" as db
+
+activate bcn
+bcn -> ui_attendance: Mở chi tiết hoạt động từ danh sách
+activate ui_attendance
+
+bcn -> ui_attendance: Nhấn "Điểm danh"
+ui_attendance -> ctrl_attendance: Yêu cầu danh sách thành viên tham gia
+deactivate ui_attendance
+activate ctrl_attendance
+
+ctrl_attendance -> db: Lấy danh sách thành viên tham gia
+activate db
+db --> ctrl_attendance: Trả về danh sách thành viên
+deactivate db
+
+ctrl_attendance --> ui_attendance: Danh sách thành viên tham gia
+deactivate ctrl_attendance
+activate ui_attendance
+ui_attendance --> bcn: Hiển thị danh sách thành viên
+deactivate ui_attendance
+
+bcn -> ui_attendance: Chọn thành viên, đánh dấu trạng thái (có mặt/vắng mặt), thêm ghi chú
+activate ui_attendance
+ui_attendance -> ctrl_attendance: Gửi thông tin điểm danh
+deactivate ui_attendance
+activate ctrl_attendance
+
+ctrl_attendance -> db: Cập nhật thông tin điểm danh (trạng thái, ghi chú)
+activate db
+db --> ctrl_attendance: Xác nhận cập nhật thành công
+deactivate db
+
+ctrl_attendance --> ui_attendance: Thông báo "Điểm danh hoàn tất"
+deactivate ctrl_attendance
+activate ui_attendance
+ui_attendance --> bcn: Hiển thị thông báo "Điểm danh hoàn tất"
+deactivate ui_attendance
+
+deactivate bcn
+
+@enduml

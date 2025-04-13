@@ -28,9 +28,11 @@
                                             <input type="text" id="activitiesSearchInput" class="form-control me-2" placeholder="Tìm kiếm hoạt động..." style="max-width: 300px;">
                                             <button type="button" id="activitiesClearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
                                         </div>
-                                        <button type="button" class="btn btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addActivityModal">
-                                            <i class="fas fa-plus me-1"></i> Thêm hoạt động
-                                        </button>
+                                        {% if is_granted('ROLE_ADMIN') %}
+                                            <button type="button" class="btn btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+                                                <i class="fas fa-plus me-1"></i> Thêm hoạt động
+                                            </button>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <!-- Tabs -->

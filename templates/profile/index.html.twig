@@ -22,9 +22,9 @@
                             <p class="mb-0 fw-bold text-sm">{{ user.name }}</p>
                         </div>
                         <div class="col-md-4 text-end d-flex justify-content-end">
-                            {% if is_granted('ROLE_ADMIN') or (app.user and app.user.id == user.id and (is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER'))) %}
+                            {% if (app.user and app.user.id == user.id and (is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER'))) %}
                                 <a href="{{ path('profile_edit', {'studentId': user.studentId}) }}" class="btn btn-light btn-sm mb-0">Chỉnh sửa thông tin</a>
-                            {% elseif is_granted('ROLE_USER') %}
+                            {% else %}
                                 <a href="{{ path('profile_suggest', {'studentId': user.studentId}) }}" class="btn btn-warning btn-sm mb-0">Đề xuất chỉnh sửa</a>
                             {% endif %}
                         </div>

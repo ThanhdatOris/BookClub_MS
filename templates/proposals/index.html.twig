@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Đề xuấtxuất{% endblock %}
+{% block title %}Đề xuất{% endblock %}
 
 {% block body %}
 <div class="container-fluid py-4">
@@ -10,7 +10,7 @@
                 <div class="card-header pb-0">
                     <h6 class="d-inline-block">Danh sách đề xuất</h6>
                     {% if is_granted('ROLE_MEMBER') and not is_granted('ROLE_ADMIN') %}
-                        <a href="{{ path('app_proposals_new') }}" class="btn btn-primary btn-sm d-inline-block ms-3">Tạo đề xuất mới</a>
+                        <a href="{{ path('app_proposals_new') }}" class="btn btn-primary btn-sm d-inline-block ms-3 mb-0">Tạo đề xuất mới</a>
                     {% endif %}
                 </div>
                 <div class="card-body px-0 pt-0 pb-2">

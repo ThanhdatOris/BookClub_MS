@@ -1,0 +1,63 @@
+@startuml
+' File: SequenceLoginLogoutOAuth2.puml
+
+actor User as user
+boundary "UI: Trang đăng nhập" as ui_login
+control "Ctrl: Quản lý đăng nhập" as ctrl_login
+participant "Google OAuth2" as google
+database "Database" as db
+
+activate user
+user -> ui_login: Truy cập trang đăng nhập
+activate ui_login
+
+user -> ui_login: Nhấn "Đăng nhập bằng Google"
+ui_login -> ctrl_login: Yêu cầu đăng nhập OAuth2
+deactivate ui_login
+activate ctrl_login
+
+ctrl_login -> google: Chuyển hướng đến xác thực Google
+activate google
+user -> google: Chọn tài khoản và xác nhận
+google --> ctrl_login: Trả về mã xác thực
+deactivate google
+
+ctrl_login -> db: Kiểm tra mã xác thực và thông tin người dùng
+activate db
+db --> ctrl_login: Trả về kết quả kiểm tra
+deactivate db
+
+alt#Gold #Pink Xác thực thất bại
+    ctrl_login --> ui_login: Thông báo lỗi
+    deactivate ctrl_login
+    activate ui_login
+    ui_login --> user: Hiển thị thông báo lỗi
+    deactivate ui_login
+else #LightBlue Xác thực thành công
+    ctrl_login --> ui_login: Chuyển hướng đến trang chính
+    deactivate ctrl_login
+    activate ui_login
+    ui_login --> user: Hiển thị trang chính
+    deactivate ui_login
+    
+    user -> ui_login: Nhấn "Đăng xuất"
+    activate ui_login
+    ui_login -> ctrl_login: Yêu cầu đăng xuất
+    deactivate ui_login
+    activate ctrl_login
+    
+    ctrl_login -> db: Kết thúc phiên
+    activate db
+    db --> ctrl_login: Xác nhận kết thúc phiên
+    deactivate db
+    
+    ctrl_login --> ui_login: Chuyển hướng về trang đăng nhập
+    deactivate ctrl_login
+    activate ui_login
+    ui_login --> user: Hiển thị trang đăng nhập
+    deactivate ui_login
+end
+
+deactivate user
+
+@enduml

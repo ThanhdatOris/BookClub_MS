@@ -3,53 +3,58 @@ left to right direction
 skinparam packageStyle rectangle
 
 actor "Thành viên" as Member
-actor "Ủy viên BCN" as UVBCN
-actor "Chủ nhiệm" as CN
-actor "Phó chủ nhiệm" as PCN
+actor "Quản trị viên" as BCN
+actor "Thủ quỹ" as Treasurer
+Treasurer -|> Member
 
 rectangle "Hệ thống quản lý CLB" {
     usecase "Đăng nhập/Đăng xuất" as UC1
     usecase "Xem thông tin cá nhân" as UC2
-    usecase "Cập nhật thông tin cá nhân" as UC3
-    usecase "Xem danh sách hoạt động" as UC4
-    usecase "Đăng ký tham gia hoạt động" as UC5
-    usecase "Xem lịch sử tham gia" as UC6
-    usecase "Gửi đề xuất/chỉnh sửa" as UC7
-    usecase "Điểm danh hoạt động" as UC8
-    usecase "Xử lý đề xuất" as UC9
-    usecase "Gửi thông báo" as UC10
-    usecase "Quản lý thành viên" as UC11
-    usecase "Thay đổi vai trò thành viên" as UC12
-    usecase "Quản lý hoạt động" as UC13
-    usecase "Quản lý quỹ" as UC14
+    usecase "Sửa thông tin cá nhân" as UC3
+    usecase "Đăng ký tham gia" as UC4
+    usecase "Xem hoạt động" as UC5
+    usecase "Điểm danh" as UC6
+    usecase "Gửi/chỉnh sửa đề xuất" as UC7
+    usecase UC8 as "Quản lý đề xuất
+    --
+    Xem, duyệt, từ chối"
+    
+    usecase UC9 as "Quản lý thành viên
+    --
+    Xem, thêm, sửa,
+    xóa, thay đổi vai trò"
+
+    usecase UC11 as "Quản lý hoạt động
+    --
+    Thêm, sửa, xóa"
+
+    usecase UC12 as "Quản lý quỹ
+    --
+    Thêm, sửa"
+
+
+    usecase "Xem thông tin quỹ" as UC13
 }
 
-UC1 <-- Member
-UC2 <-- Member
-UC3 <-- Member
-UC4 <-- Member
-UC5 <-- Member
-UC6 <-- Member
-UC7 <-- Member
+BCN -- UC1
+BCN -- UC3
+BCN -- UC8
+BCN -- UC9
+BCN -- UC11
+BCN -- UC13
 
-UVBCN --> UC1
-UVBCN --> UC2
-UVBCN --> UC4
-UVBCN --> UC8
-UVBCN --> UC9
-UVBCN --> UC10
+Member - UC1
+UC2 -- Member
+UC4 -- Member
+UC5 -- Member
+UC6 -- Member
+UC7 -- Member
 
-CN <|- UVBCN
-PCN <|- UVBCN
-
-CN --> UC11
-CN --> UC12
-CN --> UC13
-
-PCN --> UC13
-
-actor "Thủ quỹ" as Treasurer
-Treasurer <|- UVBCN
-Treasurer --> UC14
-
+UC12 -- Treasurer
+UC3 ..> UC2 : extend
+UC8 <.. UC7 : extend
+UC11 <.. UC4 : extend
+UC11 <.. UC5 : extend
+UC11 <.. UC6 : extend
+UC12 <. UC13 : extend
 @enduml

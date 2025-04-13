@@ -1,5 +1,13 @@
-{{ form_start(form) }}
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
     {{ form_row(form._token) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    {{ form_row(form.name, {'label': 'Họ tên', 'attr': {'class': 'form-control'}}) }}
+    {{ form_row(form.email, {'label': 'Email', 'attr': {'class': 'form-control'}}) }}
+    {{ form_row(form.role, {'label': 'Vai trò', 'attr': {'class': 'form-select'}}) }}
+    {% if app.user and app.user.id == form.vars.data.id %}
+        <div class="alert alert-warning mt-2">
+            Bạn không thể tự thay đổi vai trò của mình.
+        </div>
+    {% endif %}
+    {{ form_row(form.contactInfo, {'label': 'Thông tin liên hệ', 'attr': {'class': 'form-control'}}) }}
+    <button class="btn btn-primary mt-2">{{ button_label|default('Cập nhật') }}</button>
 {{ form_end(form) }}

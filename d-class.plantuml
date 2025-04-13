@@ -1,132 +1,107 @@
 @startuml
-skinparam classAttributeIconSize 0
+' skinparam monochrome true
+skinparam classAttributeIcon true
 left to right direction
-class User {
-    - id: int
-    - studentId: string
-    - name: string
-    - email: string
-    - password: string
-    - role: Role
-    - status: string
-    - class: string
-    - faculty: string
-    - contactInfo: string
-    - createdAt: DateTime
-    - updatedAt: DateTime
-    + login(): bool
-    + logout(): void
-    + updateProfile(): void
-    + submitProposal(proposal: Proposal): void
+
+' Lớp Users
+class Users {
+  +id: int <<PK>>
+  +student_id: string <<unique>>
+  +email: string <<unique>>
+  +name: string
+  +role: string
+  +status: string
+  +class_id: string <<nullable>>
+  +faculty: string <<nullable>>
+  +contact_info: text <<nullable>>
+  +created_at: DateTime
+  +updated_at: DateTime
+  +getUserIdentifier(): string
+  +getRoles(): array
 }
 
-enum Role {
-    MEMBER
-    UV_BCN
-    PRESIDENT
-    VICE_PRESIDENT
-    TREASURER
+' Lớp Activities
+class Activities {
+  +id: int <<PK>>
+  +title: string
+  +description: text <<nullable>>
+  +date: DateTime <<nullable>>
+  +time: DateTime <<nullable>>
+  +location: string <<nullable>>
+  +status: string
+  +image: string <<nullable>>
+  +created_by: int <<FK>>
+  +created_at: DateTime
+  +updated_at: DateTime
+  +addParticipant(participant: ActivityParticipant): void
+  +removeParticipant(participant: ActivityParticipant): void
 }
 
-class Member {
-    + viewActivities(): List<Activity>
-    + registerForActivity(activity: Activity): void
-    + viewParticipationHistory(): List<Activity>
+' Lớp Attendances
+class Attendances {
+  +id: int <<PK>>
+  +user_id: int <<FK>>
+  +activity_id: int <<FK>>
+  +status: string
+  +remark: text <<nullable>>
+  +marked_at: DateTime
+  +marked_by: int <<FK>>
+  +setStatus(status: string): void
 }
 
-class UV_BCN {
-    + processAttendance(activity: Activity): void
-    + processProposals(): void
-    + sendNotifications(message: string): void
+' Lớp Funds
+class Funds {
+  +id: int <<PK>>
+  +transaction_type: string
+  +amount: decimal
+  +date: DateTime
+  +description: text <<nullable>>
+  +created_by: int <<FK>>
+  +created_at: DateTime
+  +updated_at: DateTime
+  +setTransactionType(type: string): void
+  +setAmount(amount: decimal): void
 }
 
-class President {
-    + manageMembers(): void
-    + changeMemberRoles(member: User, newRole: Role): void
-    + manageActivities(): void
+' Lớp Proposals
+class Proposals {
+  +id: int <<PK>>
+  +user_id: int <<FK>>
+  +type: string
+  +content: text
+  +proposed_changes: json <<nullable>>
+  +status: string
+  +created_at: DateTime
+  +updated_at: DateTime
+  +setStatus(status: string): void
 }
 
-class VicePresident {
-    + manageActivities(): void
+' Lớp ActivityParticipant
+class ActivityParticipant {
+  +id: int <<PK>>
+  +activity_id: int <<FK>>
+  +user_id: int <<FK>>
+  +joined_at: DateTime
+  +status: string
+  +setJoinedAt(date: DateTime): void
 }
 
-class Treasurer {
-    + manageFunds(): void
-}
+' Mối quan hệ giữa các lớp
+Users "1" --> "0..*" Activities
+Users "1" --> "0..*" Attendances
+Users "1" --> "0..*" Attendances
+Activities "1" --> "0..*" Attendances
+Users "1" --> "0..*" Funds
+Users "1" --> "0..*" Proposals
+Users "1" --> "0..*" ActivityParticipant
+Activities "1" --> "0..*" ActivityParticipant
 
-class Activity {
-    - id: int
-    - title: string
-    - description: string
-    - date: DateTime
-    - time: Time
-    - location: string
-    - createdBy: User
-    - participants: List<User>
-    - status: string
-    - isDeleted: bool
-    - createdAt: DateTime
-    - updatedAt: DateTime
-    + create(): void
-    + update(): void
-    + softDelete(): void
-    + addParticipant(user: User): void
-    + removeParticipant(user: User): void
-}
-
-class Attendance {
-    - id: int
-    - user: User
-    - activity: Activity
-    - status: string
-    - remark: string
-    - markedAt: DateTime
-    + markAttendance(): void
-    + updateAttendance(status: string): void
-}
-
-class Fund {
-    - id: int
-    - transactionType: string
-    - amount: float
-    - date: DateTime
-    - description: string
-    - createdBy: User
-    - isDeleted: bool
-    - createdAt: DateTime
-    - updatedAt: DateTime
-    + addTransaction(): void
-    + updateTransaction(): void
-    + softDelete(): void
-}
-
-class Proposal {
-    - id: int
-    - user: User
-    - type: string
-    - content: string
-    - status: string
-    - createdAt: DateTime
-    - updatedAt: DateTime
-    + submit(): void
-    + approve(): void
-    + reject(): void
-}
-
-User <|-- Member
-User <|-- UV_BCN
-UV_BCN <|-- President
-UV_BCN <|-- VicePresident
-UV_BCN <|-- Treasurer
-
-User "1" -- "0..*" Proposal : submits
-User "1" -- "0..*" Attendance
-User "1" -- "0..*" Activity : creates
-Activity "1" -- "0..*" Attendance
-Activity "1" -- "0..*" User : participants
-Attendance "1" -- "1" Activity
-Attendance "1" -- "1" User
-Proposal "1" -- "1" User
-Fund "1" -- "1" User : createdBy
+' Ghi chú về vai trò
+note right of Users
+  Vai trò (role):
+  - MEMBER
+  - ADMINADMIN
+  - TREASURER
+end note
 
 @enduml

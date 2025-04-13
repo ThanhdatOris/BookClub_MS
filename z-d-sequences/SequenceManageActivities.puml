@@ -1,0 +1,64 @@
+@startuml
+' File: SequenceManageActivities.puml
+
+actor "Ban Chủ nhiệm" as bcn
+boundary "UI: Quản lý hoạt động" as ui_activities
+control "Ctrl: Quản lý hoạt động" as ctrl_activities
+database "Database" as db
+
+activate bcn
+bcn -> ui_activities: Nhấn "Quản lý hoạt động" trên menu
+activate ui_activities
+
+ui_activities -> ctrl_activities: Yêu cầu danh sách hoạt động
+deactivate ui_activities
+activate ctrl_activities
+
+ctrl_activities -> db: Lấy danh sách hoạt động
+activate db
+db --> ctrl_activities: Trả về danh sách hoạt động
+deactivate db
+
+ctrl_activities --> ui_activities: Danh sách hoạt động
+deactivate ctrl_activities
+activate ui_activities
+ui_activities --> bcn: Hiển thị danh sách hoạt động
+deactivate ui_activities
+
+bcn -> ui_activities: Nhấn "Thêm mới", nhập thông tin (tiêu đề, mô tả, ngày, giờ, địa điểm)
+activate ui_activities
+ui_activities -> ctrl_activities: Gửi thông tin hoạt động mới
+deactivate ui_activities
+activate ctrl_activities
+
+ctrl_activities -> db: Lưu hoạt động mới
+activate db
+db --> ctrl_activities: Xác nhận lưu thành công
+deactivate db
+
+ctrl_activities --> ui_activities: Thông báo "Thao tác thành công"
+deactivate ctrl_activities
+activate ui_activities
+ui_activities --> bcn: Hiển thị thông báo "Thao tác thành công"
+deactivate ui_activities
+
+bcn -> ui_activities: Chọn hoạt động, nhấn "Sửa" hoặc "Xóa"
+activate ui_activities
+ui_activities -> ctrl_activities: Gửi yêu cầu cập nhật hoặc xóa
+deactivate ui_activities
+activate ctrl_activities
+
+ctrl_activities -> db: Cập nhật hoặc xóa hoạt động
+activate db
+db --> ctrl_activities: Xác nhận thao tác thành công
+deactivate db
+
+ctrl_activities --> ui_activities: Thông báo "Thao tác thành công"
+deactivate ctrl_activities
+activate ui_activities
+ui_activities --> bcn: Hiển thị thông báo "Thao tác thành công"
+deactivate ui_activities
+
+deactivate bcn
+
+@enduml

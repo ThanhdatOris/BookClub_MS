@@ -1,0 +1,37 @@
+@startuml
+' File: ActivityAddNewActivity.puml
+
+start
+
+' Thiết lập thông tin ban đầu
+:BCN đăng nhập với vai trò quản trị viên;
+
+' Bắt đầu quy trình thêm hoạt động
+:BCN nhấn "Quản lý hoạt động" trên menu;
+:BCN nhấn "Thêm mới";
+
+' Nhập thông tin hoạt động
+repeat
+    :Nhập thông tin hoạt động;
+
+    ' Kiểm tra thông tin
+    if (Thông tin hợp lệ?) then (Có)
+        :Gán created_by = ID của BCN;
+        :Gán created_at = thời gian hiện tại;
+        :Gán updated_at = thời gian hiện tại;
+        :Gán status = "planned";
+    else (Không)
+        :Hiển thị thông báo lỗi;
+    endif
+repeat while (Thông tin không hợp lệ?)
+
+' Lưu vào cơ sở dữ liệu
+:Thêm hoạt động vào tbl:Activities;
+:Lưu thay đổi vào CSDL;
+
+' Thông báo kết quả
+:Hiển thị thông báo "Thao tác thành công";
+
+stop
+
+@enduml

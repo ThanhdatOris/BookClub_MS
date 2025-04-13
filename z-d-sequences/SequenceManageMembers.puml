@@ -1,0 +1,81 @@
+@startuml
+' File: SequenceManageMembers.puml
+
+actor "Ban Chủ nhiệm" as bcn
+boundary "UI: Quản lý thành viên" as ui_members
+control "Ctrl: Quản lý thành viên" as ctrl_members
+database "Database" as db
+
+activate bcn
+bcn -> ui_members: Nhấn "Quản lý thành viên" trên menu
+activate ui_members
+
+ui_members -> ctrl_members: Yêu cầu danh sách thành viên
+deactivate ui_members
+activate ctrl_members
+
+ctrl_members -> db: Lấy danh sách thành viên hiện tại
+activate db
+db --> ctrl_members: Trả về danh sách thành viên
+deactivate db
+
+ctrl_members --> ui_members: Danh sách thành viên
+deactivate ctrl_members
+activate ui_members
+ui_members --> bcn: Hiển thị danh sách thành viên
+deactivate ui_members
+
+bcn -> ui_members: Nhấn "Thêm mới", điền thông tin thành viên
+activate ui_members
+ui_members -> ctrl_members: Gửi thông tin thành viên mới
+deactivate ui_members
+activate ctrl_members
+
+ctrl_members -> db: Lưu thành viên mới
+activate db
+db --> ctrl_members: Xác nhận lưu thành công
+deactivate db
+
+ctrl_members --> ui_members: Thông báo "Cập nhật thành công"
+deactivate ctrl_members
+activate ui_members
+ui_members --> bcn: Hiển thị thông báo "Cập nhật thành công"
+deactivate ui_members
+
+bcn -> ui_members: Chọn thành viên, nhấn "Sửa" hoặc "Xóa"
+activate ui_members
+ui_members -> ctrl_members: Gửi yêu cầu cập nhật hoặc xóa mềm
+deactivate ui_members
+activate ctrl_members
+
+ctrl_members -> db: Cập nhật hoặc xóa mềm thông tin thành viên
+activate db
+db --> ctrl_members: Xác nhận thao tác thành công
+deactivate db
+
+ctrl_members --> ui_members: Thông báo "Cập nhật thành công"
+deactivate ctrl_members
+activate ui_members
+ui_members --> bcn: Hiển thị thông báo "Cập nhật thành công"
+deactivate ui_members
+
+bcn -> ui_members: Chọn thành viên, thay đổi vai trò (ví dụ: từ "Thành viên" thành "Thủ quỹ")
+activate ui_members
+ui_members -> ctrl_members: Gửi yêu cầu thay đổi vai trò
+deactivate ui_members
+activate ctrl_members
+
+ctrl_members -> db: Cập nhật vai trò thành viên
+activate db
+db --> ctrl_members: Xác nhận thay đổi thành công
+deactivate db
+
+ctrl_members --> ui_members: Thông báo "Cập nhật thành công"
+deactivate ctrl_members
+activate ui_members
+ui_members --> bcn: Hiển thị thông báo "Cập nhật thành công"
+deactivate ui_members
+
+deactivate bcn
+
+@enduml

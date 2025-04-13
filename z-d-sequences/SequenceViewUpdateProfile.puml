@@ -1,0 +1,47 @@
+@startuml
+' File: SequenceViewUpdateProfile.puml
+
+actor "Thành viên" as member
+boundary "UI: Thông tin cá nhân" as ui_profile
+control "Ctrl: Quản lý thông tin cá nhân" as ctrl_profile
+database "Database" as db
+
+activate member
+member -> ui_profile: Nhấn "Thông tin cá nhân" trên menu
+activate ui_profile
+
+ui_profile -> ctrl_profile: Yêu cầu thông tin cá nhân
+deactivate ui_profile
+activate ctrl_profile
+
+ctrl_profile -> db: Lấy thông tin cá nhân
+activate db
+db --> ctrl_profile: Trả về thông tin (mã số SV, họ tên, lớp, khoa, liên hệ)
+deactivate db
+
+ctrl_profile --> ui_profile: Thông tin cá nhân
+deactivate ctrl_profile
+activate ui_profile
+ui_profile --> member: Hiển thị thông tin cá nhân
+deactivate ui_profile
+
+member -> ui_profile: Nhấn "Chỉnh sửa" và điền thông tin mới
+activate ui_profile
+ui_profile -> ctrl_profile: Gửi thông tin chỉnh sửa
+deactivate ui_profile
+activate ctrl_profile
+
+ctrl_profile -> db: Lưu đề xuất chỉnh sửa
+activate db
+db --> ctrl_profile: Xác nhận lưu thành công
+deactivate db
+
+ctrl_profile --> ui_profile: Thông báo "Đề xuất đã được gửi"
+deactivate ctrl_profile
+activate ui_profile
+ui_profile --> member: Hiển thị thông báo "Đề xuất đã được gửi"
+deactivate ui_profile
+
+deactivate member
+
+@enduml

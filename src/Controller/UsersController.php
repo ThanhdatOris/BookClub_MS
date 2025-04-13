@@ -18,7 +18,7 @@ final class UsersController extends AbstractController
     public function index(UsersRepository $usersRepository): Response
     {
         return $this->render('users/index.html.twig', [
-            'users' => $usersRepository->findAll(),
+            'users' => $usersRepository->findAllOrderedByIdAndStatus(),
         ]);
     }
 
@@ -42,11 +42,30 @@ final class UsersController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_users_show', methods: ['GET'])]
-    public function show(Users $user): Response
+    #[Route('/{id}', name: 'app_users_show', methods: ['GET', 'POST'])]
+    public function show(Users $user, Request $request, EntityManagerInterface $entityManager): Response
     {
+        $editForm = $this->createForm(UsersType::class, $user);
+        $editForm->handleRequest($request);
+
+        if ($editForm->isSubmitted() && $editForm->isValid()) {
+            $currentUser = $this->getUser();
+            if ($currentUser instanceof Users && $currentUser->getId() === $user->getId()) {
+                $originalRole = $entityManager->getUnitOfWork()->getOriginalEntityData($user)['role'] ?? $user->getRole();
+                if ($user->getRole() !== $originalRole) {
+                    $this->addFlash('warning', 'Bạn không được phép tự thay đổi vai trò của mình.');
+                    return $this->redirectToRoute('app_users_show', ['id' => $user->getId()]);
+                }
+            }
+
+            $entityManager->flush();
+            $this->addFlash('success', 'Thông tin thành viên đã được cập nhật.');
+            return $this->redirectToRoute('app_users_show', ['id' => $user->getId()]);
+        }
+
         return $this->render('users/show.html.twig', [
             'user' => $user,
+            'editForm' => $editForm->createView(),
         ]);
     }
 
@@ -57,8 +76,16 @@ final class UsersController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            $currentUser = $this->getUser();
+            if ($currentUser instanceof Users && $currentUser->getId() === $user->getId()) {
+                $originalRole = $entityManager->getUnitOfWork()->getOriginalEntityData($user)['role'] ?? $user->getRole();
+                if ($user->getRole() !== $originalRole) {
+                    $this->addFlash('warning', 'Bạn không được phép tự thay đổi vai trò của mình.');
+                    return $this->redirectToRoute('app_users_edit', ['id' => $user->getId()]);
+                }
+            }
 
+            $entityManager->flush();
             return $this->redirectToRoute('app_users_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -71,9 +98,17 @@ final class UsersController extends AbstractController
     #[Route('/{id}', name: 'app_users_delete', methods: ['POST'])]
     public function delete(Request $request, Users $user, EntityManagerInterface $entityManager): Response
     {
+        // Kiểm tra nếu người dùng hiện tại tự vô hiệu hóa chính mình
+        $currentUser = $this->getUser();
+        if ($currentUser instanceof Users && $currentUser->getId() === $user->getId()) {
+            $this->addFlash('warning', 'Bạn không được phép tự vô hiệu hóa tài khoản của mình.');
+            return $this->redirectToRoute('app_users_show', ['id' => $user->getId()]);
+        }
+
         if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($user);
+            $user->setStatus('inactivate');
             $entityManager->flush();
+            $this->addFlash('success', 'Thành viên đã được vô hiệu hóa.');
         }
 
         return $this->redirectToRoute('app_users_index', [], Response::HTTP_SEE_OTHER);

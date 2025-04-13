@@ -1,0 +1,81 @@
+@startuml
+' File: SequenceManageFunds.puml
+
+actor "Thủ quỹ" as treasurer
+boundary "UI: Quản lý quỹ" as ui_funds
+control "Ctrl: Quản lý quỹ" as ctrl_funds
+database "Database" as db
+
+activate treasurer
+treasurer -> ui_funds: Nhấn "Quản lý quỹ" trên menu
+activate ui_funds
+
+ui_funds -> ctrl_funds: Yêu cầu danh sách giao dịch
+deactivate ui_funds
+activate ctrl_funds
+
+ctrl_funds -> db: Lấy danh sách giao dịch hiện tại
+activate db
+db --> ctrl_funds: Trả về danh sách giao dịch
+deactivate db
+
+ctrl_funds --> ui_funds: Danh sách giao dịch
+deactivate ctrl_funds
+activate ui_funds
+ui_funds --> treasurer: Hiển thị danh sách giao dịch
+deactivate ui_funds
+
+treasurer -> ui_funds: Nhấn "Thêm mới", nhập thông tin (loại giao dịch, số tiền, ngày, mô tả)
+activate ui_funds
+ui_funds -> ctrl_funds: Gửi thông tin giao dịch mới
+deactivate ui_funds
+activate ctrl_funds
+
+ctrl_funds -> db: Lưu giao dịch mới
+activate db
+db --> ctrl_funds: Xác nhận lưu thành công
+deactivate db
+
+ctrl_funds --> ui_funds: Thông báo "Cập nhật thành công"
+deactivate ctrl_funds
+activate ui_funds
+ui_funds --> treasurer: Hiển thị thông báo "Cập nhật thành công"
+deactivate ui_funds
+
+treasurer -> ui_funds: Chọn giao dịch, nhấn "Sửa" hoặc "Xóa"
+activate ui_funds
+ui_funds -> ctrl_funds: Gửi yêu cầu cập nhật hoặc xóa mềm
+deactivate ui_funds
+activate ctrl_funds
+
+ctrl_funds -> db: Cập nhật hoặc xóa mềm giao dịch
+activate db
+db --> ctrl_funds: Xác nhận thao tác thành công
+deactivate db
+
+ctrl_funds --> ui_funds: Thông báo "Cập nhật thành công"
+deactivate ctrl_funds
+activate ui_funds
+ui_funds --> treasurer: Hiển thị thông báo "Cập nhật thành công"
+deactivate ui_funds
+
+treasurer -> ui_funds: Nhấn "Xem báo cáo"
+activate ui_funds
+ui_funds -> ctrl_funds: Yêu cầu báo cáo tài chính
+deactivate ui_funds
+activate ctrl_funds
+
+ctrl_funds -> db: Lấy dữ liệu thống kê thu chi
+activate db
+db --> ctrl_funds: Trả về thống kê thu chi
+deactivate db
+
+ctrl_funds --> ui_funds: Báo cáo tài chính
+deactivate ctrl_funds
+activate ui_funds
+ui_funds --> treasurer: Hiển thị báo cáo tài chính
+deactivate ui_funds
+
+deactivate treasurer
+
+@enduml
