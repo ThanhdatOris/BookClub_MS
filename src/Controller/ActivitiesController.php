@@ -9,6 +9,7 @@ use App\Form\ActivitiesType;
 use App\Repository\ActivitiesRepository;
 use App\Repository\ActivityParticipantRepository;
 use App\Repository\AttendancesRepository;
+use App\Entity\ActivityParticipant;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -247,5 +248,27 @@ final class ActivitiesController extends AbstractController
         }
 
         return new JsonResponse(['error' => 'CSRF token không hợp lệ.'], Response::HTTP_BAD_REQUEST);
+    }
+
+    #[Route('/{id}/join', name: 'activity_join', methods: ['POST'])]
+    public function joinActivity(Request $request, Activities $activity, EntityManagerInterface $em): JsonResponse
+    {
+        if ($activity->getStatus() !== 'planned') {
+            return $this->json(['success' => false, 'error' => 'Chỉ có thể tham gia hoạt động đang lên kế hoạch.']);
+        }
+
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['success' => false, 'error' => 'Bạn cần đăng nhập để tham gia.']);
+        }
+
+        // Giả sử có entity ActivityParticipant
+        $participant = new ActivityParticipant();
+        $participant->setActivityID($activity);
+        $participant->setUserID($user);
+        $em->persist($participant);
+        $em->flush();
+
+        return $this->json(['success' => true]);
     }
 }

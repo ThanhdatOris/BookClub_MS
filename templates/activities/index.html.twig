@@ -316,6 +316,12 @@
                             console.error('Invalid row clicked:', row);
                             return;
                         }
+
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth' // Cuộn mượt
+                        });
+
                         const activity = activitiesData.find(a => a.id === activityId);
                         if (activity) {
                             displayActivityDetails(activity);
