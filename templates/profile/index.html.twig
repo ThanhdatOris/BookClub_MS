@@ -14,21 +14,19 @@
 
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            <div class="card shadow-sm ">
+            <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    
-                        <div class="col-md-8">
-                            <h3 class="card-title mb-0">Tài khoản cá nhân</h3>
-                            <p class="mb-0 fw-bold text-sm">{{ user.name }}</p>
-                        </div>
-                        <div class="col-md-4 text-end d-flex justify-content-end">
-                            {% if (app.user and app.user.id == user.id and (is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER'))) %}
-                                <a href="{{ path('profile_edit', {'studentId': user.studentId}) }}" class="btn btn-light btn-sm mb-0">Chỉnh sửa thông tin</a>
-                            {% else %}
-                                <a href="{{ path('profile_suggest', {'studentId': user.studentId}) }}" class="btn btn-warning btn-sm mb-0">Đề xuất chỉnh sửa</a>
-                            {% endif %}
-                        </div>
-                    
+                    <div class="col-md-8">
+                        <h3 class="card-title mb-0">Tài khoản cá nhân</h3>
+                        <p class="mb-0 fw-bold text-sm">{{ user.name }}</p>
+                    </div>
+                    <div class="col-md-4 text-end d-flex justify-content-end">
+                        {% if app.user and app.user.id == user.id and (is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER')) %}
+                            <a href="{{ path('profile_edit', {'studentId': user.studentId}) }}" class="btn btn-light btn-sm mb-0">Chỉnh sửa thông tin</a>
+                        {% else %}
+                            <a href="{{ path('profile_suggest', {'studentId': user.studentId}) }}" class="btn btn-warning btn-sm mb-0">Đề xuất chỉnh sửa</a>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="card-body">
                     <!-- Thông tin cá nhân -->
@@ -78,7 +76,6 @@
                         </table>
                     </div>
 
-
                     <!-- Lịch sử hoạt động -->
                     <div class="alert alert-info text-white">
                         <p class="mb-0"><strong>Số hoạt động đã tham gia:</strong> {{ activityCount }}</p>
@@ -100,57 +97,18 @@
                                     <table class="table table-hover align-items-center mb-0">
                                         <thead>
                                             <tr>
-                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                                    <a href="#" class="sort-link" data-sort="title">Tiêu đề</a>
-                                                </th>
-                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                                    <a href="#" class="sort-link" data-sort="date">Ngày diễn ra</a>
-                                                </th>
-                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                                    <a href="#" class="sort-link" data-sort="time">Thời gian</a>
-                                                </th>
-                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                                    <a href="#" class="sort-link" data-sort="location">Địa điểm</a>
-                                                </th>
-                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                                    <a href="#" class="sort-link" data-sort="status">Trạng thái</a>
-                                                </th>
-                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                                    <a href="#" class="sort-link" data-sort="joinedAt">Thời gian tham gia</a>
-                                                </th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tiêu đề</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày diễn ra</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thời gian</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Địa điểm</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thời gian tham gia</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="historyTableBody">
-                                            {% for participant in participatedActivities %}
-                                                <tr data-url="{{ path('app_activities_show', {'id': participant.activityId.id}) }}" style="cursor: pointer;">
-                                                    <td>
-                                                        <div class="d-flex px-2 py-1">
-                                                            <div class="d-flex flex-column justify-content-center">
-                                                                <h6 class="mb-0 text-sm">{{ participant.activityId.title }}</h6>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <p class="text-xs font-weight-bold mb-0">{{ participant.activityId.date ? participant.activityId.date|date('d/m/Y') : 'Chưa xác định' }}</p>
-                                                    </td>
-                                                    <td>
-                                                        <p class="text-xs font-weight-bold mb-0">{{ participant.activityId.time ? participant.activityId.time|date('H:i') : 'Chưa xác định' }}</p>
-                                                    </td>
-                                                    <td>
-                                                        <p class="text-xs font-weight-bold mb-0">{{ participant.activityId.location ?: 'Chưa xác định' }}</p>
-                                                    </td>
-                                                    <td>
-                                                        <p class="text-xs font-weight-bold mb-0 text-{{ participant.activityId.status == 'active' ? 'success' : 'danger' }}">{{ participant.activityId.status }}</p>
-                                                    </td>
-                                                    <td>
-                                                        <p class="text-xs font-weight-bold mb-0">{{ participant.joinedAt|date('d/m/Y H:i:s') }}</p>
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
+                                        <tbody id="historyTableBody"></tbody>
                                     </table>
                                 </div>
-                                <!-- Phân trang client-side -->
                                 <div class="navigation mt-4 d-flex justify-content-center">
                                     <nav>
                                         <ul class="pagination" id="historyPagination"></ul>
@@ -168,23 +126,22 @@
         </div>
     </div>
 
-    <!-- Include table-layout.js -->
     <script src="{{ asset('js/table-layout.js') }}"></script>
-
-    <!-- JavaScript để khởi tạo TableLayout -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const historyTable = new TableLayout({
                 data: [
                     {% for participant in participatedActivities %}
                         {
+                            id: '{{ participant.activityId.id }}',
                             title: '{{ participant.activityId.title|e('js') }}',
                             date: '{{ participant.activityId.date ? participant.activityId.date|date('d/m/Y') : 'Chưa xác định' }}',
                             time: '{{ participant.activityId.time ? participant.activityId.time|date('H:i') : 'Chưa xác định' }}',
                             location: '{{ participant.activityId.location ? participant.activityId.location|e('js') : 'Chưa xác định' }}',
                             status: '{{ participant.activityId.status|e('js') }}',
                             joinedAt: '{{ participant.joinedAt|date('d/m/Y H:i:s') }}',
-                            detailUrl: '{{ path('app_activities_show', {'id': participant.activityId.id}) }}'
+                            detailUrl: '{{ path('app_activities_show', {'id': participant.activityId.id}) }}',
+                            leaveCsrfToken: '{{ csrf_token('leave' ~ participant.activityId.id) }}'
                         },
                     {% endfor %}
                 ],
@@ -195,30 +152,90 @@
                 columns: [
                     {
                         field: 'title',
-                        formatter: (value) => `
-                            <div class="d-flex px-2 py-1">
+                        formatter: (value, data) => `
+                            <div class="d-flex px-2 py-1" data-url="${data.detailUrl}">
                                 <div class="d-flex flex-column justify-content-center">
-                                    <h6 class="mb-0 text-sm">${value}</h6>
+                                    <h6 class="mb-0 text-sm">${value.length > 25 ? value.slice(0, 25) + '...' : value}</h6>
                                 </div>
                             </div>
                         `
                     },
                     { field: 'date', type: 'date' },
                     { field: 'time' },
-                    { field: 'location' },
+                    {
+                        field: 'location',
+                        formatter: (value) => `<p class="text-xs font-weight-bold mb-0">${value.length > 20 ? value.slice(0, 20) + '...' : value}</p>`
+                    },
                     {
                         field: 'status',
-                        formatter: (value) => `
-                            <p class="text-xs font-weight-bold mb-0 text-${value === 'active' ? 'success' : 'danger'}">${value}</p>
-                        `
+                        formatter: (value) => {
+                            const statusMap = {
+                                'planned': 'primary',
+                                'ongoing': 'success',
+                                'completed': 'info',
+                                'cancelled': 'danger'
+                            };
+                            const color = statusMap[value] || 'secondary';
+                            return `<span class="badge bg-${color}">${value}</span>`;
+                        }
                     },
-                    { field: 'joinedAt', type: 'datetime' }
+                    { field: 'joinedAt', type: 'datetime' },
+                    {
+                        field: 'id',
+                        formatter: (value, data) => `
+                            <div class="text-center">
+                                ${data.status === 'planned' ? `
+                                    <button type="button" class="btn btn-sm btn-warning leave-btn mb-0" 
+                                            data-id="${data.id}" 
+                                            data-csrf-token="${data.leaveCsrfToken}"
+                                            onclick="event.stopPropagation();">
+                                        Hủy tham gia
+                                    </button>
+                                ` : ''}
+                            </div>
+                        `
+                    }
                 ],
                 onRowClick: (row) => {
                     const detailUrl = row.getAttribute('data-url');
-                    if (detailUrl) window.location.href = detailUrl;
+                    if (detailUrl) {
+                        window.location.href = detailUrl;
+                    } else {
+                        console.error('No detail URL found for row:', row);
+                    }
                 },
                 scrollPositionKey: 'history_table_scroll_position'
+            });
+
+            // Xử lý hủy tham gia
+            document.addEventListener('click', (e) => {
+                const leaveBtn = e.target.closest('.leave-btn');
+                if (leaveBtn) {
+                    if (confirm('Bạn có chắc chắn muốn hủy tham gia hoạt động này?')) {
+                        const activityId = leaveBtn.getAttribute('data-id');
+                        const csrfToken = leaveBtn.getAttribute('data-csrf-token');
+                        const formData = new FormData();
+                        formData.append('_token', csrfToken);
+
+                        fetch(`/activity_participant/leave/${activityId}`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(response => {
+                                if (response.redirected) {
+                                    window.location.href = response.url;
+                                } else {
+                                    return response.text().then(text => {
+                                        throw new Error('Có lỗi xảy ra khi hủy tham gia: ' + text.slice(0, 50));
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Leave error:', error);
+                                alert('Lỗi: ' + error.message);
+                            });
+                    }
+                }
             });
         });
     </script>

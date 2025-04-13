@@ -25,7 +25,10 @@ class ProfileController extends AbstractController
             throw new NotFoundHttpException('Người dùng không tồn tại.');
         }
 
-        $participatedActivities = $activityParticipantRepository->findBy(['userId' => $user->getId()]);
+        $participatedActivities = $activityParticipantRepository->findBy(
+            ['userId' => $user->getId()],
+            ['joinedAt' => 'DESC']
+        );
         $activityCount = count($participatedActivities);
 
         return $this->render('profile/index.html.twig', [
