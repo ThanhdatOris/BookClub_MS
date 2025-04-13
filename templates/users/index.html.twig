@@ -4,6 +4,7 @@
 
 {% block body %}
     <div class="container-fluid py-4">
+        
         <!-- Thông báo flash -->
         {% for message in app.flashes('success') %}
             <div class="alert alert-success">{{ message }}</div>
@@ -41,59 +42,26 @@
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
                                             <a href="#" class="sort-link" data-sort="name">Tên</a>
                                         </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                        {# <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
                                             <a href="#" class="sort-link" data-sort="email">Email</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
-                                            <a href="#" class="sort-link" data-sort="role">Vai trò</a>
-                                        </th>
+                                        </th> #}
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
                                             <a href="#" class="sort-link" data-sort="status">Trạng thái</a>
                                         </th>
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
                                             <a href="#" class="sort-link" data-sort="faculty">Khoa</a>
                                         </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                        {# <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
                                             <a href="#" class="sort-link" data-sort="contactInfo">Thông tin liên hệ</a>
+                                        </th> #}
+                                        {# <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th> #}
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="role">Vai trò</a>
                                         </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody id="usersTableBody">
-                                    {% for user in users %}
-                                        <tr data-url="{{ path('app_users_show', {'id': user.id}) }}" style="cursor: pointer;">
-                                            <td class="text-center">
-                                                <p class="text-xs font-weight-bold mb-0">{{ user.studentId }}</p>
-                                            </td>
-                                            <td class="text-center">
-                                                <p class="text-xs font-weight-bold mb-0">{{ user.name }}</p>
-                                            </td>
-                                            <td class="text-center">
-                                                <p class="text-xs font-weight-bold mb-0">{{ user.email }}</p>
-                                            </td>
-                                            <td class="text-center">
-                                                <p class="text-xs font-weight-bold mb-0">{{ user.role }}</p>
-                                            </td>
-                                            <td class="text-center">
-                                                <p class="text-xs font-weight-bold mb-0 text-{{ user.status == 'active' ? 'success' : 'danger' }}">{{ user.status }}</p>
-                                            </td>
-                                            <td class="text-center">
-                                                <p class="text-xs font-weight-bold mb-0">{{ user.faculty }}</p>
-                                            </td>
-                                            <td class="text-center">
-                                                <p class="text-xs font-weight-bold mb-0">{{ user.contactInfo }}</p>
-                                            </td>
-                                            <td class="text-center">
-                                                <a href="{{ path('app_users_show', {'id': user.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
-                                                <a href="{{ path('app_users_edit', {'id': user.id}) }}" class="btn btn-sm btn-primary mb-0" onclick="event.stopPropagation();">Sửa</a>
-                                                <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ user.id }}" data-csrf-token="{{ csrf_token('delete' ~ user.id) }}" onclick="event.stopPropagation();">Xóa</button>
-                                            </td>
-                                        </tr>
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="8" class="text-center">Không có thành viên nào.</td>
-                                        </tr>
-                                    {% endfor %}
+                                    
                                 </tbody>
                             </table>
                         </div>
@@ -123,26 +91,29 @@
                             {
                                 studentId: '{{ user.studentId|e('js') }}',
                                 name: '{{ user.name|e('js') }}',
-                                email: '{{ user.email|e('js') }}',
-                                role: '{{ user.role|e('js') }}',
+                                {# email: '{{ user.email|e('js') }}', #}
                                 status: '{{ user.status|e('js') }}',
                                 faculty: '{{ user.faculty|e('js') }}',
-                                contactInfo: '{{ user.contactInfo|e('js') }}',
+                                {# contactInfo: '{{ user.contactInfo|e('js') }}', #}
                                 detailUrl: '{{ path('app_users_show', {'id': user.id}) }}',
-                                actions: `
+                                {# actions: `
                                     <a href="{{ path('app_users_show', {'id': user.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
                                     <a href="{{ path('app_users_edit', {'id': user.id}) }}" class="btn btn-sm btn-primary mb-0" onclick="event.stopPropagation();">Sửa</a>
                                     <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ user.id }}" data-csrf-token="{{ csrf_token('delete' ~ user.id) }}" onclick="event.stopPropagation();">Xóa</button>
-                                `
+                                ` #}
+                                role: '{{ user.role|e('js') }}',
                             },
                         {% endfor %}
                     ],
                     tableBodyId: 'usersTableBody',
                     columns: [
-                        { field: 'studentId', class: 'text-center' },
+                        { 
+                            field: 'studentId', 
+                            class: 'text-center', 
+                            formatter: (value) => `<span class="badge bg-info text-white">${value}</span>` 
+                        },
                         { field: 'name', class: 'text-center' },
-                        { field: 'email', class: 'text-center' },
-                        { field: 'role', class: 'text-center' },
+                        {# { field: 'email', class: 'text-center' }, #}
                         {
                             field: 'status',
                             class: 'text-center',
@@ -151,7 +122,23 @@
                             `
                         },
                         { field: 'faculty', class: 'text-center' },
-                        { field: 'contactInfo', class: 'text-center' }
+                        {# { field: 'contactInfo', class: 'text-center' } #}
+                        {
+                            field: 'role',
+                            class: 'text-center',
+                            formatter: (value) => {
+                                switch (value) {
+                                    case 'ROLE_ADMIN':
+                                        return '<span class="badge bg-primary">Quản Lý</span>';
+                                    case 'ROLE_TREASURER':
+                                        return '<span class="badge bg-warning text-dark">Thủ Quỹ</span>';
+                                    case 'ROLE_MEMBER':
+                                        return '<span class="badge bg-success">Thành Viên</span>';
+                                    default:
+                                        return `<span class="badge bg-secondary">${value}</span>`;
+                                }
+                            }
+                        },
                     ],
                     onRowClick: (row) => {
                         const detailUrl = row.getAttribute('data-url');

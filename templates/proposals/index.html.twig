@@ -3,138 +3,127 @@
 {% block title %}Đề xuất{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header pb-0">
-                    <h6 class="d-inline-block">Danh sách đề xuất</h6>
-                    {% if is_granted('ROLE_MEMBER') and not is_granted('ROLE_ADMIN') %}
-                        <a href="{{ path('app_proposals_new') }}" class="btn btn-primary btn-sm d-inline-block ms-3 mb-0">Tạo đề xuất mới</a>
-                    {% endif %}
-                </div>
-                <div class="card-body px-0 pt-0 pb-2">
-                    <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Id</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Thể loại</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Nội dung</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Trạng thái</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Ngày tạo</th>
-                                    {# <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Ngày sửa</th> #}
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for proposal in proposals %}
-                                    <tr>
-                                        <td class="text-center">{{ proposal.id }}</td>
-                                        <td class="text-center">
-                                            {% if proposal.type == 'general' %}
-                                                <span class="badge bg-primary">Chung</span>
-                                            {% elseif proposal.type == 'edit_profile' %}
-                                                <span class="badge bg-info">Sửa hồ sơ</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">Không xác định</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ proposal.content|length > 30 ? proposal.content|slice(0, 30) ~ '...' : proposal.content }}</td>
-                                        <td class="text-center">
-                                            {% if proposal.status == 'pending' %}
-                                                <span class="badge bg-warning text-white">Đang chờ</span>
-                                            {% elseif proposal.status == 'approved' %}
-                                                <span class="badge bg-success">Đã duyệt</span>
-                                            {% elseif proposal.status == 'rejected' %}
-                                                <span class="badge bg-danger">Đã từ chối</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">Không xác định</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ proposal.createdAt ? proposal.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                                        {# <td>{{ proposal.updatedAt ? proposal.updatedAt|date('Y-m-d H:i:s') : '' }}</td> #}
-                                        <td class="d-flex justify-content-center">
-                                            {% if is_granted('ROLE_ADMIN') %}
-                                                <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-info btn-sm mb-0">Xem</a>
-                                            {% elseif is_granted('ROLE_MEMBER') and proposal.userId == app.user %}
-                                                <a href="{{ path('app_proposals_edit', {'id': proposal.id}) }}" class="btn btn-warning btn-sm mb-0">Sửa</a>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% else %}
-                                    <tr>
-                                        <td colspan="7" class="text-center">Không có đề xuất nào</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Danh sách đề xuất</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center me-2 mb-0">
+                                    <input type="text" id="searchInput" class="form-control me-2" placeholder="Tìm kiếm đề xuất" style="max-width: 300px;">
+                                    <button type="button" id="clearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                                </div>
+                                {% if is_granted('ROLE_MEMBER') and not is_granted('ROLE_ADMIN') %}
+                                    <a href="{{ path('app_proposals_new') }}" class="btn btn-primary btn-sm d-inline-block ms-3 mb-0">Tạo đề xuất mới</a>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                    <div class="navigation mt-4 d-flex justify-content-center">
-                        <nav>
-                            <ul class="pagination" id="attendancesPagination"></ul>
-                        </nav>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0 px-3" style="max-height: 1080px; overflow-y: auto;">
+                            <table class="table table-hover align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="id">Id</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="type">Thể loại</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="content">Nội dung</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="status">Trạng thái</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="createdAt">Ngày tạo</a>
+                                        </th>
+                                        {# <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            <a href="#" class="sort-link" data-sort="updatedAt">Ngày sửa</a>
+                                        </th> #}
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">
+                                            Hành động
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="proposalsTableBody">
+                                    
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Phân trang client-side -->
+                        <div class="navigation mt-4 d-flex justify-content-center">
+                            <nav>
+                                <ul class="pagination" id="pagination">
+                                    <!-- Phân trang sẽ được tạo bằng JavaScript -->
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
-                </div>
-                <div class="card-footer">
+                    {# <div class="card-footer"> #}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<!-- Include table-layout.js -->
-<script src="{{ asset('js/table-layout.js') }}"></script>
-<script>
-const tableLayout = new TableLayout({
-    data: [
-        {% for proposal in proposals %}
-            {
-                id: '{{ proposal.id }}',
-                type: '{{ proposal.type }}',
-                content: '{{ proposal.content|e('js') }}',
-                status: '{{ proposal.status }}',
-                createdAt: '{{ proposal.createdAt ? proposal.createdAt|date('Y-m-d H:i:s') : '' }}',
-                detailUrl: '{{ path('app_proposals_show', {'id': proposal.id}) }}',
-                actions: `
-                    <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-sm btn-info mb-0">Xem</a>
-                `
-            },
-        {% endfor %}
-    ],
-    tableBodyId: 'proposalsTableBody',
-    columns: [
-        { field: 'id', class: 'text-center' },
-        {
-            field: 'type',
-            class: 'text-center',
-            formatter: (value) => {
-                if (value === 'general') return '<span class="badge bg-primary">Chung</span>';
-                if (value === 'edit_profile') return '<span class="badge bg-info">Sửa hồ sơ</span>';
-                return '<span class="badge bg-secondary">Không xác định</span>';
-            }
-        },
-        {
-            field: 'content',
-            formatter: (value) => value.length > 30 ? value.slice(0, 30) + '...' : value
-        },
-        {
-            field: 'status',
-            class: 'text-center',
-            formatter: (value) => {
-                if (value === 'pending') return '<span class="badge bg-warning text-white">Đang chờ</span>';
-                if (value === 'approved') return '<span class="badge bg-success">Đã duyệt</span>';
-                if (value === 'rejected') return '<span class="badge bg-danger">Đã từ chối</span>';
-                return '<span class="badge bg-secondary">Không xác định</span>';
-            }
-        },
-        { field: 'createdAt', class: 'text-center', type: 'date' },
-        { field: 'actions', class: 'text-center', type: 'html' }
-    ],
-    onRowClick: (row) => {
-        const detailUrl = row.getAttribute('data-url');
-        if (detailUrl) window.location.href = detailUrl;
-    },
-    scrollPositionKey: 'proposals_table_scroll_position'
-});
-</script>
+
+    <!-- Include table-layout.js -->
+    <script src="{{ asset('js/table-layout.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tableLayout = new TableLayout({
+                data: [
+                    {% for proposal in proposals %}
+                        {
+                            id: '{{ proposal.id }}',
+                            type: '{{ proposal.type }}',
+                            content: '{{ proposal.content|e('js') }}',
+                            status: '{{ proposal.status }}',
+                            createdAt: '{{ proposal.createdAt ? proposal.createdAt|date('Y-m-d H:i:s') : '' }}',
+                            detailUrl: '{{ path('app_proposals_show', {'id': proposal.id}) }}',
+                            actions: `
+                                <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-sm btn-info mb-0">Xem</a>
+                            `
+                        },
+                    {% endfor %}
+                ],
+                tableBodyId: 'proposalsTableBody',
+                columns: [
+                    { field: 'id', class: 'text-center' },
+                    {
+                        field: 'type',
+                        class: 'text-center',
+                        formatter: (value) => {
+                            if (value === 'general') return '<span class="badge bg-primary">Chung</span>';
+                            if (value === 'edit_profile') return '<span class="badge bg-info">Sửa hồ sơ</span>';
+                            return '<span class="badge bg-secondary">Không xác định</span>';
+                        }
+                    },
+                    {
+                        field: 'content',
+                        formatter: (value) => value.length > 30 ? value.slice(0, 30) + '...' : value
+                    },
+                    {
+                        field: 'status',
+                        class: 'text-center',
+                        formatter: (value) => {
+                            if (value === 'pending') return '<span class="badge bg-warning text-white">Đang chờ</span>';
+                            if (value === 'approved') return '<span class="badge bg-success">Đã duyệt</span>';
+                            if (value === 'rejected') return '<span class="badge bg-danger">Đã từ chối</span>';
+                            return '<span class="badge bg-secondary">Không xác định</span>';
+                        }
+                    },
+                    { field: 'createdAt', class: 'text-center', type: 'date' },
+                ],
+                onRowClick: (row) => {
+                    const detailUrl = row.getAttribute('data-url');
+                    if (detailUrl) window.location.href = detailUrl;
+                },
+                scrollPositionKey: 'proposals_table_scroll_position'
+            });
+        });
+    </script>
 {% endblock %}

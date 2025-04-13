@@ -54,41 +54,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="fundsTableBody">
-                                    {% for fund in funds %}
-                                        <tr data-url="{{ path('app_funds_show', {'id': fund.id, 'referer': app.request.uri}) }}" style="cursor: pointer;">
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0 text-center">{{ fund.date|date('Y-m-d') }}</p>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex flex-column justify-content-center text-center">
-                                                    <h6 class="mb-0 text-sm text-{{ fund.transactionType == 'income' ? 'success' : 'danger' }}">
-                                                        {{ fund.transactionType == 'income' ? 'Thu' : 'Chi' }}
-                                                    </h6>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0 text-center">{{ fund.amount|format_currency('VND') }}</p>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ fund.description|length > 50 ? fund.description|slice(0, 50) ~ '...' : fund.description }}</p>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0 text-center">{{ fund.createdBy.name }}</p>
-                                            </td>
-                                            <td class="text-center">
-                                                {% if is_granted('ROLE_TREASURER') %}
-                                                    <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editFundModal{{ fund.id }}" onclick="event.stopPropagation();">Sửa</button>
-                                                    <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ fund.id }}" data-csrf-token="{{ csrf_token('delete' ~ fund.id) }}" onclick="event.stopPropagation();">Xóa</button>
-                                                {% elseif is_granted('ROLE_ADMIN') %}
-                                                    <a href="{{ path('app_funds_show', {'id': fund.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem chi tiết</a>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="6" class="text-center">Không có giao dịch nào.</td>
-                                        </tr>
-                                    {% endfor %}
+                                    
                                 </tbody>
                             </table>
                         </div>
@@ -226,11 +192,9 @@
                             field: 'transactionType',
                             class: 'text-center',
                             formatter: (value) => `
-                                <div class="d-flex flex-column justify-content-center text-center">
-                                    <h6 class="mb-0 text-sm text-${value === 'income' ? 'success' : 'danger'}">
-                                        ${value === 'income' ? 'Thu' : 'Chi'}
-                                    </h6>
-                                </div>
+                                <span class="badge bg-${value === 'income' ? 'success' : 'danger'}">
+                                    ${value === 'income' ? 'Thu' : 'Chi'}
+                                </span>
                             `
                         },
                         { field: 'amount', class: 'text-center', type: 'currency' },

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Users;
 use App\Entity\Activities;
 use App\Entity\Attendances;
 use App\Form\ActivitiesType;
@@ -22,6 +23,8 @@ final class ActivitiesController extends AbstractController
     #[Route(name: 'app_activities_index', methods: ['GET'])]
     public function index(ActivitiesRepository $activitiesRepository, ActivityParticipantRepository $participantRepository, AttendancesRepository $attendancesRepository): Response
     {
+        // Filter out canceled activities (optional, uncomment if desired)
+        $activities = $activitiesRepository->findBy(['status' => ['planned', 'ongoing', 'completed']], ['created_at' => 'DESC']);
         $activities = $activitiesRepository->findBy([], ['created_at' => 'DESC']);
         $activityParticipants = [];
         $attendances = [];
@@ -70,6 +73,72 @@ final class ActivitiesController extends AbstractController
             'editActivityForms' => $editActivityForms,
             'addAttendanceForm' => $addAttendanceForm->createView(),
         ]);
+    }
+
+    #[Route('/{id}/cancel', name: 'app_activities_cancel', methods: ['POST'])]
+    public function cancel(Request $request, Activities $activity, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('cancel' . $activity->getId(), $request->getPayload()->getString('_token'))) {
+            try {
+                $activity->setStatus('cancelled');
+                $activity->setUpdatedAt(new \DateTime());
+                $entityManager->flush();
+                $this->addFlash('success', 'Hủy hoạt động thành công!');
+                return new JsonResponse(['success' => true, 'redirect' => $this->generateUrl('app_activities_index')]);
+            } catch (\Exception $e) {
+                return new JsonResponse(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new JsonResponse(['error' => 'CSRF token không hợp lệ.'], Response::HTTP_BAD_REQUEST);
+    }
+
+    #[Route('/{id}/attendance', name: 'app_activities_attendance', methods: ['GET'])]
+    public function attendance(Activities $activity, ActivityParticipantRepository $participantRepository, AttendancesRepository $attendancesRepository): JsonResponse
+    {
+        $participants = $participantRepository->findBy(['activityId' => $activity->getId(), 'status' => 'confirmed']);
+        $attendances = $attendancesRepository->findBy(['activity_id' => $activity->getId()]);
+
+        $participantData = array_map(function ($participant) use ($attendances) {
+            $user = $participant->getUserId();
+            $attendance = array_filter($attendances, fn($a) => $a->getUserId()->getId() === $user->getId());
+            $attendance = reset($attendance);
+            return [
+                'userId' => $user->getId(),
+                'studentId' => $user->getStudentId() ?: 'N/A',
+                'name' => $user->getName(),
+                'attendanceStatus' => $attendance ? $attendance->getStatus() : 'absent',
+            ];
+        }, $participants);
+
+        return new JsonResponse([
+            'participantCount' => count($participants),
+            'attendedCount' => count(array_filter($attendances, fn($a) => $a->getStatus() === 'present')),
+            'participants' => $participantData,
+        ]);
+    }
+
+    #[Route('/attendance/toggle', name: 'app_activities_attendance_toggle', methods: ['POST'])]
+    public function toggleAttendance(Request $request, AttendancesRepository $attendancesRepository, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $userId = $request->request->getInt('userId');
+        $activityId = $request->request->getInt('activityId');
+        $status = $request->request->get('status') === 'present' ? 'absent' : 'present';
+
+        $attendance = $attendancesRepository->findOneBy(['user_id' => $userId, 'activity_id' => $activityId]);
+        if (!$attendance) {
+            $attendance = new Attendances();
+            $attendance->setUserId($entityManager->getRepository(Users::class)->find($userId));
+            $attendance->setActivityId($entityManager->getRepository(Activities::class)->find($activityId));
+            $attendance->setMarkedAt(new \DateTime());
+            $attendance->setMarkedBy($this->getUser());
+        }
+
+        $attendance->setStatus($status);
+        $entityManager->persist($attendance);
+        $entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'newStatus' => $status]);
     }
 
     #[Route('/new', name: 'app_activities_new', methods: ['POST'])]
