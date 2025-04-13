@@ -12,10 +12,11 @@
             <div class="alert alert-danger">{{ message }}</div>
         {% endfor %}
 
-        <div id="dynamicContent">
-            <!-- Nội dung sẽ được tải động tại đây -->
+        <!-- Dynamic Content -->
+        <div id="dynamicContent" class="mb-4">
+            <div class="alert alert-info text-center text-white">Chọn một hoạt động để xem chi tiết</div>
         </div>
-        
+
         <!-- Activity Management -->
         <div class="row">
             <div class="col-12">
@@ -26,10 +27,10 @@
                             <div class="d-flex align-items-center">
                                 <div class="d-flex align-items-center me-2 mb-0">
                                     <input type="text" id="activitiesSearchInput" class="form-control me-2" placeholder="Tìm kiếm hoạt động..." style="max-width: 300px;">
-                                    <button type="button" id="activitiesClearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                                    <button type="button" id="activitiesClearSearchBtn" class="btn btn-sm btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
                                 </div>
                                 {% if is_granted('ROLE_ADMIN') %}
-                                    <button type="button" class="btn btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+                                    <button type="button" class="btn btn-sm btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addActivityModal">
                                         <i class="fas fa-plus me-1"></i> Thêm hoạt động
                                     </button>
                                 {% endif %}
@@ -79,51 +80,51 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                    <h5 class="modal-title" id="addActivityModalLabel">Thêm hoạt động mới</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h5 class="modal-title" id="addActivityModalLabel">Thêm hoạt động mới</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                    <div class="alert alert-danger d-none" id="addActivityError"></div>
-                    {{ form_start(addActivityForm, {'attr': {'id': 'addActivityForm'}}) }}
-                        <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                            {{ form_label(addActivityForm.title, 'Tiêu đề', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(addActivityForm.title, {'attr': {'class': 'form-control'}}) }}
+                        <div class="alert alert-danger d-none" id="addActivityError"></div>
+                        {{ form_start(addActivityForm, {'attr': {'id': 'addActivityForm'}}) }}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(addActivityForm.title, 'Tiêu đề', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(addActivityForm.title, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(addActivityForm.date, 'Ngày', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(addActivityForm.date, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(addActivityForm.time, 'Thời gian', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(addActivityForm.time, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form_label(addActivityForm.location, 'Địa điểm', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(addActivityForm.location, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(addActivityForm.status, 'Trạng thái', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(addActivityForm.status, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(addActivityForm.image, 'Hình ảnh', {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(addActivityForm.image, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                </div>
                             </div>
                             <div class="mb-3">
-                            {{ form_label(addActivityForm.date, 'Ngày', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(addActivityForm.date, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_label(addActivityForm.description, 'Mô tả', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(addActivityForm.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
                             </div>
-                            <div class="mb-3">
-                            {{ form_label(addActivityForm.time, 'Thời gian', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(addActivityForm.time, {'attr': {'class': 'form-control'}}) }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                            {{ form_label(addActivityForm.location, 'Địa điểm', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(addActivityForm.location, {'attr': {'class': 'form-control'}}) }}
-                            </div>
-                            <div class="mb-3">
-                            {{ form_label(addActivityForm.status, 'Trạng thái', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(addActivityForm.status, {'attr': {'class': 'form-control'}}) }}
-                            </div>
-                            <div class="mb-3">
-                            {{ form_label(addActivityForm.image, 'Hình ảnh', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(addActivityForm.image, {'attr': {'class': 'form-control'}}) }}
-                            </div>
-                        </div>
-                        </div>
-                        <div class="mb-3">
-                        {{ form_label(addActivityForm.description, 'Mô tả', {'label_attr': {'class': 'form-label'}}) }}
-                        {{ form_widget(addActivityForm.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
-                        </div>
-                        <button type="submit" class="btn btn-success w-100">
-                        <span class="spinner-border spinner-border-sm d-none" id="addActivitySpinner"></span>
-                        Thêm hoạt động
-                        </button>
-                    {{ form_end(addActivityForm) }}
+                            <button type="submit" class="btn btn-sm btn-success w-100">
+                                <span class="spinner-border spinner-border-sm d-none" id="addActivitySpinner"></span>
+                                Thêm hoạt động
+                            </button>
+                        {{ form_end(addActivityForm) }}
                     </div>
                 </div>
             </div>
@@ -175,7 +176,7 @@
                                     {{ form_label(editActivityForms[activity.id].description, 'Mô tả', {'label_attr': {'class': 'form-label'}}) }}
                                     {{ form_widget(editActivityForms[activity.id].description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
                                 </div>
-                                <button type="submit" class="btn btn-primary w-100">
+                                <button type="submit" class="btn btn-sm btn-primary w-100">
                                     <span class="spinner-border spinner-border-sm d-none" id="editActivitySpinner{{ activity.id }}"></span>
                                     Lưu thay đổi
                                 </button>
@@ -186,7 +187,7 @@
             </div>
         {% endfor %}
 
-        <!-- Modal: Attendance Floating Card -->
+        <!-- Modal: Điểm danh -->
         {% for activity in activities %}
             <div class="modal fade" id="attendanceModal{{ activity.id }}" tabindex="-1" aria-labelledby="attendanceModalLabel{{ activity.id }}" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
@@ -206,6 +207,9 @@
                                     <p><strong>Tổng số đã điểm danh:</strong> <span id="attendedCount{{ activity.id }}">Đang tải...</span></p>
                                 </div>
                             </div>
+                            <div class="mb-3">
+                                <input type="text" id="participantSearch{{ activity.id }}" class="form-control" placeholder="Tìm kiếm thành viên...">
+                            </div>
                             <h6 class="text-uppercase text-secondary font-weight-bold">Danh sách tham gia:</h6>
                             <div class="table-responsive">
                                 <table class="table table-bordered align-items-center mb-0">
@@ -222,9 +226,10 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="alert alert-danger d-none mt-3" id="attendanceError{{ activity.id }}"></div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Đóng</button>
                         </div>
                     </div>
                 </div>
@@ -237,45 +242,38 @@
         <!-- JavaScript -->
         <script>
             document.addEventListener('DOMContentLoaded', function () {
+                // Kiểm tra quyền admin
+                const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
+
+                // Dữ liệu hoạt động
+                const activitiesData = [
+                    {% for activity in activities %}
+                        {
+                            id: '{{ activity.id }}',
+                            title: '{{ activity.title|e('js') }}',
+                            date: '{{ activity.date ? activity.date|date('Y-m-d') : 'N/A' }}',
+                            location: '{{ activity.location ? activity.location|e('js') : 'N/A' }}',
+                            status: '{{ activity.status|e('js') }}',
+                            createdBy: '{{ activity.createdBy.name|e('js') }}',
+                            description: '{{ (activity.description ?: 'N/A')|e('js') }}',
+                            time: '{{ activity.time ? activity.time|date('H:i') : 'N/A' }}',
+                            image: '{{ activity.image ? asset(activity.image)|e('js') : '' }}',
+                            participantsCount: {{ activityParticipants[activity.id]|default([])|length }},
+                            actions: `
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}" onclick="event.stopPropagation();">Sửa</button>
+                                    {% if activity.status != 'cancelled' and activity.status != 'completed' %}
+                                        <button type="button" class="btn btn-sm btn-danger cancel-btn mb-0" data-id="{{ activity.id }}" data-csrf-token="{{ csrf_token('cancel' ~ activity.id) }}" onclick="event.stopPropagation();">Hủy</button>
+                                    {% endif %}
+                                {% endif %}
+                            `
+                        },
+                    {% endfor %}
+                ];
+
                 // TableLayout for Activities
                 const activitiesTable = new TableLayout({
-                    data: [
-                        {% for activity in activities %}
-                            {
-                                id: '{{ activity.id }}',
-                                title: '{{ activity.title|e('js') }}',
-                                date: '{{ activity.date ? activity.date|date('Y-m-d') : 'N/A' }}',
-                                location: '{{ activity.location ? activity.location|e('js') : 'N/A' }}',
-                                status: '{{ activity.status|e('js') }}',
-                                createdBy: '{{ activity.createdBy.name|e('js') }}',
-                                actions: `
-                                    <button type="button" class="btn btn-sm btn-info mb-0" data-bs-toggle="modal" data-bs-target="#attendanceModal{{ activity.id }}">
-                                        Điểm danh
-                                    </button>
-                                    {% if is_granted('ROLE_ADMIN') %}
-                                        <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}">Sửa</button>
-                                        <button type="button" class="btn btn-sm btn-danger cancel-btn mb-0" data-id="{{ activity.id }}" data-csrf-token="{{ csrf_token('cancel' ~ activity.id) }}">Hủy</button>
-                                    {% endif %}
-                                `,
-                                expandableContent: `
-                                    <div class="p-3">
-                                        <h6>{{ activity.title|e('js') }}</h6>
-                                        <p><strong>Mô tả:</strong> {{ (activity.description ?: 'N/A')|e('js') }}</p>
-                                        <p><strong>Thời gian:</strong> {{ activity.time ? activity.time|date('H:i') : 'N/A' }}</p>
-                                        <p><strong>Địa điểm:</strong> {{ (activity.location ?: 'N/A')|e('js') }}</p>
-                                        {% if activity.image %}
-                                            <p><strong>Hình ảnh:</strong> <a href="{{ asset(activity.image)|e('js') }}" target="_blank">Xem</a></p>
-                                        {% endif %}
-                                        <p><strong>Số người tham gia:</strong> {{ activityParticipants[activity.id]|length }}</p>
-                                        <div class="d-flex">
-                                            <button type="button" class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}">Chỉnh sửa</button>
-                                            <button type="button" class="btn btn-sm btn-success attendance-btn" data-bs-toggle="modal" data-bs-target="#attendanceModal{{ activity.id }}" data-id="{{ activity.id }}">Điểm danh</button>
-                                        </div>
-                                    </div>
-                                `
-                            },
-                        {% endfor %}
-                    ],
+                    data: activitiesData,
                     tableBodyId: 'activitiesTableBody',
                     searchInputId: 'activitiesSearchInput',
                     clearSearchBtnId: 'activitiesClearSearchBtn',
@@ -299,16 +297,66 @@
                         {
                             field: 'status',
                             formatter: (value) => `
-                                <p class="text-xs font-weight-bold mb-0 text-${value === 'planned' ? 'primary' : (value === 'ongoing' ? 'success' : (value === 'completed' ? 'info' : (value === 'cancelled' ? 'danger' : 'secondary')))}">${value}</p>
+                                <span class="badge bg-${value === 'planned' ? 'primary' : (value === 'ongoing' ? 'success' : (value === 'completed' ? 'info' : 'danger'))}">${value}</span>
                             `
                         },
                         { field: 'createdBy' },
                     ],
                     onRowClick: (row) => {
                         const activityId = row.getAttribute('data-id');
-                        activitiesTable.toggleExpandableRow(activityId);
+                        const activity = activitiesData.find(a => a.id === activityId);
+                        if (activity) {
+                            displayActivityDetails(activity);
+                        }
                     },
-                    onDelete: (button) => {
+                    scrollPositionKey: 'activities_table_scroll_position'
+                });
+
+                // Hiển thị chi tiết hoạt động trong dynamicContent
+                let currentActivityId = null;
+                function displayActivityDetails(activity) {
+                    if (!activity) return;
+                    const dynamicContent = document.getElementById('dynamicContent');
+                    // Không làm mới nếu click lại cùng hoạt động
+                    if (currentActivityId === activity.id) return;
+                    currentActivityId = activity.id;
+
+                    dynamicContent.innerHTML = `
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">${activity.title}</h6>
+                                <button type="button" class="btn-close" aria-label="Đóng" onclick="resetDynamicContent()"></button>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Mô tả:</strong> ${activity.description}</p>
+                                <p><strong>Thời gian:</strong> ${activity.time}</p>
+                                <p><strong>Địa điểm:</strong> ${activity.location}</p>
+                                ${activity.image ? `<p><strong>Hình ảnh:</strong> <a href="${activity.image}" target="_blank">Xem</a></p>` : ''}
+                                <p><strong>Số người tham gia:</strong> ${activity.participantsCount}</p>
+                                <div class="d-flex">
+                                    ${isAdmin ? `
+                                        <button type="button" class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editActivityModal${activity.id}">Chỉnh sửa</button>
+                                        ${activity.status !== 'cancelled' ? `
+                                            <button type="button" class="btn btn-sm btn-success attendance-btn" data-bs-toggle="modal" data-bs-target="#attendanceModal${activity.id}" data-id="${activity.id}">Điểm danh</button>
+                                        ` : ''}
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Reset dynamicContent về trạng thái mặc định
+                function resetDynamicContent() {
+                    currentActivityId = null;
+                    document.getElementById('dynamicContent').innerHTML = `
+                        <div class="alert alert-info text-center">Chọn một hoạt động để xem chi tiết</div>
+                    `;
+                }
+
+                // Xử lý nút hủy trong cột Hành động
+                document.querySelectorAll('.cancel-btn').forEach(button => {
+                    button.addEventListener('click', () => {
                         if (!confirm('Bạn có chắc chắn muốn hủy hoạt động này?')) return;
                         const id = button.getAttribute('data-id');
                         const csrfToken = button.getAttribute('data-csrf-token');
@@ -319,68 +367,123 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            if (data.success) window.location.href = data.redirect;
-                            else alert(data.error);
+                            if (data.success) {
+                                window.location.href = data.redirect;
+                            } else {
+                                alert(data.error || 'Có lỗi xảy ra.');
+                            }
                         })
                         .catch(error => alert('Có lỗi xảy ra: ' + error.message));
-                    },
-                    scrollPositionKey: 'activities_table_scroll_position'
+                    });
                 });
 
-            document.querySelectorAll('.expand-btn').forEach(button => {
-                button.addEventListener('click', function () {
-                    const activityId = this.getAttribute('data-id');
-                    const expandableRow = document.getElementById(`expandableRow${activityId}`);
-
-                    if (expandableRow.classList.contains('d-none')) {
-                        expandableRow.classList.remove('d-none');
-                    } else {
-                        expandableRow.classList.add('d-none');
+                // Xử lý modal điểm danh
+                document.addEventListener('click', function (event) {
+                    const button = event.target.closest('.attendance-btn');
+                    if (button) {
+                        if (!isAdmin) {
+                            alert('Chỉ admin mới có thể điểm danh.');
+                            return;
+                        }
+                        const activityId = button.getAttribute('data-id');
+                        loadAttendanceModal(activityId);
                     }
                 });
-            });
 
-            document.querySelectorAll('.attendance-btn').forEach(button => {
-                button.addEventListener('click', function () {
-                    const activityId = this.getAttribute('data-id');
+                // Hàm tải dữ liệu điểm danh
+                function loadAttendanceModal(activityId) {
                     const participantList = document.getElementById(`participantList${activityId}`);
                     const participantCount = document.getElementById(`participantCount${activityId}`);
                     const attendedCount = document.getElementById(`attendedCount${activityId}`);
+                    const errorDiv = document.getElementById(`attendanceError${activityId}`);
+                    const searchInput = document.getElementById(`participantSearch${activityId}`);
 
-                    // Xóa nội dung cũ
+                    // Reset giao diện
                     participantList.innerHTML = '<tr><td colspan="4">Đang tải...</td></tr>';
                     participantCount.textContent = 'Đang tải...';
                     attendedCount.textContent = 'Đang tải...';
+                    errorDiv.classList.add('d-none');
 
-                    // Gửi yêu cầu AJAX để lấy dữ liệu
+                    // Gọi API lấy danh sách tham gia
                     fetch(`/activities/${activityId}/participants`)
                         .then(response => response.json())
                         .then(data => {
-                            // Cập nhật danh sách người tham gia
-                            participantList.innerHTML = '';
-                            data.participants.forEach(participant => {
-                                participantList.innerHTML += `
-                                    <tr>
-                                        <td>${participant.id}</td>
-                                        <td>${participant.studentId}</td>
-                                        <td>${participant.name}</td>
-                                        <td>${participant.attended ? '✔️' : '❌'}</td>
-                                    </tr>
-                                `;
-                            });
+                            if (!data.success) {
+                                throw new Error(data.error || 'Không thể tải dữ liệu.');
+                            }
 
-                            // Cập nhật số lượng
+                            // Cập nhật số liệu
                             participantCount.textContent = data.totalParticipants;
                             attendedCount.textContent = data.totalAttended;
+                            participantList.innerHTML = '';
+
+                            // Render danh sách
+                            data.participants.forEach(participant => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${participant.id}</td>
+                                    <td>${participant.studentId || 'N/A'}</td>
+                                    <td>${participant.name}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-${participant.attended ? 'success' : 'danger'} attendance-toggle-btn"
+                                                data-activity-id="${activityId}"
+                                                data-user-id="${participant.id}"
+                                                data-status="${participant.attended ? 'present' : 'absent'}"
+                                                ${isAdmin ? '' : 'disabled'}>
+                                            ${participant.attended ? 'Có mặt' : 'Vắng'}
+                                        </button>
+                                    </td>
+                                `;
+                                participantList.appendChild(row);
+                            });
+
+                            // Tìm kiếm trong modal
+                            searchInput.addEventListener('input', () => {
+                                const query = searchInput.value.toLowerCase();
+                                Array.from(participantList.children).forEach(row => {
+                                    const text = row.textContent.toLowerCase();
+                                    row.style.display = text.includes(query) ? '' : 'none';
+                                });
+                            });
+
+                            // Xử lý nút điểm danh
+                            document.querySelectorAll(`#participantList${activityId} .attendance-toggle-btn`).forEach(btn => {
+                                btn.addEventListener('click', () => {
+                                    const userId = btn.getAttribute('data-user-id');
+                                    const currentStatus = btn.getAttribute('data-status');
+                                    const newStatus = currentStatus === 'present' ? 'absent' : 'present';
+
+                                    fetch('/activities/attendance/toggle', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ activity_id: activityId, user_id: userId, status: newStatus })
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            loadAttendanceModal(activityId); // Tải lại modal
+                                        } else {
+                                            errorDiv.textContent = data.error || 'Không thể cập nhật trạng thái.';
+                                            errorDiv.classList.remove('d-none');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        errorDiv.textContent = 'Lỗi: ' + error.message;
+                                        errorDiv.classList.remove('d-none');
+                                    });
+                                });
+                            });
                         })
                         .catch(error => {
-                            participantList.innerHTML = '<tr><td colspan="4">Không thể tải dữ liệu.</td></tr>';
-                            console.error('Lỗi khi tải dữ liệu:', error);
+                            participantList.innerHTML = '<tr><td colspan="4">Lỗi: Không thể tải dữ liệu.</td></tr>';
+                            participantCount.textContent = 'N/A';
+                            attendedCount.textContent = 'N/A';
+                            errorDiv.textContent = 'Lỗi: ' + error.message;
+                            errorDiv.classList.remove('d-none');
                         });
-                });
-            });
+                }
 
-                // Add Activity Form
+                // Thêm hoạt động
                 const addActivityForm = document.getElementById('addActivityForm');
                 if (addActivityForm) {
                     addActivityForm.addEventListener('submit', function (e) {
@@ -388,8 +491,9 @@
                         const submitBtn = addActivityForm.querySelector('button[type="submit"]');
                         const spinner = document.getElementById('addActivitySpinner');
                         const errorDiv = document.getElementById('addActivityError');
-                        activitiesTable.showLoading(submitBtn, spinner);
-                        activitiesTable.hideError(errorDiv);
+                        submitBtn.disabled = true;
+                        spinner.classList.remove('d-none');
+                        errorDiv.classList.add('d-none');
 
                         fetch(addActivityForm.action, {
                             method: 'POST',
@@ -397,21 +501,25 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            activitiesTable.hideLoading(submitBtn, spinner);
+                            submitBtn.disabled = false;
+                            spinner.classList.add('d-none');
                             if (data.success) {
                                 window.location.href = data.redirect;
                             } else {
-                                activitiesTable.showError(errorDiv, data.error);
+                                errorDiv.textContent = data.error || 'Dữ liệu không hợp lệ.';
+                                errorDiv.classList.remove('d-none');
                             }
                         })
                         .catch(error => {
-                            activitiesTable.hideLoading(submitBtn, spinner);
-                            activitiesTable.showError(errorDiv, 'Có lỗi xảy ra: ' + error.message);
+                            submitBtn.disabled = false;
+                            spinner.classList.add('d-none');
+                            errorDiv.textContent = 'Lỗi: ' + error.message;
+                            errorDiv.classList.remove('d-none');
                         });
                     });
                 }
 
-                // Edit Activity Forms
+                // Sửa hoạt động
                 {% for activity in activities %}
                     const editActivityForm{{ activity.id }} = document.getElementById('editActivityForm{{ activity.id }}');
                     if (editActivityForm{{ activity.id }}) {
@@ -420,8 +528,9 @@
                             const submitBtn = editActivityForm{{ activity.id }}.querySelector('button[type="submit"]');
                             const spinner = document.getElementById('editActivitySpinner{{ activity.id }}');
                             const errorDiv = document.getElementById('editActivityError{{ activity.id }}');
-                            activitiesTable.showLoading(submitBtn, spinner);
-                            activitiesTable.hideError(errorDiv);
+                            submitBtn.disabled = true;
+                            spinner.classList.remove('d-none');
+                            errorDiv.classList.add('d-none');
 
                             fetch(editActivityForm{{ activity.id }}.action, {
                                 method: 'POST',
@@ -429,16 +538,20 @@
                             })
                             .then(response => response.json())
                             .then(data => {
-                                activitiesTable.hideLoading(submitBtn, spinner);
+                                submitBtn.disabled = false;
+                                spinner.classList.add('d-none');
                                 if (data.success) {
                                     window.location.href = data.redirect;
                                 } else {
-                                    activitiesTable.showError(errorDiv, data.error);
+                                    errorDiv.textContent = data.error || 'Dữ liệu không hợp lệ.';
+                                    errorDiv.classList.remove('d-none');
                                 }
                             })
                             .catch(error => {
-                                activitiesTable.hideLoading(submitBtn, spinner);
-                                activitiesTable.showError(errorDiv, 'Có lỗi xảy ra: ' + error.message);
+                                submitBtn.disabled = false;
+                                spinner.classList.add('d-none');
+                                errorDiv.textContent = 'Lỗi: ' + error.message;
+                                errorDiv.classList.remove('d-none');
                             });
                         });
                     }

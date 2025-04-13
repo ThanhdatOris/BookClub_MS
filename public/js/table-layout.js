@@ -65,7 +65,9 @@ class TableLayout {
                 tbody.appendChild(expandRow);
             }
         });
-
+        this.tableBody.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', () => this.onRowClick(row));
+        });
         this.renderPagination();
     }
 
