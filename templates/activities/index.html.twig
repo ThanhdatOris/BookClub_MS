@@ -198,6 +198,35 @@
         <script src="{{ asset('js/table-layout.js') }}"></script>
 
         <!-- JavaScript -->
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
+                const activitiesData = [
+                    {% for activity in activities %}
+                        {
+                            id: '{{ activity.id }}',
+                            title: '{{ activity.title|e('js') }}',
+                            date: '{{ activity.date ? activity.date|date('Y-m-d') : 'N/A' }}',
+                            location: '{{ activity.location ? activity.location|e('js') : 'N/A' }}',
+                            status: '{{ activity.status|e('js') }}',
+                            createdBy: '{{ activity.createdBy.name|e('js') }}',
+                            description: '{{ (activity.description ?: 'N/A')|e('js') }}',
+                            time: '{{ activity.time ? activity.time|date('H:i') : 'N/A' }}',
+                            image: '{{ activity.image ? asset(activity.image)|e('js') : '' }}',
+                            participantsCount: {{ activityParticipants[activity.id]|default([])|length }},
+                            hasJoined: {% if app.user %}{{ activityParticipants[activity.id]|default([])|filter(p => p.userId.id == app.user.id)|length > 0 ? 'true' : 'false' }}{% else %}false{% endif %},
+                            action: '{% if is_granted('ROLE_ADMIN') %}<button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}" onclick="event.stopPropagation();">Sửa</button>{% if activity.status != 'cancelled' and activity.status != 'completed' %} <button type="button" class="btn btn-sm btn-danger cancel-btn mb-0" data-id="{{ activity.id }}" data-csrf-token="{{ csrf_token('cancel' ~ activity.id) }}" onclick="event.stopPropagation();">Hủy</button>{% endif %}{% endif %}'
+                        },
+                    {% endfor %}
+                ];
+
+                console.log('Activities Data:', activitiesData);
+
+                const activitiesTable = new TableLayout({
+                    data: activitiesData,
+                    tableBodyId: 'activitiesTableBody',
+                    searchInputId: 'activitiesSearchInput',
+                    clearSearchBtnId: 'activitiesClearSearchBtn',
                     paginationId: 'activitiesPagination',
                     columns: [
                         {
@@ -208,315 +237,274 @@
                                         <h6 class="mb-0 text-sm" data-id="${data.id}">${value.length > 25 ? value.slice(0, 25) + '...' : value}</h6>
                                     </div>
                                 </div>
+                            `
                         },
                         { field: 'date', type: 'date' },
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
-        const activitiesData = [
-            {% for activity in activities %}
-                {
-                    id: '{{ activity.id }}',
-                    title: '{{ activity.title|e('js') }}',
-                    date: '{{ activity.date ? activity.date|date('Y-m-d') : 'N/A' }}',
-                    location: '{{ activity.location ? activity.location|e('js') : 'N/A' }}',
-                    status: '{{ activity.status|e('js') }}',
-                    createdBy: '{{ activity.createdBy.name|e('js') }}',
-                    description: '{{ (activity.description ?: 'N/A')|e('js') }}',
-                    time: '{{ activity.time ? activity.time|date('H:i') : 'N/A' }}',
-                    image: '{{ activity.image ? asset(activity.image)|e('js') : '' }}',
-                    participantsCount: {{ activityParticipants[activity.id]|default([])|length }},
-                    hasJoined: {% if app.user %}{{ activityParticipants[activity.id]|default([])|filter(p => p.userId.id == app.user.id)|length > 0 ? 'true' : 'false' }}{% else %}false{% endif %},
-                    action: '{% if is_granted('ROLE_ADMIN') %}<button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}" onclick="event.stopPropagation();">Sửa</button>{% if activity.status != 'cancelled' and activity.status != 'completed' %} <button type="button" class="btn btn-sm btn-danger cancel-btn mb-0" data-id="{{ activity.id }}" data-csrf-token="{{ csrf_token('cancel' ~ activity.id) }}" onclick="event.stopPropagation();">Hủy</button>{% endif %}{% endif %}'
-                },
-            {% endfor %}
-        ];
+                        {
+                            field: 'location',
+                            formatter: (value, data) => `<p class="text-xs font-weight-bold mb-0" data-id="${data.id}">${value.length > 20 ? value.slice(0, 20) + '...' : value}</p>`
+                        },
+                        {
+                            field: 'status',
+                            formatter: (value, data) => `
+                                <span class="badge bg-${value === 'planned' ? 'primary' : (value === 'ongoing' ? 'success' : (value === 'completed' ? 'info' : 'danger'))}" data-id="${data.id}">${value}</span>
+                            `
+                        },
+                        { field: 'createdBy' },
+                        {
+                            field: 'action',
+                            formatter: (value, data) => value,
+                            className: 'text-center'
+                        }
+                    ],
+                    onRowClick: (row) => {
+                        const activityId = row.getAttribute('data-id');
+                        if (!activityId) {
+                            console.error('Invalid row clicked:', row);
+                            return;
+                        }
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                        const activity = activitiesData.find(a => a.id === activityId);
+                        if (activity) displayActivityDetails(activity);
+                        else console.error('Activity not found for ID:', activityId);
+                    },
+                    onDelete: button => {
+                        if (!confirm('Bạn có chắc chắn muốn hủy hoạt động này?')) return;
+                        const id = button.getAttribute('data-id');
+                        const csrfToken = button.getAttribute('data-csrf-token');
+                        fetch(`/activities/${id}/cancel`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `_token=${csrfToken}`
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) window.location.href = data.redirect;
+                                else alert(data.error || 'Có lỗi xảy ra.');
+                            })
+                            .catch(error => alert('Lỗi: ' + error.message));
+                    },
+                    scrollPositionKey: 'activities_table_scroll_position'
+                });
 
-        console.log('Activities Data:', activitiesData);
+                // Listener thủ công cho click hàng
+                document.getElementById('activitiesTableBody').addEventListener('click', (e) => {
+                    const activityId = e.target.getAttribute('data-id');
+                    if (!activityId) {
+                        console.error('Invalid element clicked:', e.target);
+                        return;
+                    }
+                    console.log('Row clicked:', activityId);
+                    const activity = activitiesData.find(a => a.id === activityId);
+                    if (activity) {
+                        displayActivityDetails(activity);
+                    } else {
+                        console.error('Activity not found for ID:', activityId);
+                    }
+                });
 
-        const activitiesTable = new TableLayout({
-            data: activitiesData,
-            tableBodyId: 'activitiesTableBody',
-            searchInputId: 'activitiesSearchInput',
-            clearSearchBtnId: 'activitiesClearSearchBtn',
-            paginationId: 'activitiesPagination',
-            columns: [
-                {
-                    field: 'title',
-                    formatter: (value, data) => `
-                        <div class="d-flex px-2 py-1" data-id="${data.id}">
-                            <div class="d-flex flex-column justify-content-center" data-id="${data.id}">
-                                <h6 class="mb-0 text-sm" data-id="${data.id}">${value.length > 25 ? value.slice(0, 25) + '...' : value}</h6>
+                let currentActivityId = null;
+
+                function displayActivityDetails(activity) {
+                    if (!activity || currentActivityId === activity.id) return;
+                    currentActivityId = activity.id;
+                    const dynamicContent = document.getElementById('dynamicContent');
+                    if (!dynamicContent) return console.error("Element 'dynamicContent' not found.");
+
+                    const buttons = isAdmin ? `
+                        <button type="button" class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editActivityModal${activity.id}">Chỉnh sửa</button>
+                        ${activity.status !== 'cancelled' ? `
+                            <button type="button" class="btn btn-sm btn-success attendance-btn" data-bs-toggle="modal" data-bs-target="#attendanceModal${activity.id}" data-id="${activity.id}">Điểm danh</button>
+                        ` : ''}
+                    ` : activity.status === 'planned' && !activity.hasJoined ? `
+                        <button type="button" class="btn btn-sm btn-info join-btn me-2" data-id="${activity.id}">Tham gia</button>
+                    ` : '';
+
+                    dynamicContent.innerHTML = `
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">${activity.title}</h6>
+                                <button type="button" class="btn-close" aria-label="Đóng" onclick="resetDynamicContent()"></button>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Mô tả:</strong> ${activity.description}</p>
+                                <p><strong>Thời gian:</strong> ${activity.time}</p>
+                                <p><strong>Địa điểm:</strong> ${activity.location}</p>
+                                ${activity.image ? `<p><strong>Hình ảnh:</strong> <a href="${activity.image}" target="_blank">Xem</a></p>` : ''}
+                                <p><strong>Số người tham gia:</strong> ${activity.participantsCount}</p>
+                                <div class="d-flex">${buttons}</div>
                             </div>
                         </div>
-                    `
-                },
-                { field: 'date', type: 'date' },
-                {
-                    field: 'location',
-                    formatter: (value, data) => `<p class="text-xs font-weight-bold mb-0" data-id="${data.id}">${value.length > 20 ? value.slice(0, 20) + '...' : value}</p>`
-                },
-                {
-                    field: 'status',
-                    formatter: (value, data) => `
-                        <span class="badge bg-${value === 'planned' ? 'primary' : (value === 'ongoing' ? 'success' : (value === 'completed' ? 'info' : 'danger'))}" data-id="${data.id}">${value}</span>
-                    `
-                },
-                { field: 'createdBy' },
-                {
-                    field: 'action',
-                    formatter: (value, data) => value,
-                    className: 'text-center'
+                    `;
                 }
-            ],
-            onRowClick: (row) => {
-                const activityId = row.getAttribute('data-id');
-                if (!activityId) {
-                    console.error('Invalid row clicked:', row);
-                    return;
+
+                function resetDynamicContent() {
+                    currentActivityId = null;
+                    document.getElementById('dynamicContent').innerHTML = `
+                        <div class="alert alert-info text-center text-white">Chọn một hoạt động để xem chi tiết</div>
+                    `;
                 }
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-                const activity = activitiesData.find(a => a.id === activityId);
-                if (activity) displayActivityDetails(activity);
-                else console.error('Activity not found for ID:', activityId);
-            },
-            onDelete: button => {
-                if (!confirm('Bạn có chắc chắn muốn hủy hoạt động này?')) return;
-                const id = button.getAttribute('data-id');
-                const csrfToken = button.getAttribute('data-csrf-token');
-                fetch(`/activities/${id}/cancel`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `_token=${csrfToken}`
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) window.location.href = data.redirect;
-                        else alert(data.error || 'Có lỗi xảy ra.');
-                    })
-                    .catch(error => alert('Lỗi: ' + error.message));
-            },
-            scrollPositionKey: 'activities_table_scroll_position'
-        });
 
-        // Listener thủ công cho click hàng
-        document.getElementById('activitiesTableBody').addEventListener('click', (e) => {
-            const activityId = e.target.getAttribute('data-id');
-            if (!activityId) {
-                console.error('Invalid element clicked:', e.target);
-                return;
-            }
-            console.log('Row clicked:', activityId);
-            const activity = activitiesData.find(a => a.id === activityId);
-            if (activity) {
-                displayActivityDetails(activity);
-            } else {
-                console.error('Activity not found for ID:', activityId);
-            }
-        });
+                function loadAttendanceModal(activityId) {
+                    const elements = {
+                        list: document.getElementById(`participantList${activityId}`),
+                        count: document.getElementById(`participantCount${activityId}`),
+                        attended: document.getElementById(`attendedCount${activityId}`),
+                        error: document.getElementById(`attendanceError${activityId}`),
+                        search: document.getElementById(`participantSearch${activityId}`)
+                    };
 
-        let currentActivityId = null;
+                    elements.list.innerHTML = '<tr><td colspan="4">Đang tải...</td></tr>';
+                    elements.count.textContent = elements.attended.textContent = 'Đang tải...';
+                    elements.error.classList.add('d-none');
 
-        function displayActivityDetails(activity) {
-            if (!activity || currentActivityId === activity.id) return;
-            currentActivityId = activity.id;
-            const dynamicContent = document.getElementById('dynamicContent');
-            if (!dynamicContent) return console.error("Element 'dynamicContent' not found.");
+                    fetch(`/activities/${activityId}/participants`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.success) throw new Error(data.error || 'Không thể tải dữ liệu.');
+                            elements.count.textContent = data.totalParticipants;
+                            elements.attended.textContent = data.totalAttended;
+                            elements.list.innerHTML = data.participants.map(p => `
+                                <tr>
+                                    <td>${p.id}</td>
+                                    <td>${p.studentId || 'N/A'}</td>
+                                    <td>${p.name}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-${p.attended ? 'success' : 'danger'} attendance-toggle-btn mb-0"
+                                                data-activity-id="${activityId}"
+                                                data-user-id="${p.id}"
+                                                data-status="${p.attended ? 'present' : 'absent'}"
+                                                ${isAdmin ? '' : 'disabled'}>
+                                            ${p.attended ? 'Có mặt' : 'Vắng'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('');
 
-            const buttons = isAdmin ? `
-                <button type="button" class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editActivityModal${activity.id}">Chỉnh sửa</button>
-                ${activity.status !== 'cancelled' ? `
-                    <button type="button" class="btn btn-sm btn-success attendance-btn" data-bs-toggle="modal" data-bs-target="#attendanceModal${activity.id}" data-id="${activity.id}">Điểm danh</button>
-                ` : ''}
-            ` : activity.status === 'planned' && !activity.hasJoined ? `
-                <button type="button" class="btn btn-sm btn-info join-btn me-2" data-id="${activity.id}">Tham gia</button>
-            ` : '';
-
-            dynamicContent.innerHTML = `
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">${activity.title}</h6>
-                        <button type="button" class="btn-close" aria-label="Đóng" onclick="resetDynamicContent()"></button>
-                    </div>
-                    <div class="card-body">
-                        <p><strong>Mô tả:</strong> ${activity.description}</p>
-                        <p><strong>Thời gian:</strong> ${activity.time}</p>
-                        <p><strong>Địa điểm:</strong> ${activity.location}</p>
-                        ${activity.image ? `<p><strong>Hình ảnh:</strong> <a href="${activity.image}" target="_blank">Xem</a></p>` : ''}
-                        <p><strong>Số người tham gia:</strong> ${activity.participantsCount}</p>
-                        <div class="d-flex">${buttons}</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function resetDynamicContent() {
-            currentActivityId = null;
-            document.getElementById('dynamicContent').innerHTML = `
-                <div class="alert alert-info text-center text-white">Chọn một hoạt động để xem chi tiết</div>
-            `;
-        }
-
-        function loadAttendanceModal(activityId) {
-            const elements = {
-                list: document.getElementById(`participantList${activityId}`),
-                count: document.getElementById(`participantCount${activityId}`),
-                attended: document.getElementById(`attendedCount${activityId}`),
-                error: document.getElementById(`attendanceError${activityId}`),
-                search: document.getElementById(`participantSearch${activityId}`)
-            };
-
-            elements.list.innerHTML = '<tr><td colspan="4">Đang tải...</td></tr>';
-            elements.count.textContent = elements.attended.textContent = 'Đang tải...';
-            elements.error.classList.add('d-none');
-
-            fetch(`/activities/${activityId}/participants`)
-                .then(response => response.json())
-                .then(data => {
-                    if (!data.success) throw new Error(data.error || 'Không thể tải dữ liệu.');
-                    elements.count.textContent = data.totalParticipants;
-                    elements.attended.textContent = data.totalAttended;
-                    elements.list.innerHTML = data.participants.map(p => `
-                        <tr>
-                            <td>${p.id}</td>
-                            <td>${p.studentId || 'N/A'}</td>
-                            <td>${p.name}</td>
-                            <td>
-                                <button class="btn btn-sm btn-${p.attended ? 'success' : 'danger'} attendance-toggle-btn mb-0"
-                                        data-activity-id="${activityId}"
-                                        data-user-id="${p.id}"
-                                        data-status="${p.attended ? 'present' : 'absent'}"
-                                        ${isAdmin ? '' : 'disabled'}>
-                                    ${p.attended ? 'Có mặt' : 'Vắng'}
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('');
-
-                    elements.search.addEventListener('input', () => {
-                        const query = elements.search.value.toLowerCase();
-                        Array.from(elements.list.children).forEach(row => {
-                            row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
-                        });
-                    });
-
-                    elements.list.querySelectorAll('.attendance-toggle-btn').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const userId = btn.getAttribute('data-user-id');
-                            const newStatus = btn.getAttribute('data-status') === 'present' ? 'absent' : 'present';
-                            fetch('/activities/attendance/toggle', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ activity_id: activityId, user_id: userId, status: newStatus })
-                            })
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data.success) loadAttendanceModal(activityId);
-                                    else throw new Error(data.error || 'Không thể cập nhật trạng thái.');
-                                })
-                                .catch(error => {
-                                    elements.error.textContent = 'Lỗi: ' + error.message;
-                                    elements.error.classList.remove('d-none');
+                            elements.search.addEventListener('input', () => {
+                                const query = elements.search.value.toLowerCase();
+                                Array.from(elements.list.children).forEach(row => {
+                                    row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
                                 });
+                            });
+
+                            elements.list.querySelectorAll('.attendance-toggle-btn').forEach(btn => {
+                                btn.addEventListener('click', () => {
+                                    const userId = btn.getAttribute('data-user-id');
+                                    const newStatus = btn.getAttribute('data-status') === 'present' ? 'absent' : 'present';
+                                    fetch('/activities/attendance/toggle', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ activity_id: activityId, user_id: userId, status: newStatus })
+                                    })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) loadAttendanceModal(activityId);
+                                            else throw new Error(data.error || 'Không thể cập nhật trạng thái.');
+                                        })
+                                        .catch(error => {
+                                            elements.error.textContent = 'Lỗi: ' + error.message;
+                                            elements.error.classList.remove('d-none');
+                                        });
+                                });
+                            });
+                        })
+                        .catch(error => {
+                            elements.list.innerHTML = '<tr><td colspan="4">Lỗi: Không thể tải dữ liệu.</td></tr>';
+                            elements.count.textContent = elements.attended.textContent = 'N/A';
+                            elements.error.textContent = 'Lỗi: ' + error.message;
+                            elements.error.classList.remove('d-none');
                         });
-                    });
-                })
-                .catch(error => {
-                    elements.list.innerHTML = '<tr><td colspan="4">Lỗi: Không thể tải dữ liệu.</td></tr>';
-                    elements.count.textContent = elements.attended.textContent = 'N/A';
-                    elements.error.textContent = 'Lỗi: ' + error.message;
-                    elements.error.classList.remove('d-none');
-                });
-        }
+                }
 
-        function handleJoinActivity(activityId) {
-            if (isAdmin) return alert('Admin không thể tham gia hoạt động.');
-            {% if not app.user %}
-                alert('Vui lòng đăng nhập để tham gia hoạt động.');
-                window.location.href = '{{ path('app_login') }}';
-                return;
-            {% endif %}
-            fetch(`/activities/${activityId}/join`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.text().then(text => {
-                            throw new Error('Phản hồi không phải JSON: ' + text.slice(0, 50));
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        alert('Tham gia hoạt động thành công!');
-                        const activity = activitiesData.find(a => a.id === activityId);
-                        if (activity) {
-                            activity.hasJoined = true;
-                            activity.participantsCount++;
-                            activitiesTable.renderTable();
-                            displayActivityDetails(activity);
-                        }
-                    } else {
-                        alert(data.error || 'Không thể tham gia hoạt động.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Join error:', error);
-                    alert('Lỗi: ' + error.message);
-                });
-        }
-
-        function handleFormSubmit(formId, spinnerId, errorId, callback) {
-            const form = document.getElementById(formId);
-            if (!form) return;
-            form.addEventListener('submit', e => {
-                e.preventDefault();
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const spinner = document.getElementById(spinnerId);
-                const errorDiv = document.getElementById(errorId);
-                activitiesTable.showLoading(submitBtn, spinner);
-                activitiesTable.hideError(errorDiv);
-
-                fetch(form.action, {
-                    method: 'POST',
-                    body: new FormData(form)
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        activitiesTable.hideLoading(submitBtn, spinner);
-                        if (data.success) callback(data);
-                        else activitiesTable.showError(errorDiv, data.error || 'Dữ liệu không hợp lệ.');
+                function handleJoinActivity(activityId) {
+                    if (isAdmin) return alert('Admin không thể tham gia hoạt động.');
+                    {% if not app.user %}
+                        alert('Vui lòng đăng nhập để tham gia hoạt động.');
+                        window.location.href = '{{ path('app_login') }}';
+                        return;
+                    {% endif %}
+                    fetch(`/activities/${activityId}/join`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
                     })
-                    .catch(error => {
-                        activitiesTable.hideLoading(submitBtn, spinner);
-                        activitiesTable.showError(errorDiv, 'Lỗi: ' + error.message);
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.text().then(text => {
+                                    throw new Error('Phản hồi không phải JSON: ' + text.slice(0, 50));
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                alert('Tham gia hoạt động thành công!');
+                                const activity = activitiesData.find(a => a.id === activityId);
+                                if (activity) {
+                                    activity.hasJoined = true;
+                                    activity.participantsCount++;
+                                    activitiesTable.renderTable();
+                                    displayActivityDetails(activity);
+                                }
+                            } else {
+                                alert(data.error || 'Không thể tham gia hoạt động.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Join error:', error);
+                            alert('Lỗi: ' + error.message);
+                        });
+                }
+
+                function handleFormSubmit(formId, spinnerId, errorId, callback) {
+                    const form = document.getElementById(formId);
+                    if (!form) return;
+                    form.addEventListener('submit', e => {
+                        e.preventDefault();
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        const spinner = document.getElementById(spinnerId);
+                        const errorDiv = document.getElementById(errorId);
+                        activitiesTable.showLoading(submitBtn, spinner);
+                        activitiesTable.hideError(errorDiv);
+
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: new FormData(form)
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                activitiesTable.hideLoading(submitBtn, spinner);
+                                if (data.success) callback(data);
+                                else activitiesTable.showError(errorDiv, data.error || 'Dữ liệu không hợp lệ.');
+                            })
+                            .catch(error => {
+                                activitiesTable.hideLoading(submitBtn, spinner);
+                                activitiesTable.showError(errorDiv, 'Lỗi: ' + error.message);
+                            });
                     });
+                }
+
+                document.addEventListener('click', e => {
+                    const attendanceBtn = e.target.closest('.attendance-btn');
+                    if (attendanceBtn) {
+                        if (!isAdmin) return alert('Chỉ admin mới có thể điểm danh.');
+                        loadAttendanceModal(attendanceBtn.getAttribute('data-id'));
+                    }
+                    const joinBtn = e.target.closest('.join-btn');
+                    if (joinBtn) {
+                        const id = joinBtn.getAttribute('data-id');
+                        handleJoinActivity(id);
+                    }
+                });
+
+                handleFormSubmit('addActivityForm', 'addActivitySpinner', 'addActivityError', data => window.location.href = data.redirect);
+                {% for activity in activities %}
+                    handleFormSubmit('editActivityForm{{ activity.id }}', 'editActivitySpinner{{ activity.id }}', 'editActivityError{{ activity.id }}', data => window.location.href = data.redirect);
+                {% endfor %}
             });
-        }
-
-        document.addEventListener('click', e => {
-            const attendanceBtn = e.target.closest('.attendance-btn');
-            if (attendanceBtn) {
-                if (!isAdmin) return alert('Chỉ admin mới có thể điểm danh.');
-                loadAttendanceModal(attendanceBtn.getAttribute('data-id'));
-            }
-            const joinBtn = e.target.closest('.join-btn');
-            if (joinBtn) {
-                const id = joinBtn.getAttribute('data-id');
-                handleJoinActivity(id);
-            }
-        });
-
-        handleFormSubmit('addActivityForm', 'addActivitySpinner', 'addActivityError', data => window.location.href = data.redirect);
-        {% for activity in activities %}
-            handleFormSubmit('editActivityForm{{ activity.id }}', 'editActivitySpinner{{ activity.id }}', 'editActivityError{{ activity.id }}', data => window.location.href = data.redirect);
-        {% endfor %}
-    });
-</script>
+        </script>
     </div>
 {% endblock %}
