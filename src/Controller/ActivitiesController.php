@@ -255,4 +255,22 @@ final class ActivitiesController extends AbstractController
 
         return new JsonResponse(['error' => 'CSRF token không hợp lệ.'], Response::HTTP_BAD_REQUEST);
     }
+
+    #[Route('/activities/{id}/participants', name: 'app_activities_participants', methods: ['GET'])]
+    public function getParticipants(Activities $activity): JsonResponse
+    {
+        $participants = $activity->getParticipants(); // Giả sử bạn có quan hệ giữa Activity và Participant
+        $data = [
+            'totalParticipants' => count($participants),
+            'totalAttended' => count(array_filter($participants->toArray(), fn($p) => $p->isAttended())),
+            'participants' => array_map(fn($p) => [
+                'id' => $p->getId(),
+                'studentId' => $p->getStudentId(),
+                'name' => $p->getName(),
+                'attended' => $p->isAttended(),
+            ], $participants->toArray()),
+        ];
+
+        return new JsonResponse($data);
+    }
 }

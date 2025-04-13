@@ -92,9 +92,9 @@
                     </table>
                 </div>
                 <div class="card-footer d-flex justify-content-between">
-                    <a href="{{ referer }}" class="btn btn-secondary">Quay lại</a>
-                    <div>
-                        <a href="{{ path('app_funds_edit', {'id': fund.id}) }}" class="btn btn-primary btn-sm">Edit</a>
+                    <a href="{{ referer }}" class="btn btn-secondary btn-sm me-2">Quay lại</a>
+                    <div class="d-flex">
+                        <a href="{{ path('app_funds_edit', {'id': fund.id}) }}" class="btn btn-primary btn-sm me-2">Edit</a>
                         {{ include('funds/_delete_form.html.twig') }}
                     </div>
                 </div>

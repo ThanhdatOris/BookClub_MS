@@ -4,6 +4,7 @@
 
 {% block body %}
     <div class="container-fluid py-4">
+    
         <!-- Thông báo flash -->
         {% for message in app.flashes('success') %}
             <div class="alert alert-success">{{ message }}</div>
