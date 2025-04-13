@@ -251,7 +251,7 @@ final class ActivitiesController extends AbstractController
     }
 
     #[Route('/{id}/join', name: 'activity_join', methods: ['POST'])]
-    public function joinActivity(Request $request, Activities $activity, EntityManagerInterface $em): JsonResponse
+    public function joinActivity(Request $request, Activities $activity, EntityManagerInterface $em, ActivityParticipantRepository $participantRepository): JsonResponse
     {
         if ($activity->getStatus() !== 'planned') {
             return $this->json(['success' => false, 'error' => 'Chỉ có thể tham gia hoạt động đang lên kế hoạch.']);
@@ -262,13 +262,23 @@ final class ActivitiesController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Bạn cần đăng nhập để tham gia.']);
         }
 
-        // Giả sử có entity ActivityParticipant
-        $participant = new ActivityParticipant();
-        $participant->setActivityID($activity);
-        $participant->setUserID($user);
-        $em->persist($participant);
-        $em->flush();
+        // Kiểm tra người dùng đã tham gia chưa
+        $existingParticipant = $participantRepository->findByActivityAndUser($activity->getId(), $user->getId());
+        if ($existingParticipant) {
+            return $this->json(['success' => false, 'error' => 'Bạn đã tham gia hoạt động này.']);
+        }
 
-        return $this->json(['success' => true]);
+        try {
+            $participant = new ActivityParticipant();
+            $participant->setActivityId($activity);
+            $participant->setUserId($user);
+            $participant->setJoinedAt(new \DateTime());
+            $participant->setStatus('confirmed'); // Giả định có cột status
+            $em->persist($participant);
+            $em->flush();
+            return $this->json(['success' => true]);
+        } catch (\Exception $e) {
+            return $this->json(['success' => false, 'error' => 'Lỗi khi tham gia: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
