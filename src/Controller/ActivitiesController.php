@@ -22,7 +22,7 @@ final class ActivitiesController extends AbstractController
     #[Route(name: 'app_activities_index', methods: ['GET'])]
     public function index(ActivitiesRepository $activitiesRepository, ActivityParticipantRepository $participantRepository): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ admin mới được truy cập trang này.');
+        // $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ admin mới được truy cập trang này.');
 
         // Lấy tất cả hoạt động, sắp xếp theo created_at DESC
         $activities = $activitiesRepository->findBy([], ['created_at' => 'DESC']);

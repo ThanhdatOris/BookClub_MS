@@ -14,7 +14,6 @@ class TableLayout {
         this.currentPage = 1;
         this.sortField = '';
         this.sortDirection = 'asc';
-        this.expandedRows = new Set();
 
         this.init();
     }
@@ -33,9 +32,14 @@ class TableLayout {
         const end = start + this.itemsPerPage;
         const paginatedData = this.data.slice(start, end);
 
-        paginatedData.forEach((item, index) => {
+        paginatedData.forEach((item) => {
+            if (!item.id) {
+                console.error('Item missing id:', item);
+                return;
+            }
             const row = document.createElement('tr');
             row.setAttribute('data-id', item.id);
+            row.className = 'activity-row';
             row.style.cursor = 'pointer';
 
             this.columns.forEach(column => {
@@ -45,40 +49,10 @@ class TableLayout {
                 row.appendChild(td);
             });
 
-            // Actions column
-            const actionsTd = document.createElement('td');
-            actionsTd.className = 'text-center';
-            actionsTd.innerHTML = item.actions || '';
-            row.appendChild(actionsTd);
-
             tbody.appendChild(row);
+        });
 
-            // Render expandable row if expanded
-            if (this.expandedRows.has(item.id)) {
-                const expandRow = document.createElement('tr');
-                expandRow.className = 'expandable-row';
-                expandRow.setAttribute('data-id', item.id);
-                const expandTd = document.createElement('td');
-                expandTd.setAttribute('colspan', this.columns.length + 1);
-                expandTd.innerHTML = item.expandableContent || '';
-                expandRow.appendChild(expandTd);
-                tbody.appendChild(expandRow);
-            }
-        });
-        this.tableBody.querySelectorAll('tr').forEach(row => {
-            row.addEventListener('click', () => this.onRowClick(row));
-        });
         this.renderPagination();
-    }
-
-    toggleExpandableRow(activityId) {
-        activityId = activityId.toString();
-        if (this.expandedRows.has(activityId)) {
-            this.expandedRows.delete(activityId);
-        } else {
-            this.expandedRows.add(activityId);
-        }
-        this.renderTable();
     }
 
     searchData(query) {
@@ -162,23 +136,6 @@ class TableLayout {
     }
 
     setupEventListeners() {
-        const tableBody = document.getElementById(this.tableBodyId);
-        tableBody.addEventListener('click', (e) => {
-            const row = e.target.closest('tr');
-            if (row && !e.target.closest('.expand-btn, .cancel-btn, [data-bs-toggle="modal"]')) {
-                this.onRowClick(row);
-            }
-
-            if (e.target.classList.contains('expand-btn')) {
-                const activityId = e.target.getAttribute('data-id');
-                this.toggleExpandableRow(activityId);
-            }
-
-            if (e.target.classList.contains('cancel-btn')) {
-                this.onDelete(e.target);
-            }
-        });
-
         const searchInput = document.getElementById(this.searchInputId);
         const clearSearchBtn = document.getElementById(this.clearSearchBtnId);
         if (searchInput) {
@@ -239,80 +196,5 @@ class TableLayout {
             errorDiv.textContent = '';
             errorDiv.classList.add('d-none');
         }
-    }
-
-    loadAttendanceModal(activityId) {
-        const participantList = document.getElementById(`participantList${activityId}`);
-        const participantCount = document.getElementById(`participantCount${activityId}`);
-        const attendedCount = document.getElementById(`attendedCount${activityId}`);
-
-        fetch(`/activities/${activityId}/attendance`)
-            .then(response => response.json())
-            .then(data => {
-                participantList.innerHTML = '';
-                let attended = 0;
-
-                data.participants.forEach(participant => {
-                    const status = participant.attendance_status || 'N/A';
-                    if (status === 'present') attended++;
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${participant.user_id}</td>
-                        <td>${participant.student_id || 'N/A'}</td>
-                        <td>${participant.name}</td>
-                        <td>
-                            <button class="btn btn-sm btn-${status === 'present' ? 'success' : 'danger'} mb-0 attendance-toggle-btn"
-                                    data-activity-id="${activityId}"
-                                    data-user-id="${participant.user_id}"
-                                    data-status="${status === 'present' ? 'present' : 'absent'}">
-                                ${status === 'present' ? 'Có mặt' : status === 'absent' ? 'Vắng mặt' : 'Chưa điểm danh'}
-                            </button>
-                        </td>
-                    `;
-                    participantList.appendChild(row);
-                });
-
-                participantCount.textContent = data.participants.length;
-                attendedCount.textContent = attended;
-
-                this.setupAttendanceButtons(activityId);
-            })
-            .catch(error => {
-                console.error('Error loading attendance:', error);
-                participantList.innerHTML = '<tr><td colspan="4">Có lỗi xảy ra khi tải dữ liệu.</td></tr>';
-            });
-    }
-
-    setupAttendanceButtons(activityId) {
-        const buttons = document.querySelectorAll(`#participantList${activityId} .attendance-toggle-btn`);
-        buttons.forEach(button => {
-            button.addEventListener('click', () => {
-                const activityId = button.getAttribute('data-activity-id');
-                const userId = button.getAttribute('data-user-id');
-                const currentStatus = button.getAttribute('data-status');
-                const newStatus = currentStatus === 'present' ? 'absent' : 'present';
-
-                fetch('/activities/attendance/toggle', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        activity_id: activityId,
-                        user_id: userId,
-                        status: newStatus
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        this.loadAttendanceModal(activityId);
-                    } else {
-                        alert('Có lỗi xảy ra: ' + data.error);
-                    }
-                })
-                .catch(error => alert('Có lỗi xảy ra: ' + error.message));
-            });
-        });
     }
 }

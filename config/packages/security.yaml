@@ -41,7 +41,7 @@ security:
         - { path: ^/update-student-id, roles: IS_AUTHENTICATED_FULLY } # Thêm phân quyền cho route update-student-id
         - { path: ^/dashboard, roles: [ROLE_ADMIN, ROLE_TREASURER] }
         - { path: ^/members, roles: [ROLE_ADMIN, ROLE_TREASURER] }
-        - { path: ^/activities, roles: [ROLE_ADMIN, ROLE_TREASURER] }
+        - { path: ^/activities, roles: PUBLIC_ACCESS }
         - { path: ^/attendances, roles: [ROLE_ADMIN, ROLE_TREASURER] }
         - { path: ^/activity_participant, roles: [ROLE_ADMIN, ROLE_TREASURER] }
         - { path: ^/funds, roles: [ROLE_ADMIN, ROLE_TREASURER] }

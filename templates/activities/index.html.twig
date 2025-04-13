@@ -259,7 +259,7 @@
                             time: '{{ activity.time ? activity.time|date('H:i') : 'N/A' }}',
                             image: '{{ activity.image ? asset(activity.image)|e('js') : '' }}',
                             participantsCount: {{ activityParticipants[activity.id]|default([])|length }},
-                            actions: `
+                            action: `
                                 {% if is_granted('ROLE_ADMIN') %}
                                     <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}" onclick="event.stopPropagation();">Sửa</button>
                                     {% if activity.status != 'cancelled' and activity.status != 'completed' %}
@@ -271,6 +271,9 @@
                     {% endfor %}
                 ];
 
+                // Debug: Kiểm tra dữ liệu
+                console.log('Activities Data:', activitiesData);
+
                 // TableLayout for Activities
                 const activitiesTable = new TableLayout({
                     data: activitiesData,
@@ -281,10 +284,10 @@
                     columns: [
                         {
                             field: 'title',
-                            formatter: (value) => `
-                                <div class="d-flex px-2 py-1">
-                                    <div class="d-flex flex-column justify-content-center">
-                                        <h6 class="mb-0 text-sm">${value.length > 25 ? value.slice(0, 25) + '...' : value}</h6>
+                            formatter: (value, data) => `
+                                <div class="d-flex px-2 py-1" data-id="${data.id}">
+                                    <div class="d-flex flex-column justify-content-center" data-id="${data.id}">
+                                        <h6 class="mb-0 text-sm" data-id="${data.id}">${value.length > 25 ? value.slice(0, 25) + '...' : value}</h6>
                                     </div>
                                 </div>
                             `
@@ -292,32 +295,90 @@
                         { field: 'date', type: 'date' },
                         {
                             field: 'location',
-                            formatter: (value) => `<p class="text-xs font-weight-bold mb-0">${value.length > 20 ? value.slice(0, 20) + '...' : value}</p>`
+                            formatter: (value, data) => `<p class="text-xs font-weight-bold mb-0" data-id="${data.id}">${value.length > 20 ? value.slice(0, 20) + '...' : value}</p>`
                         },
                         {
                             field: 'status',
-                            formatter: (value) => `
-                                <span class="badge bg-${value === 'planned' ? 'primary' : (value === 'ongoing' ? 'success' : (value === 'completed' ? 'info' : 'danger'))}">${value}</span>
+                            formatter: (value, data) => `
+                                <span class="badge bg-${value === 'planned' ? 'primary' : (value === 'ongoing' ? 'success' : (value === 'completed' ? 'info' : 'danger'))}" data-id="${data.id}">${value}</span>
                             `
                         },
                         { field: 'createdBy' },
+                        {
+                            field: 'action',
+                            formatter: (value, data) => value,
+                            className: 'text-center'
+                        }
                     ],
                     onRowClick: (row) => {
-                        const activityId = row.getAttribute('data-id');
+                        const activityId = row.getAttribute('data-id'); // Lấy ID từ thuộc tính data-id
+                        if (!activityId) {
+                            console.error('Invalid row clicked:', row);
+                            return;
+                        }
                         const activity = activitiesData.find(a => a.id === activityId);
                         if (activity) {
                             displayActivityDetails(activity);
+                        } else {
+                            console.error('Activity not found for ID:', activityId);
                         }
+                    },
+                    rowAttributes: (row, data) => {
+                        row.setAttribute('data-id', data.id); // Thêm thuộc tính data-id vào mỗi hàng
+                    },
+                    onDelete: (button) => {
+                        if (!confirm('Bạn có chắc chắn muốn hủy hoạt động này?')) return;
+                        const id = button.getAttribute('data-id');
+                        const csrfToken = button.getAttribute('data-csrf-token');
+                        fetch(`/activities/${id}/cancel`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `_token=${csrfToken}`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) window.location.href = data.redirect;
+                            else alert(data.error || 'Có lỗi xảy ra.');
+                        })
+                        .catch(error => alert('Có lỗi xảy ra: ' + error.message));
                     },
                     scrollPositionKey: 'activities_table_scroll_position'
                 });
 
-                // Hiển thị chi tiết hoạt động trong dynamicContent
+                // Listener thủ công cho click hàng
+                document.getElementById('activitiesTableBody').addEventListener('click', (e) => {
+                    // Tìm `data-id` từ phần tử được nhấn
+                    const activityId = e.target.getAttribute('data-id');
+                    if (!activityId) {
+                        console.error('Invalid element clicked:', e.target);
+                        return;
+                    }
+
+                    console.log('Row clicked:', activityId); // Debug
+                    const activity = activitiesData.find(a => a.id === activityId);
+                    if (activity) {
+                        displayActivityDetails(activity);
+                    } else {
+                        console.error('Activity not found for ID:', activityId);
+                    }
+                });
+
+                // Khai báo currentActivityId
                 let currentActivityId = null;
+
+                // Hiển thị chi tiết hoạt động trong dynamicContent
                 function displayActivityDetails(activity) {
-                    if (!activity) return;
+                    if (!activity) {
+                        console.error("Activity data is missing.");
+                        return;
+                    }
+
                     const dynamicContent = document.getElementById('dynamicContent');
-                    // Không làm mới nếu click lại cùng hoạt động
+                    if (!dynamicContent) {
+                        console.error("Element with ID 'dynamicContent' not found.");
+                        return;
+                    }
+
                     if (currentActivityId === activity.id) return;
                     currentActivityId = activity.id;
 
@@ -350,32 +411,9 @@
                 function resetDynamicContent() {
                     currentActivityId = null;
                     document.getElementById('dynamicContent').innerHTML = `
-                        <div class="alert alert-info text-center">Chọn một hoạt động để xem chi tiết</div>
+                        <div class="alert alert-info text-center text-white">Chọn một hoạt động để xem chi tiết</div>
                     `;
                 }
-
-                // Xử lý nút hủy trong cột Hành động
-                document.querySelectorAll('.cancel-btn').forEach(button => {
-                    button.addEventListener('click', () => {
-                        if (!confirm('Bạn có chắc chắn muốn hủy hoạt động này?')) return;
-                        const id = button.getAttribute('data-id');
-                        const csrfToken = button.getAttribute('data-csrf-token');
-                        fetch(`/activities/${id}/cancel`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: `_token=${csrfToken}`
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = data.redirect;
-                            } else {
-                                alert(data.error || 'Có lỗi xảy ra.');
-                            }
-                        })
-                        .catch(error => alert('Có lỗi xảy ra: ' + error.message));
-                    });
-                });
 
                 // Xử lý modal điểm danh
                 document.addEventListener('click', function (event) {
@@ -398,13 +436,11 @@
                     const errorDiv = document.getElementById(`attendanceError${activityId}`);
                     const searchInput = document.getElementById(`participantSearch${activityId}`);
 
-                    // Reset giao diện
                     participantList.innerHTML = '<tr><td colspan="4">Đang tải...</td></tr>';
                     participantCount.textContent = 'Đang tải...';
                     attendedCount.textContent = 'Đang tải...';
                     errorDiv.classList.add('d-none');
 
-                    // Gọi API lấy danh sách tham gia
                     fetch(`/activities/${activityId}/participants`)
                         .then(response => response.json())
                         .then(data => {
@@ -412,12 +448,10 @@
                                 throw new Error(data.error || 'Không thể tải dữ liệu.');
                             }
 
-                            // Cập nhật số liệu
                             participantCount.textContent = data.totalParticipants;
                             attendedCount.textContent = data.totalAttended;
                             participantList.innerHTML = '';
 
-                            // Render danh sách
                             data.participants.forEach(participant => {
                                 const row = document.createElement('tr');
                                 row.innerHTML = `
@@ -425,7 +459,7 @@
                                     <td>${participant.studentId || 'N/A'}</td>
                                     <td>${participant.name}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-${participant.attended ? 'success' : 'danger'} attendance-toggle-btn"
+                                        <button class="btn btn-sm btn-${participant.attended ? 'success' : 'danger'} attendance-toggle-btn mb-0"
                                                 data-activity-id="${activityId}"
                                                 data-user-id="${participant.id}"
                                                 data-status="${participant.attended ? 'present' : 'absent'}"
@@ -437,7 +471,6 @@
                                 participantList.appendChild(row);
                             });
 
-                            // Tìm kiếm trong modal
                             searchInput.addEventListener('input', () => {
                                 const query = searchInput.value.toLowerCase();
                                 Array.from(participantList.children).forEach(row => {
@@ -446,7 +479,6 @@
                                 });
                             });
 
-                            // Xử lý nút điểm danh
                             document.querySelectorAll(`#participantList${activityId} .attendance-toggle-btn`).forEach(btn => {
                                 btn.addEventListener('click', () => {
                                     const userId = btn.getAttribute('data-user-id');
@@ -461,7 +493,8 @@
                                     .then(response => response.json())
                                     .then(data => {
                                         if (data.success) {
-                                            loadAttendanceModal(activityId); // Tải lại modal
+                                            // Cập nhật lại modal sau khi trạng thái thay đổi
+                                            loadAttendanceModal(activityId);
                                         } else {
                                             errorDiv.textContent = data.error || 'Không thể cập nhật trạng thái.';
                                             errorDiv.classList.remove('d-none');
@@ -491,9 +524,8 @@
                         const submitBtn = addActivityForm.querySelector('button[type="submit"]');
                         const spinner = document.getElementById('addActivitySpinner');
                         const errorDiv = document.getElementById('addActivityError');
-                        submitBtn.disabled = true;
-                        spinner.classList.remove('d-none');
-                        errorDiv.classList.add('d-none');
+                        activitiesTable.showLoading(submitBtn, spinner);
+                        activitiesTable.hideError(errorDiv);
 
                         fetch(addActivityForm.action, {
                             method: 'POST',
@@ -501,20 +533,16 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            submitBtn.disabled = false;
-                            spinner.classList.add('d-none');
+                            activitiesTable.hideLoading(submitBtn, spinner);
                             if (data.success) {
                                 window.location.href = data.redirect;
                             } else {
-                                errorDiv.textContent = data.error || 'Dữ liệu không hợp lệ.';
-                                errorDiv.classList.remove('d-none');
+                                activitiesTable.showError(errorDiv, data.error || 'Dữ liệu không hợp lệ.');
                             }
                         })
                         .catch(error => {
-                            submitBtn.disabled = false;
-                            spinner.classList.add('d-none');
-                            errorDiv.textContent = 'Lỗi: ' + error.message;
-                            errorDiv.classList.remove('d-none');
+                            activitiesTable.hideLoading(submitBtn, spinner);
+                            activitiesTable.showError(errorDiv, 'Lỗi: ' + error.message);
                         });
                     });
                 }
@@ -528,9 +556,8 @@
                             const submitBtn = editActivityForm{{ activity.id }}.querySelector('button[type="submit"]');
                             const spinner = document.getElementById('editActivitySpinner{{ activity.id }}');
                             const errorDiv = document.getElementById('editActivityError{{ activity.id }}');
-                            submitBtn.disabled = true;
-                            spinner.classList.remove('d-none');
-                            errorDiv.classList.add('d-none');
+                            activitiesTable.showLoading(submitBtn, spinner);
+                            activitiesTable.hideError(errorDiv);
 
                             fetch(editActivityForm{{ activity.id }}.action, {
                                 method: 'POST',
@@ -538,20 +565,16 @@
                             })
                             .then(response => response.json())
                             .then(data => {
-                                submitBtn.disabled = false;
-                                spinner.classList.add('d-none');
+                                activitiesTable.hideLoading(submitBtn, spinner);
                                 if (data.success) {
                                     window.location.href = data.redirect;
                                 } else {
-                                    errorDiv.textContent = data.error || 'Dữ liệu không hợp lệ.';
-                                    errorDiv.classList.remove('d-none');
+                                    activitiesTable.showError(errorDiv, data.error || 'Dữ liệu không hợp lệ.');
                                 }
                             })
                             .catch(error => {
-                                submitBtn.disabled = false;
-                                spinner.classList.add('d-none');
-                                errorDiv.textContent = 'Lỗi: ' + error.message;
-                                errorDiv.classList.remove('d-none');
+                                activitiesTable.hideLoading(submitBtn, spinner);
+                                activitiesTable.showError(errorDiv, 'Lỗi: ' + error.message);
                             });
                         });
                     }
