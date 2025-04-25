@@ -12,15 +12,34 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 class SecurityController extends AbstractController
 {
     #[Route(path: '/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
+        // Nếu đã đăng nhập, chuyển hướng đến trang chủ
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_home');
+        }
+
+        // Lấy lỗi đăng nhập nếu có
         $error = $authenticationUtils->getLastAuthenticationError();
+        
+        // Lấy email cuối cùng được sử dụng
+        $lastUsername = $authenticationUtils->getLastUsername();
+
+        // Kiểm tra nếu có lỗi từ session
+        $sessionError = $request->getSession()->get('login_error');
+        if ($sessionError) {
+            $request->getSession()->remove('login_error');
+        }
+
         return $this->render('security/login.html.twig', [
+            'last_username' => $lastUsername,
             'error' => $error,
+            'session_error' => $sessionError
         ]);
     }
 
@@ -61,6 +80,13 @@ class SecurityController extends AbstractController
         if ($request->isMethod('POST')) {
             $studentId = $request->request->get('student_id');
 
+            // Validate student ID
+            if (empty($studentId)) {
+                return $this->render('security/student_id.html.twig', [
+                    'error' => 'Vui lòng nhập mã sinh viên.',
+                ]);
+            }
+
             // Kiểm tra studentId đã tồn tại chưa
             $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['student_id' => $studentId]);
             if ($existingUser) {
@@ -69,23 +95,30 @@ class SecurityController extends AbstractController
                 ]);
             }
 
-            // Tạo user mới
-            $user = new Users();
-            $user->setStudentId($studentId);
-            $user->setEmail($googleUserData['email']);
-            $user->setGoogleId($googleUserData['googleId']);
-            $user->setName($googleUserData['name']);
-            $user->setRole('ROLE_MEMBER');
-            $user->setStatus('active');
-            $user->setClassId('');
-            $user->setFaculty('');
-            $user->setContactInfo('');
+            try {
+                // Tạo user mới
+                $user = new Users();
+                $user->setStudentId($studentId);
+                $user->setEmail($googleUserData['email']);
+                $user->setGoogleId($googleUserData['googleId']);
+                $user->setName($googleUserData['name']);
+                $user->setRole('ROLE_MEMBER');
+                $user->setStatus('active');
+                $user->setClassId('');
+                $user->setFaculty('');
+                $user->setContactInfo('');
 
-            $entityManager->persist($user);
-            $entityManager->flush();
+                $entityManager->persist($user);
+                $entityManager->flush();
 
-            $session->remove('google_user_data');
-            return $this->redirectToRoute('app_login');
+                $session->remove('google_user_data');
+                $this->addFlash('success', 'Đăng ký thành công! Vui lòng đăng nhập.');
+                return $this->redirectToRoute('app_login');
+            } catch (\Exception $e) {
+                return $this->render('security/student_id.html.twig', [
+                    'error' => 'Có lỗi xảy ra. Vui lòng thử lại sau.',
+                ]);
+            }
         }
 
         return $this->render('security/student_id.html.twig', [
@@ -138,20 +171,17 @@ class SecurityController extends AbstractController
             $existingUser = $entityManager->getRepository(Users::class)->findOneBy(['student_id' => $studentId]);
             if ($existingUser) {
                 $this->addFlash('error', 'Mã sinh viên đã tồn tại. Vui lòng thử mã khác.');
-                return $this->render('security/update_student_id.html.twig', [
-                    'form' => $form->createView(),
-                ]);
+                return $this->redirectToRoute('app_update_student_id');
             }
 
             try {
-                // Cập nhật studentId
                 $user->setStudentId($studentId);
                 $entityManager->flush();
-
                 $this->addFlash('success', 'Cập nhật mã sinh viên thành công!');
                 return $this->redirectToRoute('app_dashboard');
             } catch (\Exception $e) {
-                $this->addFlash('error', 'Có lỗi xảy ra khi cập nhật mã sinh viên: ' . $e->getMessage());
+                $this->addFlash('error', 'Có lỗi xảy ra. Vui lòng thử lại sau.');
+                return $this->redirectToRoute('app_update_student_id');
             }
         }
 
