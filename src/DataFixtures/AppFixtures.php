@@ -23,7 +23,7 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
-        $faker = Factory::create();
+        $faker = Factory::create('vi_VN');
 
         // Tạo 3 user cố định
         $admin = new Users();
@@ -35,7 +35,7 @@ class AppFixtures extends Fixture
         $admin->setStatus('active');
         $admin->setClassId('HTTT2211');
         $admin->setFaculty('Công nghệ Thông tin');
-        $admin->setContactInfo('Phone: 0123456789, Address: 123 Đường Láng, Đống Đa, Hà Nội');
+        $admin->setContactInfo('Điện thoại: 0123456789, Địa chỉ: 123 Đường Láng, Đống Đa, Hà Nội');
         $admin->setCreateAt(new \DateTime());
         $admin->setUpdateAt(new \DateTime());
         $admin->setGoogleId('google_id_admin_000');
@@ -50,7 +50,7 @@ class AppFixtures extends Fixture
         $treasurer->setStatus('active');
         $treasurer->setClassId('CNTP2211');
         $treasurer->setFaculty('Công nghệ Thực phẩm');
-        $treasurer->setContactInfo('Phone: 0987654321, Address: 456 Nguyễn Trãi, Thanh Xuân, Hà Nội');
+        $treasurer->setContactInfo('Điện thoại: 0987654321, Địa chỉ: 456 Nguyễn Trãi, Thanh Xuân, Hà Nội');
         $treasurer->setCreateAt(new \DateTime());
         $treasurer->setUpdateAt(new \DateTime());
         $treasurer->setGoogleId('google_id_treasurer_001');
@@ -65,7 +65,7 @@ class AppFixtures extends Fixture
         $member->setStatus('active');
         $member->setClassId('HTTT2211');
         $member->setFaculty('Hệ thống thông tin');
-        $member->setContactInfo('Phone: 0912345678, Address: 789 Lê Lợi, TP.HCM');
+        $member->setContactInfo('Điện thoại: 0912345678, Địa chỉ: 789 Lê Lợi, TP.HCM');
         $member->setCreateAt(new \DateTime());
         $member->setUpdateAt(new \DateTime());
         $member->setGoogleId('google_id_member_002');
@@ -270,7 +270,7 @@ class AppFixtures extends Fixture
                 'proposed_changes' => [
                     'name' => 'Nguyễn Trần Anh Khoa (Updated)',
                     'email' => 'khoa.updated@gmail.com',
-                    'contact_info' => 'Phone: 0912345678, Address: 123 Nguyễn Huệ, TP.HCM',
+                    'contact_info' => 'Điện thoại: 0912345678, Địa chỉ: 123 Nguyễn Huệ, TP.HCM',
                 ],
             ],
             [
