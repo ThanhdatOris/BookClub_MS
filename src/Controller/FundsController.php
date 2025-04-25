@@ -22,8 +22,24 @@ final class FundsController extends AbstractController
         // Kiểm tra quyền truy cập
         // $this->denyAccessUnlessGranted(['ROLE_ADMIN', 'ROLE_TREASURER'], null, 'Chỉ có Admin hoặc Treasurer mới được truy cập trang này.');
 
-        // Tải toàn bộ dữ liệu (không phân trang server-side)
-        $funds = $fundsRepository->findAll();
+        // Tạo QueryBuilder
+        $queryBuilder = $fundsRepository->createQueryBuilder('f')
+            ->orderBy('f.date', 'DESC');
+
+        // Xử lý tìm kiếm
+        $search = $request->query->get('search');
+        if ($search) {
+            $queryBuilder
+                ->andWhere('f.description LIKE :search OR f.transaction_type LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Phân trang
+        $pagination = $paginator->paginate(
+            $queryBuilder->getQuery(),
+            $request->query->getInt('page', 1),
+            10 // Số bản ghi trên mỗi trang
+        );
 
         // Tạo form để thêm giao dịch
         $addFund = new Funds();
@@ -31,14 +47,15 @@ final class FundsController extends AbstractController
 
         // Tạo form để sửa giao dịch
         $editFundForms = [];
-        foreach ($funds as $fund) {
+        foreach ($pagination as $fund) {
             $editFundForms[$fund->getId()] = $this->createForm(FundsType::class, $fund)->createView();
         }
 
         return $this->render('funds/index.html.twig', [
-            'funds' => $funds,
+            'funds' => $pagination,
             'addFundForm' => $addFundForm->createView(),
             'editFundForms' => $editFundForms,
+            'search' => $search,
         ]);
     }
 
