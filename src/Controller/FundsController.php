@@ -30,12 +30,28 @@ final class FundsController extends AbstractController
             ->orderBy('f.date', 'DESC');
 
         // Xử lý tìm kiếm
-        $search = $request->query->get('search');
         if ($search) {
             $queryBuilder
                 ->andWhere('f.description LIKE :search OR f.transaction_type LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
         }
+
+        // Tính tổng thu, tổng chi và số dư
+        $totalIncomeQuery = $fundsRepository->createQueryBuilder('f')
+            ->select('SUM(f.amount)')
+            ->where('f.transaction_type = :type')
+            ->setParameter('type', 'income')
+            ->getQuery();
+        $totalIncome = $totalIncomeQuery->getSingleScalarResult() ?? 0;
+
+        $totalExpenseQuery = $fundsRepository->createQueryBuilder('f')
+            ->select('SUM(f.amount)')
+            ->where('f.transaction_type = :type')
+            ->setParameter('type', 'expense')
+            ->getQuery();
+        $totalExpense = $totalExpenseQuery->getSingleScalarResult() ?? 0;
+
+        $balance = $totalIncome - $totalExpense;
 
         // Phân trang
         $pagination = $paginator->paginate(
@@ -59,6 +75,9 @@ final class FundsController extends AbstractController
             'addFundForm' => $addFundForm->createView(),
             'editFundForms' => $editFundForms,
             'search' => $search,
+            'totalIncome' => $totalIncome,
+            'totalExpense' => $totalExpense,
+            'balance' => $balance,
         ]);
     }
 
