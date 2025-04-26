@@ -34,7 +34,8 @@ class Activities
     #[ORM\ManyToOne(inversedBy: 'activities')]
     private ?Users $created_by_id = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(targetEntity: Users::class)]
+    #[ORM\JoinColumn(name: 'created_by', referencedColumnName: 'id', nullable: true)]
     private ?Users $created_by = null;
 
     #[ORM\Column(length: 50)]
