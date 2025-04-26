@@ -4,25 +4,6 @@
 
 {% block body %}
     <div class="container-fluid">
-        <div class="card shadow mb-4">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý quỹ</h6>
-                    <div class="d-flex align-items-center">
-                        <div class="d-flex align-items-center me-2 mb-0">
-                            <input type="text" id="fundsSearchInput" class="form-control me-2" placeholder="Tìm kiếm giao dịch..." style="max-width: 300px;">
-                            <button type="button" id="fundsClearSearchBtn" class="btn btn-sm btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
-                        </div>
-                        {% if is_granted('ROLE_TREASURER') %}
-                            <button type="button" class="btn btn-sm btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addFundModal">
-                                <i class="fas fa-plus me-1"></i> Thêm giao dịch
-                            </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {# Thống kê tổng quan #}
         <div class="row mb-4">
             <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
@@ -113,8 +94,21 @@
 
         {# Bảng hiển thị dữ liệu #}
         <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Danh sách giao dịch</h6>
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý quỹ</h6>
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center me-2 mb-0">
+                            <input type="text" id="fundsSearchInput" class="form-control me-2" placeholder="Tìm kiếm giao dịch..." style="max-width: 300px;">
+                            <button type="button" id="fundsClearSearchBtn" class="btn btn-sm btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                        </div>
+                        {% if is_granted('ROLE_TREASURER') %}
+                            <button type="button" class="btn btn-sm btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addFundModal">
+                                <i class="fas fa-plus me-1"></i> Thêm giao dịch
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
             <div class="card-body px-0 pt-0 pb-2">
                 <div class="table-responsive p-0 px-3" style="max-height: 1080px; overflow-y: auto;">
