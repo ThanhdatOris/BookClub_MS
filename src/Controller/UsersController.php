@@ -17,27 +17,20 @@ use Knp\Component\Pager\PaginatorInterface;
 final class UsersController extends AbstractController
 {
     #[Route(name: 'app_users_index', methods: ['GET'])]
-    public function index(Request $request, UsersRepository $usersRepository, ActivityParticipantRepository $participantRepository, PaginatorInterface $paginator): Response
+    public function index(Request $request, UsersRepository $usersRepository, ActivityParticipantRepository $participantRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        
         $search = $request->query->get('search');
         $queryBuilder = $usersRepository->createQueryBuilder('u')
-            ->orderBy('u.status', 'ASC') // Active users first
+            ->orderBy('u.status', 'ASC')
             ->addOrderBy('u.id', 'DESC');
-
         if ($search) {
             $queryBuilder->andWhere('u.name LIKE :search OR u.studentId LIKE :search OR u.email LIKE :search OR u.faculty LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
         }
+        $users = $queryBuilder->getQuery()->getResult();
 
-        $pagination = $paginator->paginate(
-            $queryBuilder->getQuery(),
-            $request->query->getInt('page', 1),
-            10
-        );
-
-        // Tính toán thống kê
+        // Thống kê
         $totalUsers = $usersRepository->count([]);
         $activeUsers = $usersRepository->count(['status' => 'active']);
         $inactiveUsers = $usersRepository->count(['status' => 'inactive']);
@@ -45,9 +38,9 @@ final class UsersController extends AbstractController
         $treasurerUsers = $usersRepository->count(['role' => 'ROLE_TREASURER']);
         $memberUsers = $usersRepository->count(['role' => 'ROLE_MEMBER']);
 
-        // Get activity statistics for each user
+        // Thống kê hoạt động
         $userStats = [];
-        foreach ($pagination as $user) {
+        foreach ($users as $user) {
             $participations = $participantRepository->findBy(['userId' => $user->getId()]);
             $attended = 0;
             $total = count($participations);
@@ -62,8 +55,24 @@ final class UsersController extends AbstractController
             ];
         }
 
+        // Chuẩn bị dữ liệu cho TableLayout (array to json)
+        $usersData = array_map(function($user) use ($userStats) {
+            return [
+                'id' => $user->getId(),
+                'studentId' => $user->getStudentId(),
+                'name' => $user->getName(),
+                'email' => $user->getEmail(),
+                'faculty' => $user->getFaculty(),
+                'role' => $user->getRole(),
+                'status' => $user->getStatus(),
+                'total_activities' => $userStats[$user->getId()]['total_activities'] ?? 0,
+                'attended_activities' => $userStats[$user->getId()]['attended_activities'] ?? 0,
+            ];
+        }, $users);
+
         return $this->render('users/index.html.twig', [
-            'users' => $pagination,
+            'users' => $users,
+            'users_json' => json_encode($usersData),
             'search' => $search,
             'total_users' => $totalUsers,
             'active_users' => $activeUsers,
