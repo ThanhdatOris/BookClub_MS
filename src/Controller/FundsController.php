@@ -25,42 +25,24 @@ final class FundsController extends AbstractController
         $startDate = $request->query->get('start_date');
         $endDate = $request->query->get('end_date');
 
-        // Tạo query để lấy dữ liệu từ database
+        // Tạo QueryBuilder
         $queryBuilder = $fundsRepository->createQueryBuilder('f')
-            ->leftJoin('f.created_by', 'u')
             ->orderBy('f.date', 'DESC');
 
-        // Thêm điều kiện tìm kiếm nếu có
+        // Xử lý tìm kiếm
+        $search = $request->query->get('search');
         if ($search) {
-            $queryBuilder->andWhere('f.description LIKE :search OR f.transaction_type LIKE :search OR u.fullname LIKE :search')
+            $queryBuilder
+                ->andWhere('f.description LIKE :search OR f.transaction_type LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
         }
 
-        // Thêm điều kiện lọc theo ngày nếu có
-        if ($startDate) {
-            $queryBuilder->andWhere('f.date >= :startDate')
-                ->setParameter('startDate', new \DateTime($startDate));
-        }
-        if ($endDate) {
-            $queryBuilder->andWhere('f.date <= :endDate')
-                ->setParameter('endDate', new \DateTime($endDate));
-        }
-
-        // Sử dụng KnpPaginator để phân trang
+        // Phân trang
         $pagination = $paginator->paginate(
-            $queryBuilder,
+            $queryBuilder->getQuery(),
             $request->query->getInt('page', 1),
-            10
+            10 // Số bản ghi trên mỗi trang
         );
-
-        // Tính tổng thu và chi
-        $totalIncome = $fundsRepository->getTotalFundsByType('income');
-        $totalExpense = $fundsRepository->getTotalFundsByType('expense');
-        $balance = $totalIncome - $totalExpense;
-
-        // Lấy dữ liệu thống kê theo tháng cho biểu đồ
-        $currentYear = (new \DateTime())->format('Y');
-        $monthlyStats = $fundsRepository->getMonthlyFunds($currentYear);
 
         // Tạo form để thêm giao dịch
         $addFund = new Funds();
@@ -69,22 +51,14 @@ final class FundsController extends AbstractController
         // Tạo form edit cho mỗi giao dịch
         $editFundForms = [];
         foreach ($pagination as $fund) {
-            $editFundForms[$fund->getId()] = $this->createForm(FundsType::class, $fund, [
-                'action' => $this->generateUrl('app_funds_edit', ['id' => $fund->getId()]),
-            ])->createView();
+            $editFundForms[$fund->getId()] = $this->createForm(FundsType::class, $fund)->createView();
         }
 
         return $this->render('funds/index.html.twig', [
             'funds' => $pagination,
             'addFundForm' => $addFundForm->createView(),
             'editFundForms' => $editFundForms,
-            'totalIncome' => $totalIncome,
-            'totalExpense' => $totalExpense,
-            'balance' => $balance,
-            'monthlyStats' => $monthlyStats,
             'search' => $search,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
         ]);
     }
 
