@@ -12,15 +12,42 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/proposals')]
 final class ProposalsController extends AbstractController
 {
-    #[Route(name: 'app_proposals_index', methods: ['GET'])]
-    public function index(ProposalsRepository $proposalsRepository): Response
+    #[Route('/', name: 'app_proposals_index', methods: ['GET'])]
+    public function index(Request $request, ProposalsRepository $proposalsRepository, PaginatorInterface $paginator): Response
     {
+        $search = $request->query->get('search');
+        $queryBuilder = $proposalsRepository->createQueryBuilder('p')
+            ->orderBy('p.id', 'DESC');
+
+        if ($search) {
+            $queryBuilder->andWhere('p.content LIKE :search OR p.type LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        $proposals = $paginator->paginate(
+            $queryBuilder->getQuery(),
+            $request->query->getInt('page', 1),
+            10
+        );
+
+        // Tính toán thống kê
+        $totalProposals = $proposalsRepository->count([]);
+        $pendingProposals = $proposalsRepository->count(['status' => 'pending']);
+        $approvedProposals = $proposalsRepository->count(['status' => 'approved']);
+        $rejectedProposals = $proposalsRepository->count(['status' => 'rejected']);
+
         return $this->render('proposals/index.html.twig', [
-            'proposals' => $proposalsRepository->findAll(),
+            'proposals' => $proposals,
+            'search' => $search,
+            'total_proposals' => $totalProposals,
+            'pending_proposals' => $pendingProposals,
+            'approved_proposals' => $approvedProposals,
+            'rejected_proposals' => $rejectedProposals,
         ]);
     }
 
