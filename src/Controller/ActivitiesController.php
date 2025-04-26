@@ -16,17 +16,52 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Service\ImageService;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/activities')]
 final class ActivitiesController extends AbstractController
 {
-    #[Route(name: 'app_activities_index', methods: ['GET'])]
-    public function index(ActivitiesRepository $activitiesRepository, ActivityParticipantRepository $participantRepository): Response
+    private $imageService;
+
+    public function __construct(ImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
+    #[Route('/', name: 'app_activities_index', methods: ['GET'])]
+    public function index(Request $request, ActivitiesRepository $activitiesRepository, ActivityParticipantRepository $participantRepository, PaginatorInterface $paginator): Response
     {
         // $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ admin mới được truy cập trang này.');
 
-        // Lấy tất cả hoạt động, sắp xếp theo created_at DESC
-        $activities = $activitiesRepository->findBy([], ['created_at' => 'DESC']);
+        $search = $request->query->get('search');
+        $status = $request->query->get('status');
+        
+        $queryBuilder = $activitiesRepository->createQueryBuilder('a')
+            ->orderBy('a.id', 'DESC');
+
+        if ($search) {
+            $queryBuilder->andWhere('a.title LIKE :search OR a.location LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($status && in_array($status, ['pending', 'ongoing', 'completed', 'cancelled'])) {
+            $queryBuilder->andWhere('a.status = :status')
+                ->setParameter('status', $status);
+        }
+
+        $activities = $paginator->paginate(
+            $queryBuilder->getQuery(),
+            $request->query->getInt('page', 1),
+            10
+        );
+
+        $totalActivities = $activitiesRepository->count([]);
+        $pendingActivities = $activitiesRepository->count(['status' => 'planned']);
+        $ongoingActivities = $activitiesRepository->count(['status' => 'ongoing']);
+        $completedActivities = $activitiesRepository->count(['status' => 'completed']);
+        $cancelledActivities = $activitiesRepository->count(['status' => 'cancelled']);
+
         $activityParticipants = [];
 
         foreach ($activities as $activity) {
@@ -57,6 +92,13 @@ final class ActivitiesController extends AbstractController
             'activityParticipants' => $activityParticipants,
             'addActivityForm' => $addActivityForm->createView(),
             'editActivityForms' => $editActivityForms,
+            'totalActivities' => $totalActivities,
+            'pendingActivities' => $pendingActivities,
+            'ongoingActivities' => $ongoingActivities,
+            'completedActivities' => $completedActivities,
+            'cancelledActivities' => $cancelledActivities,
+            'currentSearch' => $search,
+            'currentStatus' => $status,
         ]);
     }
 
@@ -140,49 +182,54 @@ final class ActivitiesController extends AbstractController
         }
     }
 
-    #[Route('/new', name: 'app_activities_new', methods: ['POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    #[Route('/new', name: 'app_activities_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ admin mới được thêm hoạt động.');
+        try {
+            $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ admin mới được thêm hoạt động.');
 
-        $activity = new Activities();
-        $activity->setCreatedBy($this->getUser());
-        $activity->setCreatedAt(new \DateTime());
-        $activity->setUpdatedAt(new \DateTime());
+            $activity = new Activities();
+            $form = $this->createForm(ActivitiesType::class, $activity);
+            $form->handleRequest($request);
 
-        $form = $this->createForm(ActivitiesType::class, $activity);
-        $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $imageFile = $form->get('image')->getData();
+                
+                if ($imageFile) {
+                    try {
+                        $this->imageService->validateImage($imageFile);
+                        $fileName = $this->imageService->upload($imageFile);
+                        $activity->setImage($fileName);
+                    } catch (\Exception $e) {
+                        $this->addFlash('error', 'Lỗi khi tải lên ảnh: ' . $e->getMessage());
+                        return $this->redirectToRoute('app_activities_index');
+                    }
+                }
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $imageFile = $form->get('image')->getData();
-            if ($imageFile) {
-                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
-                $imageFile->move(
-                    $this->getParameter('activity_images_directory'),
-                    $newFilename
-                );
-                $activity->setImage('uploads/activities/' . $newFilename);
-            }
+                $activity->setCreatedBy($this->getUser());
+                $activity->setCreatedAt(new \DateTime());
+                $activity->setUpdatedAt(new \DateTime());
 
-            try {
                 $entityManager->persist($activity);
                 $entityManager->flush();
-                $this->addFlash('success', 'Thêm hoạt động thành công!');
-                return new JsonResponse(['success' => true, 'redirect' => $this->generateUrl('app_activities_index')]);
-            } catch (\Exception $e) {
-                return new JsonResponse(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
-        }
 
-        $errors = [];
-        foreach ($form->getErrors(true) as $error) {
-            $errors[] = $error->getMessage();
+                $this->addFlash('success', 'Thêm hoạt động thành công!');
+                return $this->redirectToRoute('app_activities_index');
+            }
+
+            if ($form->isSubmitted() && !$form->isValid()) {
+                $this->addFlash('error', 'Vui lòng kiểm tra lại thông tin nhập vào.');
+            }
+
+            return $this->redirectToRoute('app_activities_index');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            return $this->redirectToRoute('app_activities_index');
         }
-        return new JsonResponse(['error' => implode(', ', $errors)], Response::HTTP_BAD_REQUEST);
     }
 
-    #[Route('/{id}/edit', name: 'app_activities_edit', methods: ['POST'])]
-    public function edit(Request $request, Activities $activity, EntityManagerInterface $entityManager): JsonResponse
+    #[Route('/{id}/edit', name: 'app_activities_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Activities $activity, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ admin mới được chỉnh sửa hoạt động.');
 
@@ -191,13 +238,21 @@ final class ActivitiesController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $imageFile = $form->get('image')->getData();
+            
             if ($imageFile) {
-                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
-                $imageFile->move(
-                    $this->getParameter('activity_images_directory'),
-                    $newFilename
-                );
-                $activity->setImage('uploads/activities/' . $newFilename);
+                try {
+                    // Delete old image if exists
+                    if ($activity->getImage()) {
+                        $this->imageService->delete($activity->getImage());
+                    }
+                    
+                    $this->imageService->validateImage($imageFile);
+                    $fileName = $this->imageService->upload($imageFile);
+                    $activity->setImage($fileName);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', $e->getMessage());
+                    return $this->redirectToRoute('app_activities_edit', ['id' => $activity->getId()]);
+                }
             }
 
             $activity->setUpdatedAt(new \DateTime());
@@ -205,17 +260,16 @@ final class ActivitiesController extends AbstractController
             try {
                 $entityManager->flush();
                 $this->addFlash('success', 'Cập nhật hoạt động thành công!');
-                return new JsonResponse(['success' => true, 'redirect' => $this->generateUrl('app_activities_index')]);
+                return $this->redirectToRoute('app_activities_index');
             } catch (\Exception $e) {
                 return new JsonResponse(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         }
 
-        $errors = [];
-        foreach ($form->getErrors(true) as $error) {
-            $errors[] = $error->getMessage();
-        }
-        return new JsonResponse(['error' => implode(', ', $errors)], Response::HTTP_BAD_REQUEST);
+        return $this->render('activities/edit.html.twig', [
+            'activity' => $activity,
+            'form' => $form,
+        ]);
     }
 
     // Giữ lại nhưng không dùng trong index.html.twig hiện tại
@@ -237,6 +291,11 @@ final class ActivitiesController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ admin mới được xóa hoạt động.');
 
         if ($this->isCsrfTokenValid('delete' . $activity->getId(), $request->getPayload()->getString('_token'))) {
+            // Delete image if exists
+            if ($activity->getImage()) {
+                $this->imageService->delete($activity->getImage());
+            }
+            
             try {
                 $entityManager->remove($activity);
                 $entityManager->flush();
