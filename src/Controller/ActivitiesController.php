@@ -97,8 +97,8 @@ final class ActivitiesController extends AbstractController
             'ongoingActivities' => $ongoingActivities,
             'completedActivities' => $completedActivities,
             'cancelledActivities' => $cancelledActivities,
-            'currentSearch' => $search,
-            'currentStatus' => $status,
+            'search' => $search,
+            'status' => $status,
         ]);
     }
 

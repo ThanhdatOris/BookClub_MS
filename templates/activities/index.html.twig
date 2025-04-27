@@ -3,7 +3,7 @@
 {% block title %}Quản lý hoạt động{% endblock %}
 
 {% block body %}
-    <div class="container-fluid py-4">
+    <div class="container-fluid">
         <!-- Statistics Cards -->
         <div class="row">
             <div class="col-xl-3 col-sm-6 mb-4">
@@ -146,9 +146,10 @@
                             </table>
                         </div>
                         <div class="navigation mt-4 d-flex justify-content-center">
-                            <nav>
+                            {# <nav>
                                 <ul class="pagination" id="activitiesPagination"></ul>
-                            </nav>
+                            </nav> #}
+                            {{ knp_pagination_render(activities, null, {'search': search}) }}
                         </div>
                     </div>
                 </div>
