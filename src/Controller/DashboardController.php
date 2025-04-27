@@ -45,17 +45,19 @@ class DashboardController extends AbstractController
                 ->getSingleScalarResult();
 
             // Tính toán số dư quỹ
-            $qb = $fundsRepository->createQueryBuilder('f');
-            
             // Tổng thu
-            $totalIncome = $qb->select('SUM(f.amount)')
-                ->where('f.amount > 0')
+            $totalIncome = $fundsRepository->createQueryBuilder('f')
+                ->select('COALESCE(SUM(f.amount), 0)')
+                ->where('f.transactionType = :incomeType')
+                ->setParameter('incomeType', 'income')
                 ->getQuery()
                 ->getSingleScalarResult() ?? 0;
 
             // Tổng chi
-            $totalExpense = $qb->select('SUM(ABS(f.amount))')
-                ->where('f.amount < 0')
+            $totalExpense = $fundsRepository->createQueryBuilder('f')
+                ->select('COALESCE(SUM(ABS(f.amount)), 0)')
+                ->where('f.transactionType = :expenseType')
+                ->setParameter('expenseType', 'expense')
                 ->getQuery()
                 ->getSingleScalarResult() ?? 0;
 
@@ -66,27 +68,28 @@ class DashboardController extends AbstractController
             $participationCount = $activityParticipantRepository->count([]);
             
             // Dữ liệu cho biểu đồ biến động quỹ
-            $qb = $fundsRepository->createQueryBuilder('f')
+            $qbChart = $fundsRepository->createQueryBuilder('f')
                 ->where('YEAR(f.date) = :year')
                 ->setParameter('year', $year);
 
             if ($month) {
-                $qb->andWhere('MONTH(f.date) = :month')
+                $qbChart->andWhere('MONTH(f.date) = :month')
                    ->setParameter('month', $month);
             }
 
             if ($type === 'income') {
-                $qb->andWhere('f.amount > 0');
+                $qbChart->andWhere('f.amount > 0');
             } elseif ($type === 'expense') {
-                $qb->andWhere('f.amount < 0');
+                $qbChart->andWhere('f.amount < 0');
             }
 
-            $fundsByMonth = $qb->select("MONTH(f.date) as month, 
-                                       SUM(CASE WHEN f.amount > 0 THEN f.amount ELSE 0 END) as income,
-                                       SUM(CASE WHEN f.amount < 0 THEN ABS(f.amount) ELSE 0 END) as expense")
+            $fundsByMonth = $qbChart
+                ->select("MONTH(f.date) as month, 
+                         SUM(CASE WHEN f.amount > 0 THEN f.amount ELSE 0 END) as income,
+                         SUM(CASE WHEN f.amount < 0 THEN ABS(f.amount) ELSE 0 END) as expense")
                 ->groupBy('month')
                 ->getQuery()
-                ->getArrayResult();
+                ->getResult();
 
             // Khởi tạo mảng dữ liệu cho biểu đồ
             $fundLabels = [];

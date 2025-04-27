@@ -275,6 +275,15 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Format tiền tệ
+        const formatCurrency = (value) => {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND',
+                maximumFractionDigits: 0
+            }).format(value);
+        };
+
         // Khởi tạo biểu đồ
         var ctx = document.getElementById('chart-line').getContext('2d');
         var chart = new Chart(ctx, {
@@ -286,28 +295,34 @@
                     data: {{ incomeData|json_encode|raw }},
                     backgroundColor: 'rgba(66, 153, 225, 0.5)',
                     borderColor: 'rgb(66, 153, 225)',
-                    borderWidth: 1
+                    borderWidth: 1,
+                    stack: 'stack'
                 }, {
                     label: 'Chi',
                     data: {{ expenseData|json_encode|raw }},
                     backgroundColor: 'rgba(245, 101, 101, 0.5)',
                     borderColor: 'rgb(245, 101, 101)',
-                    borderWidth: 1
+                    borderWidth: 1,
+                    stack: 'stack'
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
                 scales: {
+                    x: {
+                        stacked: true
+                    },
                     y: {
+                        stacked: true,
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND',
-                                    maximumFractionDigits: 0
-                                }).format(value);
+                                return formatCurrency(value);
                             }
                         }
                     }
@@ -316,17 +331,17 @@
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return context.dataset.label + ': ' + new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND',
-                                    maximumFractionDigits: 0
-                                }).format(context.raw);
+                                return context.dataset.label + ': ' + formatCurrency(context.raw);
                             }
                         }
+                    },
+                    legend: {
+                        position: 'top'
                     }
                 }
             }
         });
+
 
         // Xử lý filter
         function updateChart() {
