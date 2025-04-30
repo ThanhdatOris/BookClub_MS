@@ -155,16 +155,6 @@
                     </div>
                 </div>
             </div>
-            
-            <div id="userDetailContainer" class="card my-4 d-none">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Chi tiết thành viên</h5>
-                    <button type="button" class="btn-close" aria-label="Close" onclick="hideUserDetail()"></button>
-                </div>
-                <div class="card-body" id="userDetailContent">
-                    <!-- Nội dung chi tiết sẽ được render tại đây -->
-                </div>
-            </div>
 
             <!-- Dynamic Content Container -->
             <div id="dynamicContent" class="mb-4 px-0">
@@ -284,6 +274,8 @@
                         const user = usersData.find(u => u.id == userId);
                         if (user) {
                             showUserDetail(user);
+                            let userDetailContainer = document.getElementById('dynamicContent');
+                            window.scrollTo(0, dynamicContent.offsetTop);
                         }
                     }
                 }
