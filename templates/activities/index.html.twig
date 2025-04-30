@@ -143,7 +143,6 @@
                                         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                             <a href="#" class="sort-link" data-sort="createdBy">Người tạo</a>
                                         </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody id="activitiesTableBody">
@@ -324,7 +323,6 @@
                             image: '{{ activity.image ? asset('uploads/activities/' ~ activity.image)|e('js') : '' }}',
                             participantsCount: {{ activityParticipants[activity.id]|default([])|length }},
                             hasJoined: {% if app.user %}{{ activityParticipants[activity.id]|default([])|filter(p => p.userId.id == app.user.id)|length > 0 ? 'true' : 'false' }}{% else %}false{% endif %},
-                            action: '{% if is_granted('ROLE_ADMIN') %}<button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editActivityModal{{ activity.id }}" onclick="event.stopPropagation();">Sửa</button>{% if activity.status != 'cancelled' and activity.status != 'completed' %} <button type="button" class="btn btn-sm btn-danger cancel-btn mb-0" data-id="{{ activity.id }}" data-csrf-token="{{ csrf_token('cancel' ~ activity.id) }}" onclick="event.stopPropagation();">Hủy</button>{% endif %}{% endif %}'
                         },
                     {% endfor %}
                 ];
@@ -359,12 +357,7 @@
                                 <span class="badge bg-${value === 'planned' ? 'primary' : (value === 'ongoing' ? 'success' : (value === 'completed' ? 'info' : 'danger'))}" data-id="${data.id}">${value}</span>
                             `
                         },
-                        { field: 'createdBy' },
-                        {
-                            field: 'action',
-                            formatter: (value, data) => value,
-                            className: 'text-center'
-                        }
+                        { field: 'createdBy' }
                     ],
                     onRowClick: (row) => {
                         const activityId = row.getAttribute('data-id');
@@ -372,10 +365,8 @@
                             console.error('Invalid row clicked:', row);
                             return;
                         }
-                        window.scrollTo({
-                            top: 0,
-                            behavior: 'smooth'
-                        });
+                        let userDetailContainer = document.getElementById('dynamicContent');
+                        window.scrollTo(0, userDetailContainer.offsetTop);
                         const activity = activitiesData.find(a => a.id === activityId);
                         if (activity) displayActivityDetails(activity);
                         else console.error('Activity not found for ID:', activityId);
