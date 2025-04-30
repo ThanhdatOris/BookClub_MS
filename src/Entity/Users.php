@@ -55,6 +55,9 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updated_at = null;
 
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $gender = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -271,5 +274,16 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // Not needed when using modern algorithms like bcrypt or sodium
         return null;
+    }
+
+    public function getGender(): ?string
+    {
+        return $this->gender;
+    }
+
+    public function setGender(?string $gender): static
+    {
+        $this->gender = $gender;
+        return $this;
     }
 }
