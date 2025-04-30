@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[Route('/members')]
 final class UsersController extends AbstractController
@@ -20,12 +21,17 @@ final class UsersController extends AbstractController
     public function index(Request $request, UsersRepository $usersRepository, ActivityParticipantRepository $participantRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        // Tạo form để thêm thành viên mới
+        $newUser = new Users();
+        $form = $this->createForm(UsersType::class, $newUser);
+
         $search = $request->query->get('search');
         $queryBuilder = $usersRepository->createQueryBuilder('u')
             ->orderBy('u.status', 'ASC')
             ->addOrderBy('u.id', 'DESC');
         if ($search) {
-            $queryBuilder->andWhere('u.name LIKE :search OR u.studentId LIKE :search OR u.email LIKE :search OR u.faculty LIKE :search')
+            $queryBuilder->andWhere('u.name LIKE :search OR u.student_id LIKE :search OR u.email LIKE :search OR u.faculty LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
         }
         $users = $queryBuilder->getQuery()->getResult();
@@ -81,30 +87,81 @@ final class UsersController extends AbstractController
             'treasurer_users' => $treasurerUsers,
             'member_users' => $memberUsers,
             'user_stats' => $userStats,
+            'form' => $form->createView(),
         ]);
     }
 
-    #[Route('/new', name: 'app_users_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new', name: 'app_users_new', methods: ['POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $user = new Users();
         $form = $this->createForm(UsersType::class, $user);
+        
         $form->handleRequest($request);
+        
+        if ($form->isSubmitted()) {
+            // Kiểm tra trùng lặp mã sinh viên
+            $existingUser = $entityManager->getRepository(Users::class)->findOneBy([
+                'student_id' => $user->getStudentId()
+            ]);
+            if ($existingUser) {
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'Mã sinh viên đã tồn tại trong hệ thống.'
+                ], Response::HTTP_BAD_REQUEST);
+            }
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($user);
-            $entityManager->flush();
+            // Kiểm tra trùng lặp email
+            $existingUser = $entityManager->getRepository(Users::class)->findOneBy([
+                'email' => $user->getEmail()
+            ]);
+            if ($existingUser) {
+                return new JsonResponse([
+                    'success' => false,
+                    'error' => 'Email đã tồn tại trong hệ thống.'
+                ], Response::HTTP_BAD_REQUEST);
+            }
 
-            $this->addFlash('success', 'Thêm thành viên mới thành công!');
-            return $this->redirectToRoute('app_users_index', [], Response::HTTP_SEE_OTHER);
+            if ($form->isValid()) {
+                try {
+                    // Thiết lập các giá trị mặc định
+                    $user->setStatus('active');
+                    $user->setPassword('not_used');
+                    $user->setCreatedAt(new \DateTime());
+                    $user->setUpdatedAt(new \DateTime());
+
+                    $entityManager->persist($user);
+                    $entityManager->flush();
+
+                    return new JsonResponse([
+                        'success' => true,
+                        'message' => 'Thêm thành viên mới thành công!'
+                    ]);
+                } catch (\Exception $e) {
+                    return new JsonResponse([
+                        'success' => false,
+                        'error' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                    ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
+            }
+
+            $errors = [];
+            foreach ($form->getErrors(true) as $error) {
+                $errors[] = $error->getMessage();
+            }
+
+            return new JsonResponse([
+                'success' => false,
+                'error' => implode(', ', $errors)
+            ], Response::HTTP_BAD_REQUEST);
         }
 
-        return $this->render('users/new.html.twig', [
-            'user' => $user,
-            'form' => $form,
-        ]);
+        return new JsonResponse([
+            'success' => false,
+            'error' => 'Invalid form submission.'
+        ], Response::HTTP_BAD_REQUEST);
     }
 
     #[Route('/{id}', name: 'app_users_show', methods: ['GET', 'POST'])]

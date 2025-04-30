@@ -16,26 +16,56 @@ class UsersType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('student_id', TextType::class, [
+                'label' => 'Mã sinh viên',
+                'attr' => ['class' => 'form-control'],
+                'required' => true
+            ])
             ->add('name', TextType::class, [
                 'label' => 'Họ tên',
                 'attr' => ['class' => 'form-control'],
+                'required' => true
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email',
                 'attr' => ['class' => 'form-control'],
+                'required' => true
+            ])
+            ->add('gender', ChoiceType::class, [
+                'label' => 'Giới tính',
+                'choices' => [
+                    'Nam' => 'male',
+                    'Nữ' => 'female',
+                    'Khác' => 'other'
+                ],
+                'placeholder' => 'Chọn giới tính',
+                'required' => false,
+                'attr' => ['class' => 'form-select']
+            ])
+            ->add('faculty', TextType::class, [
+                'label' => 'Khoa',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('class_id', TextType::class, [
+                'label' => 'Lớp',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
             ])
             ->add('role', ChoiceType::class, [
                 'label' => 'Vai trò',
                 'choices' => [
                     'Quản Lý' => 'ROLE_ADMIN',
                     'Thủ Quỹ' => 'ROLE_TREASURER',
-                    'Thành Viên' => 'ROLE_MEMBER',
+                    'Thành Viên' => 'ROLE_MEMBER'
                 ],
-                'attr' => ['class' => 'form-select'],
+                'required' => true,
+                'attr' => ['class' => 'form-select']
             ])
-            ->add('contactInfo', TextType::class, [
+            ->add('contact_info', TextType::class, [
                 'label' => 'Thông tin liên hệ',
-                'attr' => ['class' => 'form-control'],
+                'required' => false,
+                'attr' => ['class' => 'form-control']
             ]);
     }
 
