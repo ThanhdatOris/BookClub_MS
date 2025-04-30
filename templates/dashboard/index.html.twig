@@ -5,15 +5,33 @@
 {% block body %}
 
 <div class="container-fluid py-4">
+    {% if error is not null %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
     <!-- Chào user -->
-    <div class="mb-4">
-        {% if user is not null %}
-            <h3 class="text-white">Chào {{ user.name }} ({{ user.studentId }})!</h3>
-            <p class="text-white">Vai trò: {{ user.role|replace({'ROLE_': ''})|capitalize }}</p>
-        {% else %}
-            <h3 class="text-white">Chào bạn!</h3>
-            <p class="text-white">Vui lòng <a href="{{ path('app_login') }}" class="text-primary">đăng nhập</a> để tiếp tục.</p>
-        {% endif %}
+    <div class="card shadow-sm mb-4 pb-0">
+        <div class="card-body">
+            {% if user is not null %}
+                <h3 class="text-dark">👋 Chào <span class="text-primary">{{ user.name }}</span> (<span class="text-muted">{{ user.studentId }}</span>)!</h3>
+                <p class="text-dark mb-0">🎓 Vai trò: <span class="badge bg-info text-dark">{{ user.role|replace({'ROLE_': ''})|capitalize }}</span></p>
+            {% else %}
+                <h3 class="text-dark">Chào bạn!</h3>
+                <p class="text-dark">Vui lòng <a href="{{ path('app_login') }}" class="text-primary">đăng nhập</a> để tiếp tục.</p>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Thống kê nhanh -->
@@ -342,7 +360,6 @@
             }
         });
 
-
         // Xử lý filter
         function updateChart() {
             const year = document.getElementById('yearFilter').value;
@@ -350,15 +367,23 @@
             const type = document.getElementById('typeFilter').value;
             
             let url = new URL(window.location.href);
-            url.searchParams.set('year', year);
             
-            if (month) {
+            // Xử lý năm
+            if (year) {
+                url.searchParams.set('year', year);
+            } else {
+                url.searchParams.delete('year');
+            }
+            
+            // Xử lý tháng
+            if (month && month !== '') {
                 url.searchParams.set('month', month);
             } else {
                 url.searchParams.delete('month');
             }
             
-            if (type) {
+            // Xử lý loại giao dịch
+            if (type && type !== '') {
                 url.searchParams.set('type', type);
             } else {
                 url.searchParams.delete('type');
