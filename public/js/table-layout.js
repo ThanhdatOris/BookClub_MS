@@ -67,6 +67,11 @@ class TableLayout {
                         row.appendChild(td);
                     });
 
+                    // Gắn sự kiện onRowClick
+                    row.addEventListener('click', () => {
+                        this.onRowClick(row);
+                    });
+
                     tbody.appendChild(row);
                 });
             }
