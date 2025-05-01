@@ -69,8 +69,11 @@ final class UsersController extends AbstractController
                 'name' => $user->getName(),
                 'email' => $user->getEmail(),
                 'faculty' => $user->getFaculty(),
+                'classId' => $user->getClassId(),
                 'role' => $user->getRole(),
                 'status' => $user->getStatus(),
+                'gender' => $user->getGender(),
+                'contactInfo' => $user->getContactInfo(),
                 'total_activities' => $userStats[$user->getId()]['total_activities'] ?? 0,
                 'attended_activities' => $userStats[$user->getId()]['attended_activities'] ?? 0,
             ];
