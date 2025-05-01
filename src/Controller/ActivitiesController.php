@@ -185,47 +185,85 @@ final class ActivitiesController extends AbstractController
     #[Route('/new', name: 'app_activities_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
-        try {
+        // try {
             $this->denyAccessUnlessGranted('ROLE_ADMIN', null, 'Chỉ admin mới được thêm hoạt động.');
 
             $activity = new Activities();
             $form = $this->createForm(ActivitiesType::class, $activity);
             $form->handleRequest($request);
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $imageFile = $form->get('image')->getData();
-                
-                if ($imageFile) {
-                    try {
-                        $this->imageService->validateImage($imageFile);
-                        $fileName = $this->imageService->upload($imageFile);
-                        $activity->setImage($fileName);
-                    } catch (\Exception $e) {
-                        $this->addFlash('error', 'Lỗi khi tải lên ảnh: ' . $e->getMessage());
-                        return $this->redirectToRoute('app_activities_index');
+            if ($form->isSubmitted()) {
+                if ($form->isValid()) {
+                    $imageFile = $form->get('image')->getData();
+                    
+                    if ($imageFile) {
+                        try {
+                            $this->imageService->validateImage($imageFile);
+                            $fileName = $this->imageService->upload($imageFile);
+                            $activity->setImage($fileName);
+                        } catch (\Exception $e) {
+                            if ($request->isXmlHttpRequest()) {
+                                return new JsonResponse(['success' => false, 'error' => 'Lỗi khi tải lên ảnh: ' . $e->getMessage()]);
+                            }
+                            $this->addFlash('error', 'Lỗi khi tải lên ảnh: ' . $e->getMessage());
+                            return $this->redirectToRoute('app_activities_index');
+                        }
                     }
+
+                    $activity->setCreatedBy($this->getUser());
+                    $activity->setCreatedAt(new \DateTime());
+                    $activity->setUpdatedAt(new \DateTime());
+
+                    try {
+                        $entityManager->persist($activity);
+                        $entityManager->flush();
+
+                        if ($request->isXmlHttpRequest()) {
+                            return new JsonResponse([
+                                'success' => true,
+                                'message' => 'Thêm hoạt động thành công!',
+                                'redirect' => $this->generateUrl('app_activities_index')
+                            ]);
+                        }
+
+                        $this->addFlash('success', 'Thêm hoạt động thành công!');
+                        return $this->redirectToRoute('app_activities_index');
+                    } catch (\Exception $e) {
+                        if ($request->isXmlHttpRequest()) {
+                            return new JsonResponse(['success' => false, 'error' => 'Lỗi khi lưu hoạt động: ' . $e->getMessage()]);
+                        }
+                        $this->addFlash('error', 'Lỗi khi lưu hoạt động: ' . $e->getMessage());
+                    }
+                } else {
+                    $errors = [];
+                    foreach ($form->getErrors(true) as $error) {
+                        $errors[] = $error->getMessage();
+                    }
+                    
+                    if ($request->isXmlHttpRequest()) {
+                        return new JsonResponse([
+                            'success' => false,
+                            'error' => 'Vui lòng kiểm tra lại thông tin nhập vào.',
+                            'errors' => $errors
+                        ]);
+                    }
+                    
+                    $this->addFlash('error', 'Vui lòng kiểm tra lại thông tin nhập vào.');
                 }
-
-                $activity->setCreatedBy($this->getUser());
-                $activity->setCreatedAt(new \DateTime());
-                $activity->setUpdatedAt(new \DateTime());
-
-                $entityManager->persist($activity);
-                $entityManager->flush();
-
-                $this->addFlash('success', 'Thêm hoạt động thành công!');
-                return $this->redirectToRoute('app_activities_index');
             }
 
-            if ($form->isSubmitted() && !$form->isValid()) {
-                $this->addFlash('error', 'Vui lòng kiểm tra lại thông tin nhập vào.');
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => false, 'error' => 'Yêu cầu không hợp lệ.']);
             }
 
             return $this->redirectToRoute('app_activities_index');
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
-            return $this->redirectToRoute('app_activities_index');
-        }
+        // } catch (\Exception $e) {
+        //     if ($request->isXmlHttpRequest()) {
+        //         return new JsonResponse(['success' => false, 'error' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+        //     }
+        //     $this->addFlash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        //     return $this->redirectToRoute('app_activities_index');
+        // }
     }
 
     #[Route('/{id}/edit', name: 'app_activities_edit', methods: ['GET', 'POST'])]
