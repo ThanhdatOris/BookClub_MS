@@ -16,7 +16,8 @@ entity "users" as users {
     *student_id : VARCHAR(20) <<UNIQUE>>
     *email : VARCHAR(180) <<UNIQUE>>
     *name : VARCHAR(255)
-    *role : VARCHAR
+    *role : VARCHAR(50)
+    gender : VARCHAR(50) <<NULLABLE>>
     *status : VARCHAR(50)
     class_id : VARCHAR(50) <<NULLABLE>>
     faculty : VARCHAR(255) <<NULLABLE>>

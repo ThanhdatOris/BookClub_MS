@@ -75,7 +75,7 @@
                             </a>
                         </li>
                     {% endif %}
-                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                    {% if is_granted('ROLE_ADMIN') %}
                         <li class="nav-item mt-3">
                             <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Quản lý</h6>
                         </li>
@@ -116,7 +116,7 @@
                             <span class="nav-link-text ms-1">Đề xuất</span>
                         </a>
                     </li>
-                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                    {% if is_granted('ROLE_ADMIN')%}
                         <li class="nav-item mt-3">
                             <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>
                         </li>
