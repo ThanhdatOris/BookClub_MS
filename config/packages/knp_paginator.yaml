@@ -5,16 +5,15 @@ knp_paginator:
         sort_field_name: sort          # Tên tham số sort trong query string
         sort_direction_name: direction # Tên tham số direction trong query string
         distinct: true                 # Đảm bảo không có bản ghi trùng lặp
-        default_limit: 15              # default number of items per page
+        default_limit: 10              # default number of items per page
         filter_field_name: filterField  # filter field query parameter name
         filter_value_name: filterValue  # filter value query parameter name
         page_out_of_range: ignore       # ignore, fix, or throwException when the page is out of range
 
     template:
-        pagination: '@KnpPaginator/Pagination/twitter_bootstrap_v4_pagination.html.twig' # Template phân trang
-        sortable: '@KnpPaginator/Pagination/sortable_link.html.twig'                     # Template cho cột sắp xếp
-        rel_links: '@KnpPaginator/Pagination/rel_links.html.twig'    # <link rel=...> tags template
-        filtration: '@KnpPaginator/Pagination/filtration.html.twig' 
+        pagination: 'pagination/custom_pagination.html.twig'     # Template phân trang tùy chỉnh
+        sortable: '@KnpPaginator/Pagination/sortable_link.html.twig'     # Template cho cột sắp xếp
+        filtration: '@KnpPaginator/Pagination/filtration.html.twig'      # Template cho bộ lọc
     # language:
     #     search: "🔍 Tìm kiếm "
     #     lengthMenu: "Hiển thị _MENU_ mục"

@@ -9,6 +9,7 @@ use App\Repository\ProposalsRepository;
 use App\Repository\ActivityParticipantRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
@@ -17,6 +18,7 @@ class DashboardController extends AbstractController
     #[Route('/dashboard', name: 'app_dashboard')]
     // #[IsGranted('ROLE_MEMBER')] // Chỉ cho phép user có role ROLE_MEMBER trở lên
     public function index(
+        Request $request,
         UsersRepository $usersRepository,
         ActivitiesRepository $activitiesRepository,
         FundsRepository $fundsRepository,
@@ -24,85 +26,209 @@ class DashboardController extends AbstractController
         ActivityParticipantRepository $activityParticipantRepository
     ): Response {
         try {
-            // Tổng số thành viên
+            // Lấy tham số filter từ request
+            $year = filter_var($request->query->get('year', (new \DateTime())->format('Y')), FILTER_VALIDATE_INT);
+            if ($year === false) {
+                throw new \InvalidArgumentException('Năm không hợp lệ.');
+            }
+
+            // Xử lý tham số tháng
+            $monthParam = $request->query->get('month');
+            $month = null;
+            if ($monthParam !== null && $monthParam !== '') {
+                $month = filter_var($monthParam, FILTER_VALIDATE_INT);
+                if ($month === false || $month < 1 || $month > 12) {
+                    throw new \InvalidArgumentException('Tháng phải nằm trong khoảng từ 1 đến 12.');
+                }
+            }
+            
+            $type = $request->query->get('type', '');
+            $validTypes = ['income', 'expense', ''];
+            if (!in_array($type, $validTypes, true)) {
+                throw new \InvalidArgumentException('Loại giao dịch không hợp lệ.');
+            }
+
+            // Tổng số thành viên và hoạt động
             $totalMembers = $usersRepository->count([]);
-            // Tổng số hoạt động
             $totalActivities = $activitiesRepository->count([]);
             
             // Số hoạt động mới (trong tháng hiện tại)
             $startOfMonth = new \DateTime('first day of this month');
             $newActivities = $activitiesRepository->createQueryBuilder('a')
-            ->where('a.created_at >= :startOfMonth')
-            ->setParameter('startOfMonth', $startOfMonth)
-            ->select('COUNT(a.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
-            // Tổng quỹ
-            $totalFunds = $fundsRepository->createQueryBuilder('f')
-            ->select('SUM(f.amount)')
-            ->getQuery()
-            ->getSingleScalarResult() ?? 0;
+                ->where('a.created_at >= :startOfMonth')
+                ->setParameter('startOfMonth', $startOfMonth)
+                ->select('COUNT(a.id)')
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            // Tính toán số dư quỹ
+            // Tổng thu
+            $totalIncome = $fundsRepository->createQueryBuilder('f')
+                ->select('COALESCE(SUM(f.amount), 0)')
+                ->where('f.transaction_type = :type')
+                ->setParameter('type', 'income')
+                ->getQuery()
+                ->getSingleScalarResult() ?? 0;
+
+            // Tổng chi
+            $totalExpense = $fundsRepository->createQueryBuilder('f')
+                ->select('COALESCE(SUM(ABS(f.amount)), 0)')
+                ->where('f.transaction_type = :type')
+                ->setParameter('type', 'expense')
+                ->getQuery()
+                ->getSingleScalarResult() ?? 0;
+
+            // Số dư = Tổng thu - Tổng chi
+            $balance = $totalIncome - $totalExpense;
             
             // Số lượt tham gia hoạt động
-            $participationCount = $activityParticipantRepository->createQueryBuilder('ap')
-            ->select('COUNT(ap.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
+            $participationCount = $activityParticipantRepository->count([]);
             
-            
-            // Dữ liệu cho biểu đồ biến động quỹ (theo tháng trong năm hiện tại)
-            $currentYear = (new \DateTime())->format('Y');
-            $fundsByMonth = $fundsRepository->createQueryBuilder('f')
-            ->select("MONTH(f.date) as month, SUM(f.amount) as total")
-            ->where('YEAR(f.date) = :year')
-            ->setParameter('year', $currentYear)
-            ->groupBy('month')
-            ->getQuery()
-            ->getArrayResult();
-            
+            // Dữ liệu cho biểu đồ biến động quỹ
+            $qbChart = $fundsRepository->createQueryBuilder('f')
+                ->where('YEAR(f.date) = :year')
+                ->setParameter('year', $year);
+
+            if ($month !== null) {
+                $qbChart->andWhere('MONTH(f.date) = :month')
+                   ->setParameter('month', $month);
+            }
+
+            if ($type === 'income') {
+                $qbChart->andWhere('f.transaction_type = :type')
+                    ->setParameter('type', 'income');
+            } elseif ($type === 'expense') {
+                $qbChart->andWhere('f.transaction_type = :type')
+                    ->setParameter('type', 'expense');
+            }
+
+            $fundsByMonth = $qbChart
+                ->select("MONTH(f.date) as month, 
+                         SUM(CASE WHEN f.transaction_type = 'income' THEN f.amount ELSE 0 END) as income,
+                         SUM(CASE WHEN f.transaction_type = 'expense' THEN ABS(f.amount) ELSE 0 END) as expense")
+                ->groupBy('month')
+                ->orderBy('month', 'ASC')
+                ->getQuery()
+                ->getResult();
+
             // Khởi tạo mảng dữ liệu cho biểu đồ
             $fundLabels = [];
-            $fundData = array_fill(1, 12, 0); // Khởi tạo mảng 12 tháng với giá trị 0
-            foreach (range(1, 12) as $month) {
-                $fundLabels[] = (new \DateTime("$currentYear-$month-01"))->format('M');
+            $incomeData = array_fill(0, 12, 0);
+            $expenseData = array_fill(0, 12, 0);
+
+            if ($month === null) {
+                // Nếu không chọn tháng cụ thể, hiển thị cả 12 tháng
+                foreach (range(1, 12) as $m) {
+                    $fundLabels[] = (new \DateTime("$year-$m-01"))->format('M Y');
+                }
+            } else {
+                // Nếu chọn tháng cụ thể, chỉ hiển thị tháng đó
+                $fundLabels[] = (new \DateTime("$year-$month-01"))->format('M Y');
+                $incomeData = [0];
+                $expenseData = [0];
             }
+
             foreach ($fundsByMonth as $fund) {
-                $fundData[$fund['month']] = (float) $fund['total']; // Chuyển sang float để biểu đồ hiển thị đúng
+                if ($month === null) {
+                    $monthIndex = $fund['month'] - 1;
+                    $incomeData[$monthIndex] = (float) $fund['income'];
+                    $expenseData[$monthIndex] = (float) $fund['expense'];
+                } else {
+                    $incomeData[0] = (float) $fund['income'];
+                    $expenseData[0] = (float) $fund['expense'];
+                }
             }
             
             // Các hoạt động gần đây (cho carousel)
-            $recentActivities = $activitiesRepository->findBy([], ['created_at' => 'DESC'], 3);
+            $recentActivities = $activitiesRepository->createQueryBuilder('a')
+                ->where('a.image IS NOT NULL')
+                ->orderBy('a.created_at', 'DESC')
+                ->setMaxResults(5)
+                ->getQuery()
+                ->getResult();
             
             // Đề xuất đang chờ xử lý
-            $pendingProposals = $proposalsRepository->findBy(['status' => 'pending'], ['created_at' => 'DESC'], 5);
+            $pendingProposals = $proposalsRepository->findBy(
+                ['status' => 'pending'], 
+                ['created_at' => 'DESC'], 
+                5
+            );
             
+            // Danh sách năm cho filter
+            $years = $fundsRepository->createQueryBuilder('f')
+                ->select('DISTINCT YEAR(f.date) as year')
+                ->orderBy('year', 'DESC')
+                ->getQuery()
+                ->getArrayResult();
+
             return $this->render('dashboard/index.html.twig', [
                 'user' => $this->getUser(),
-                'totalFunds' => $totalFunds,
+                'balance' => $balance,
+                'totalIncome' => $totalIncome,
+                'totalExpense' => $totalExpense,
                 'totalMembers' => $totalMembers,
                 'totalActivities' => $totalActivities,
                 'newActivities' => $newActivities,
                 'participationCount' => $participationCount,
                 'fundLabels' => $fundLabels,
-                'fundData' => array_values($fundData), // Đảm bảo mảng là tuần tự
+                'incomeData' => array_values($incomeData),
+                'expenseData' => array_values($expenseData),
                 'recentActivities' => $recentActivities,
                 'pendingProposals' => $pendingProposals,
+                'years' => array_column($years, 'year'),
+                'currentYear' => $year,
+                'currentMonth' => $month,
+                'currentType' => $type,
+                'error' => null
             ]);
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Có lỗi xảy ra khi tải dashboard: ' . $e->getMessage());
-            dump($e);
-            die();
+        } catch (\InvalidArgumentException $e) {
+            // Log lỗi tham số không hợp lệ
+            error_log('Dashboard Parameter Error: ' . $e->getMessage());
+            
             return $this->render('dashboard/index.html.twig', [
                 'user' => $this->getUser(),
-                'totalFunds' => 0,
+                'balance' => 0,
+                'totalIncome' => 0,
+                'totalExpense' => 0,
                 'totalMembers' => 0,
                 'totalActivities' => 0,
                 'newActivities' => 0,
                 'participationCount' => 0,
                 'fundLabels' => [],
-                'fundData' => [],
+                'incomeData' => [],
+                'expenseData' => [],
                 'recentActivities' => [],
                 'pendingProposals' => [],
+                'years' => [],
+                'currentYear' => (new \DateTime())->format('Y'),
+                'currentMonth' => null,
+                'currentType' => '',
+                'error' => $e->getMessage()
+            ]);
+        } catch (\Exception $e) {
+            // Log lỗi chi tiết
+            error_log('Dashboard Error: ' . $e->getMessage());
+            error_log($e->getTraceAsString());
+            
+            return $this->render('dashboard/index.html.twig', [
+                'user' => $this->getUser(),
+                'balance' => 0,
+                'totalIncome' => 0,
+                'totalExpense' => 0,
+                'totalMembers' => 0,
+                'totalActivities' => 0,
+                'newActivities' => 0,
+                'participationCount' => 0,
+                'fundLabels' => [],
+                'incomeData' => [],
+                'expenseData' => [],
+                'recentActivities' => [],
+                'pendingProposals' => [],
+                'years' => [],
+                'currentYear' => (new \DateTime())->format('Y'),
+                'currentMonth' => null,
+                'currentType' => '',
+                'error' => 'Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.'
             ]);
         }
     }

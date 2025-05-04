@@ -3,7 +3,7 @@ left to right direction
 skinparam packageStyle rectangle
 
 actor "Thành viên" as Member
-actor "Quản trị viên" as BCN
+actor "BCN" as BCN
 actor "Thủ quỹ" as Treasurer
 Treasurer -|> Member
 

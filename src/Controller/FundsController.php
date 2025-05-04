@@ -12,41 +12,79 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/funds')]
+#[IsGranted('ROLE_MEMBER')]
 final class FundsController extends AbstractController
 {
-    #[Route(name: 'app_funds_index', methods: ['GET'])]
+    #[Route('/', name: 'app_funds_index', methods: ['GET'])]
     public function index(Request $request, FundsRepository $fundsRepository, PaginatorInterface $paginator): Response
     {
-        // Kiểm tra quyền truy cập
-        // $this->denyAccessUnlessGranted(['ROLE_ADMIN', 'ROLE_TREASURER'], null, 'Chỉ có Admin hoặc Treasurer mới được truy cập trang này.');
+        $search = $request->query->get('search', '');
+        $startDate = $request->query->get('start_date');
+        $endDate = $request->query->get('end_date');
 
-        // Tải toàn bộ dữ liệu (không phân trang server-side)
-        $funds = $fundsRepository->findAll();
+        // Tạo QueryBuilder
+        $queryBuilder = $fundsRepository->createQueryBuilder('f')
+            ->orderBy('f.date', 'DESC');
+
+        // Xử lý tìm kiếm
+        if ($search) {
+            $queryBuilder
+                ->andWhere('f.description LIKE :search OR f.transaction_type LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Tính tổng thu, tổng chi và số dư
+        $totalIncomeQuery = $fundsRepository->createQueryBuilder('f')
+            ->select('SUM(f.amount)')
+            ->where('f.transaction_type = :type')
+            ->setParameter('type', 'income')
+            ->getQuery();
+        $totalIncome = $totalIncomeQuery->getSingleScalarResult() ?? 0;
+
+        $totalExpenseQuery = $fundsRepository->createQueryBuilder('f')
+            ->select('SUM(f.amount)')
+            ->where('f.transaction_type = :type')
+            ->setParameter('type', 'expense')
+            ->getQuery();
+        $totalExpense = $totalExpenseQuery->getSingleScalarResult() ?? 0;
+
+        $balance = $totalIncome - $totalExpense;
+
+        // Phân trang
+        $pagination = $paginator->paginate(
+            $queryBuilder->getQuery(),
+            $request->query->getInt('page', 1),
+            10 // Số bản ghi trên mỗi trang
+        );
 
         // Tạo form để thêm giao dịch
         $addFund = new Funds();
         $addFundForm = $this->createForm(FundsType::class, $addFund);
 
-        // Tạo form để sửa giao dịch
+        // Tạo form edit cho mỗi giao dịch
         $editFundForms = [];
-        foreach ($funds as $fund) {
+        foreach ($pagination as $fund) {
             $editFundForms[$fund->getId()] = $this->createForm(FundsType::class, $fund)->createView();
         }
 
         return $this->render('funds/index.html.twig', [
-            'funds' => $funds,
+            'funds' => $pagination,
             'addFundForm' => $addFundForm->createView(),
             'editFundForms' => $editFundForms,
+            'search' => $search,
+            'totalIncome' => $totalIncome,
+            'totalExpense' => $totalExpense,
+            'balance' => $balance,
         ]);
     }
 
     #[Route('/new', name: 'app_funds_new', methods: ['POST'])]
+    #[IsGranted('ROLE_TREASURER')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
-        // $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Treasurer mới được thêm giao dịch.');
-
         $fund = new Funds();
         $fund->setCreatedBy($this->getUser());
         $fund->setCreatedAt(new \DateTime());
@@ -74,10 +112,9 @@ final class FundsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_funds_show', methods: ['GET'])]
+    #[IsGranted('ROLE_TREASURER')]
     public function show(Funds $fund, Request $request): Response
     {
-        // $this->denyAccessUnlessGranted(['ROLE_TREASURER', 'ROLE_ADMIN'], null, 'Chỉ có Treasurer hoặc Admin mới được xem chi tiết quỹ.');
-
         $referer = $request->query->get('referer', $this->generateUrl('app_funds_index'));
 
         return $this->render('funds/show.html.twig', [
@@ -87,10 +124,9 @@ final class FundsController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_funds_edit', methods: ['POST'])]
+    #[IsGranted('ROLE_TREASURER')]
     public function edit(Request $request, Funds $fund, EntityManagerInterface $entityManager): Response
     {
-        // $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Treasurer mới được chỉnh sửa quỹ này.');
-
         $form = $this->createForm(FundsType::class, $fund);
         $form->handleRequest($request);
 
@@ -113,10 +149,9 @@ final class FundsController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_funds_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_TREASURER')]
     public function delete(Request $request, Funds $fund, EntityManagerInterface $entityManager): Response
     {
-        // $this->denyAccessUnlessGranted('ROLE_TREASURER', null, 'Chỉ có Treasurer mới được xóa quỹ này.');
-
         if ($this->isCsrfTokenValid('delete' . $fund->getId(), $request->request->get('_token'))) {
             try {
                 $entityManager->remove($fund);
@@ -129,5 +164,42 @@ final class FundsController extends AbstractController
         }
 
         return new JsonResponse(['error' => 'CSRF token không hợp lệ.'], Response::HTTP_BAD_REQUEST);
+    }
+
+    #[Route('/export', name: 'app_funds_export', methods: ['GET'])]
+    #[IsGranted('ROLE_TREASURER')]
+    public function export(FundsRepository $fundsRepository): Response
+    {
+        $funds = $fundsRepository->findBy([], ['date' => 'DESC']);
+        
+        $csvData = [];
+        $csvData[] = ['ID', 'Loại giao dịch', 'Số tiền', 'Ngày', 'Mô tả', 'Người tạo', 'Ngày tạo', 'Ngày cập nhật'];
+        
+        foreach ($funds as $fund) {
+            $csvData[] = [
+                $fund->getId(),
+                $fund->getTransactionType(),
+                $fund->getAmount(),
+                $fund->getDate()->format('Y-m-d'),
+                $fund->getDescription(),
+                $fund->getCreatedBy()->getFullname(),
+                $fund->getCreatedAt()->format('Y-m-d H:i:s'),
+                $fund->getUpdatedAt()->format('Y-m-d H:i:s'),
+            ];
+        }
+        
+        $response = new Response();
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment; filename="funds_export.csv"');
+        
+        $handle = fopen('php://temp', 'r+');
+        foreach ($csvData as $row) {
+            fputcsv($handle, $row);
+        }
+        rewind($handle);
+        $response->setContent(stream_get_contents($handle));
+        fclose($handle);
+        
+        return $response;
     }
 }

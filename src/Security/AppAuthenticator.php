@@ -48,10 +48,15 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        $request->getSession()->getFlashBag()->add('success', 'Đăng nhập thành công!');
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             return new RedirectResponse($targetPath);
         }
-        return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));
+
+        $user = $token->getUser();
+        if (in_array('ROLE_ADMIN', $user->getRoles()) || in_array('ROLE_TREASURER', $user->getRoles())) {
+            return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));
+        }
+
+        return new RedirectResponse($this->urlGenerator->generate('app_home'));
     }
 }

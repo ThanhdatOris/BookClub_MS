@@ -39,6 +39,7 @@ class AppFixtures extends Fixture
         $admin->setCreateAt(new \DateTime());
         $admin->setUpdateAt(new \DateTime());
         $admin->setGoogleId('google_id_admin_000');
+        $admin->setGender('male');
         $manager->persist($admin);
 
         $treasurer = new Users();
@@ -54,10 +55,11 @@ class AppFixtures extends Fixture
         $treasurer->setCreateAt(new \DateTime());
         $treasurer->setUpdateAt(new \DateTime());
         $treasurer->setGoogleId('google_id_treasurer_001');
+        $admin->setGender('female');
         $manager->persist($treasurer);
 
         $member = new Users();
-        $member->setEmail('nguyenthanhdat.st@gmail.com');
+        $member->setEmail('nguyenthanhdatst@gmail.com');
         $member->setPassword($this->passwordHasher->hashPassword($member, '123456'));
         $member->setName('Nguyễn Trần Anh Khoa');
         $member->setRoles(['ROLE_MEMBER']);
@@ -69,6 +71,7 @@ class AppFixtures extends Fixture
         $member->setCreateAt(new \DateTime());
         $member->setUpdateAt(new \DateTime());
         $member->setGoogleId('google_id_member_002');
+        $admin->setGender('male');
         $manager->persist($member);
 
         $users = [$admin, $treasurer, $member];
@@ -133,6 +136,7 @@ class AppFixtures extends Fixture
             $user->setCreateAt($createdAt);
             $user->setUpdateAt($updatedAt);
             $user->setGoogleId('google_id_' . $faker->uuid());
+            $user->setGender($faker->randomElement(['male', 'female']));
             $users[] = $user;
             $userss[] = $user;
             $manager->persist($user);

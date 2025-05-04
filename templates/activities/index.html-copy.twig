@@ -3,6 +3,34 @@
 {% block title %}Quản lý hoạt động{% endblock %}
 
 {% block body %}
+    {# Lưu form view vào biến để tái sử dụng #}
+    {% set add_form_fields = {
+        'title': form_row(addActivityForm.title, {'label': 'Tiêu đề', 'attr': {'class': 'form-control'}}),
+        'date': form_row(addActivityForm.date, {'label': 'Ngày', 'attr': {'class': 'form-control'}}),
+        'time': form_row(addActivityForm.time, {'label': 'Thời gian', 'attr': {'class': 'form-control'}}),
+        'location': form_row(addActivityForm.location, {'label': 'Địa điểm', 'attr': {'class': 'form-control'}}),
+        'status': form_row(addActivityForm.status, {'label': 'Trạng thái', 'attr': {'class': 'form-control'}}),
+        'image': form_row(addActivityForm.image, {'label': 'Hình ảnh', 'attr': {'class': 'form-control'}}),
+        'description': form_row(addActivityForm.description, {'label': 'Mô tả', 'attr': {'class': 'form-control', 'rows': 4}})
+    } %}
+
+    {% set edit_form_fields = {} %}
+    {% for activity in activities %}
+        {% if editActivityForms[activity.id] is defined %}
+            {% set edit_form_fields = edit_form_fields|merge({
+                (activity.id): {
+                    'title': form_row(editActivityForms[activity.id].title, {'label': 'Tiêu đề', 'attr': {'class': 'form-control'}}),
+                    'date': form_row(editActivityForms[activity.id].date, {'label': 'Ngày', 'attr': {'class': 'form-control'}}),
+                    'time': form_row(editActivityForms[activity.id].time, {'label': 'Thời gian', 'attr': {'class': 'form-control'}}),
+                    'location': form_row(editActivityForms[activity.id].location, {'label': 'Địa điểm', 'attr': {'class': 'form-control'}}),
+                    'status': form_row(editActivityForms[activity.id].status, {'label': 'Trạng thái', 'attr': {'class': 'form-control'}}),
+                    'image': form_row(editActivityForms[activity.id].image, {'label': 'Hình ảnh', 'attr': {'class': 'form-control'}}),
+                    'description': form_row(editActivityForms[activity.id].description, {'label': 'Mô tả', 'attr': {'class': 'form-control', 'rows': 4}})
+                }
+            }) %}
+        {% endif %}
+    {% endfor %}
+
     <div class="container-fluid">
         <!-- Statistics Cards -->
         <div class="row">
@@ -116,7 +144,7 @@
                                     <button type="button" id="activitiesClearSearchBtn" class="btn btn-sm btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
                                 </div>
                                 {% if is_granted('ROLE_ADMIN') %}
-                                    <button type="button" class="btn btn-sm btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+                                    <button type="button" class="btn btn-sm btn-success mb-0" onclick="showAddActivityForm()">
                                         <i class="fas fa-plus me-1"></i> Thêm hoạt động
                                     </button>
                                 {% endif %}
@@ -157,101 +185,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Modal: Thêm hoạt động -->
-        <div class="modal fade" id="addActivityModal" tabindex="-1" aria-labelledby="addActivityModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addActivityModalLabel">Thêm hoạt động mới</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="alert alert-danger d-none" id="addActivityError"></div>
-                        {{ form_start(addActivityForm, {'attr': {'id': 'addActivityForm'}}) }}
-                            <div class="row">
-                                <div class="col-md-6">
-                                    {{ form_row(addActivityForm.title, {'label': 'Tiêu đề', 'attr': {'class': 'form-control'}}) }}
-                                    {{ form_row(addActivityForm.date, {'label': 'Ngày', 'attr': {'class': 'form-control'}}) }}
-                                    {{ form_row(addActivityForm.time, {'label': 'Thời gian', 'attr': {'class': 'form-control'}}) }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form_row(addActivityForm.location, {'label': 'Địa điểm', 'attr': {'class': 'form-control'}}) }}
-                                    {{ form_row(addActivityForm.status, {'label': 'Trạng thái', 'attr': {'class': 'form-control'}}) }}
-                                    {{ form_row(addActivityForm.image, {'label': 'Hình ảnh', 'attr': {'class': 'form-control'}}) }}
-                                </div>
-                            </div>
-                            {{ form_row(addActivityForm.description, {'label': 'Mô tả', 'attr': {'class': 'form-control', 'rows': 4}}) }}
-                            <button type="submit" class="btn btn-sm btn-success w-100">
-                                <span class="spinner-border spinner-border-sm d-none" id="addActivitySpinner"></span>
-                                Thêm hoạt động
-                            </button>
-                        {{ form_end(addActivityForm) }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal: Sửa hoạt động -->
-        {% for activity in activities %}
-            <div class="modal fade" id="editActivityModal{{ activity.id }}" tabindex="-1" aria-labelledby="editActivityModalLabel{{ activity.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editActivityModalLabel{{ activity.id }}">Chỉnh sửa hoạt động: {{ activity.title }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="alert alert-danger d-none" id="editActivityError{{ activity.id }}"></div>
-                            {{ form_start(editActivityForms[activity.id], {'attr': {'id': 'editActivityForm' ~ activity.id, 'class': 'needs-validation'}}) }}
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        {{ form_row(editActivityForms[activity.id].title, {'label': 'Tiêu đề', 'attr': {'class': 'form-control'}}) }}
-                                        {{ form_row(editActivityForms[activity.id].date, {'label': 'Ngày', 'attr': {'class': 'form-control'}}) }}
-                                        {{ form_row(editActivityForms[activity.id].time, {'label': 'Thời gian', 'attr': {'class': 'form-control'}}) }}
-                                    </div>
-                                    <div class="col-md-6">
-                                        {{ form_row(editActivityForms[activity.id].location, {'label': 'Địa điểm', 'attr': {'class': 'form-control'}}) }}
-                                        {{ form_row(editActivityForms[activity.id].status, {'label': 'Trạng thái', 'attr': {'class': 'form-control'}}) }}
-                                        <div class="mb-3">
-                                            {% if activity.image %}
-                                                <div class="current-image mb-2">
-                                                    <label class="form-label">Hình ảnh hiện tại:</label>
-                                                    <div class="d-flex align-items-center">
-                                                        <img src="{{ asset('uploads/activities/' ~ activity.image) }}" alt="{{ activity.title }}" class="img-thumbnail me-2" style="max-height: 100px;">
-                                                        <div class="form-text">{{ activity.image }}</div>
-                                                    </div>
-                                                </div>
-                                            {% endif %}
-                                            {{ form_label(editActivityForms[activity.id].image, 'Thay đổi hình ảnh') }}
-                                            {{ form_widget(editActivityForms[activity.id].image, {
-                                                'attr': {
-                                                    'class': 'form-control',
-                                                    'accept': 'image/*',
-                                                    'onchange': 'previewImage(this, "imagePreview' ~ activity.id ~ '")'
-                                                }
-                                            }) }}
-                                            <div id="imagePreview{{ activity.id }}" class="mt-2 d-none">
-                                                <label class="form-label">Xem trước:</label>
-                                                <img src="" alt="Preview" class="img-thumbnail" style="max-height: 100px;">
-                                            </div>
-                                            <div class="form-text">
-                                                Chấp nhận file: JPG, PNG, GIF (tối đa 5MB)
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {{ form_row(editActivityForms[activity.id].description, {'label': 'Mô tả', 'attr': {'class': 'form-control', 'rows': 4}}) }}
-                                <button type="submit" class="btn btn-sm btn-primary w-100">
-                                    <span class="spinner-border spinner-border-sm d-none" id="editActivitySpinner{{ activity.id }}"></span>
-                                    Lưu thay đổi
-                                </button>
-                            {{ form_end(editActivityForms[activity.id]) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
 
         <!-- Modal: Điểm danh -->
         {% for activity in activities %}
@@ -309,6 +242,8 @@
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
+                const addFormFields = {{ add_form_fields|json_encode|raw }};
+                const editFormFields = {{ edit_form_fields|json_encode|raw }};
                 const activitiesData = [
                     {% for activity in activities %}
                         {
@@ -322,12 +257,12 @@
                             time: '{{ activity.time ? activity.time|date('H:i') : 'N/A' }}',
                             image: '{{ activity.image ? asset('uploads/activities/' ~ activity.image)|e('js') : '' }}',
                             participantsCount: {{ activityParticipants[activity.id]|default([])|length }},
-                            hasJoined: {% if app.user %}{{ activityParticipants[activity.id]|default([])|filter(p => p.userId.id == app.user.id)|length > 0 ? 'true' : 'false' }}{% else %}false{% endif %},
+                            hasJoined: {% if app.user %}{{ activityParticipants[activity.id]|default([])|filter(p => p.userId.id == app.user.id)|length > 0 ? 'true' : 'false' }}{% else %}false{% endif %}
                         },
                     {% endfor %}
                 ];
 
-                console.log('Activities Data:', activitiesData);
+                // console.log('Activities Data:', activitiesData);
 
                 const activitiesTable = new TableLayout({
                     data: activitiesData,
@@ -427,7 +362,7 @@
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">${activity.title}</h6>
-                                <button type="button" class="btn-close" aria-label="Đóng" onclick="resetDynamicContent()"></button>
+                                <button type="button" class="btn-close" onclick="hideForm()"></button>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -446,15 +381,250 @@
                                         ` : ''}
                                     </div>
                                 </div>
-                                <div id="subDynamicContent"></div>
                             </div>
                         </div>
                     `
                 }
 
-                function resetDynamicContent() {
-                    currentActivityId = null;
-                    document.getElementById('dynamicContent').innerHTML = `
+                // Hàm tiện ích xử lý form
+                const formUtils = {
+                    showError: function(errorDiv, message) {
+                        console.debug('[Error Display]', { message, errorDiv });
+                        if (errorDiv) {
+                            errorDiv.textContent = message;
+                            errorDiv.classList.remove('d-none');
+                        }
+                        showToast('error', message);
+                    },
+                    
+                    hideError: function(errorDiv) {
+                        console.debug('[Error Hide]', { errorDiv });
+                        if (errorDiv) {
+                            errorDiv.classList.add('d-none');
+                        }
+                    },
+                    
+                    toggleLoading: function(submitBtn, spinner, isLoading) {
+                        console.debug('[Loading Toggle]', { submitBtn, spinner, isLoading });
+                        if (submitBtn) submitBtn.disabled = isLoading;
+                        if (spinner) spinner.classList.toggle('d-none', !isLoading);
+                    },
+                    
+                    handleImagePreview: function(input, previewContainerId) {
+                        console.debug('[Image Preview Start]', { input, previewContainerId });
+                        const file = input.files[0];
+                        if (!file) {
+                            console.debug('[Image Preview] No file selected');
+                            return;
+                        }
+
+                        console.debug('[Image Preview] File details:', {
+                            name: file.name,
+                            size: file.size,
+                            type: file.type
+                        });
+
+                        // Validate file
+                        if (file.size > 5 * 1024 * 1024) {
+                            console.warn('[Image Preview] File too large:', file.size);
+                            showToast('error', 'Kích thước file không được vượt quá 5MB');
+                            input.value = '';
+                            return;
+                        }
+
+                        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                        if (!allowedTypes.includes(file.type)) {
+                            console.warn('[Image Preview] Invalid file type:', file.type);
+                            showToast('error', 'Chỉ chấp nhận file ảnh định dạng JPG, PNG hoặc GIF');
+                            input.value = '';
+                            return;
+                        }
+
+                        // Create/update preview
+                        let preview = document.getElementById(previewContainerId);
+                        console.debug('[Image Preview] Existing preview element:', preview);
+
+                        if (!preview) {
+                            preview = document.createElement('div');
+                            preview.id = previewContainerId;
+                            preview.className = 'mt-2';
+                            preview.innerHTML = `
+                                <label class="form-label">Xem trước:</label>
+                                <img src="" alt="Preview" class="img-thumbnail" style="max-height: 100px;">
+                            `;
+                            input.parentNode.appendChild(preview);
+                            console.debug('[Image Preview] Created new preview element');
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            console.debug('[Image Preview] FileReader loaded');
+                            const img = preview.querySelector('img');
+                            if (img) {
+                                img.src = e.target.result;
+                                console.debug('[Image Preview] Image source updated');
+                            }
+                            preview.classList.remove('d-none');
+                        };
+
+                        reader.onerror = function(e) {
+                            console.error('[Image Preview] FileReader error:', e);
+                            showToast('error', 'Lỗi khi đọc file ảnh');
+                        };
+
+                        reader.readAsDataURL(file);
+                        console.debug('[Image Preview] Started reading file');
+                    },
+                    
+                    handleFormSubmit: async function(form, options = {}) {
+                        console.debug('[Form Submit] Starting submission', { 
+                            formId: form.id,
+                            formAction: form.action,
+                            formMethod: form.method,
+                            options 
+                        });
+
+                        const {
+                            submitBtn = form.querySelector('button[type="submit"]'),
+                            spinner = form.querySelector('.spinner-border'),
+                            errorDiv = form.querySelector('.alert-danger'),
+                            successCallback,
+                            errorCallback
+                        } = options;
+
+                        try {
+                            this.toggleLoading(submitBtn, spinner, true);
+                            this.hideError(errorDiv);
+
+                            const formData = new FormData(form);
+                            const formDataDebug = {};
+                            for (let [key, value] of formData.entries()) {
+                                formDataDebug[key] = value instanceof File ? 
+                                    { name: value.name, type: value.type, size: value.size } : 
+                                    value;
+                            }
+                            console.debug('[Form Submit] Form data:', formDataDebug);
+
+                            console.debug('[Form Submit] Sending request to:', form.action);
+                            const response = await fetch(form.action, {
+                                method: form.method,
+                                body: formData,
+                                headers: {
+                                    'Accept': 'application/json, text/html, */*'
+                                }
+                            });
+
+                            console.debug('[Form Submit] Response details:', {
+                                ok: response.ok,
+                                status: response.status,
+                                statusText: response.statusText,
+                                type: response.type,
+                                url: response.url,
+                                headers: Object.fromEntries(response.headers.entries())
+                            });
+
+                            const contentType = response.headers.get("content-type");
+                            console.debug('[Form Submit] Content type:', contentType);
+
+                            let responseData;
+                            let errorMessage = null;
+
+                            try {
+                                if (contentType && contentType.includes("application/json")) {
+                                    responseData = await response.json();
+                                    console.debug('[Form Submit] JSON response:', responseData);
+                                } else {
+                                    const html = await response.text();
+                                    console.debug('[Form Submit] HTML response length:', html.length);
+                                    
+                                    // Tạo DOM parser để xử lý HTML response
+                                    const parser = new DOMParser();
+                                    const doc = parser.parseFromString(html, 'text/html');
+                                    
+                                    // Kiểm tra flash messages và error messages
+                                    const flashError = doc.querySelector('.alert-danger');
+                                    const formErrors = doc.querySelectorAll('.invalid-feedback, .form-error');
+                                    const otherErrors = doc.querySelectorAll('[class*="error"], [class*="danger"]');
+                                    
+                                    if (flashError) {
+                                        errorMessage = flashError.textContent.trim();
+                                    } else if (formErrors.length > 0) {
+                                        errorMessage = Array.from(formErrors)
+                                            .map(error => error.textContent.trim())
+                                            .filter(msg => msg)
+                                            .join('\n');
+                                    } else if (otherErrors.length > 0) {
+                                        errorMessage = Array.from(otherErrors)
+                                            .map(error => error.textContent.trim())
+                                            .filter(msg => msg)
+                                            .join('\n');
+                                    }
+
+                                    // Nếu không tìm thấy error message cụ thể
+                                    if (!errorMessage && !response.ok) {
+                                        errorMessage = `Lỗi ${response.status}: ${response.statusText}`;
+                                    }
+
+                                    responseData = {
+                                        success: !errorMessage,
+                                        error: errorMessage,
+                                        redirect: response.url !== window.location.href ? response.url : null
+                                    };
+                                }
+
+                                if (responseData.success) {
+                                    console.debug('[Form Submit] Success response:', responseData);
+                                    showToast('success', responseData.message || 'Thao tác thành công!');
+                                    
+                                    if (successCallback) {
+                                        console.debug('[Form Submit] Calling success callback');
+                                        successCallback(responseData);
+                                    } else if (responseData.redirect) {
+                                        console.debug('[Form Submit] Redirecting to:', responseData.redirect);
+                                        window.location.href = responseData.redirect;
+                                    } else {
+                                        console.debug('[Form Submit] Reloading page');
+                                        window.location.reload();
+                                    }
+                                } else {
+                                    throw new Error(responseData.error || errorMessage || 'Có lỗi xảy ra trong quá trình xử lý.');
+                                }
+                            } catch (parseError) {
+                                console.error('[Form Submit] Error parsing response:', parseError);
+                                throw new Error('Có lỗi xảy ra khi xử lý phản hồi từ server.');
+                            }
+                        } catch (error) {
+                            console.error('[Form Submit] Error details:', {
+                                message: error.message,
+                                stack: error.stack,
+                                name: error.name
+                            });
+
+                            const errorMessage = error.message || 'Có lỗi xảy ra. Vui lòng thử lại.';
+                            
+                            if (errorCallback) {
+                                console.debug('[Form Submit] Calling error callback');
+                                errorCallback(error);
+                            } else {
+                                this.showError(errorDiv, errorMessage);
+                                showToast('error', errorMessage);
+                            }
+                        } finally {
+                            this.toggleLoading(submitBtn, spinner, false);
+                        }
+                    }
+                };
+
+                // Định nghĩa hàm hideForm
+                window.hideForm = function() {
+                    console.debug('[Hide Form] Starting...');
+                    const dynamicContent = document.getElementById('dynamicContent');
+                    if (!dynamicContent) {
+                        console.warn('[Hide Form] Dynamic content element not found');
+                        return;
+                    }
+                    
+                    dynamicContent.innerHTML = `
                         <div class="card">
                             <div class="card-body text-center py-4">
                                 <i class="fas fa-info-circle fs-2 text-info mb-3"></i>
@@ -463,6 +633,161 @@
                             </div>
                         </div>
                     `;
+                    console.debug('[Hide Form] Form hidden successfully');
+                };
+
+                // Thêm hàm showAddActivityForm
+                window.showAddActivityForm = function() {
+                    console.debug('[Show Add Form] Starting...');
+                    const dynamicContent = document.getElementById('dynamicContent');
+                    if (!dynamicContent) {
+                        console.warn('[Show Add Form] Dynamic content element not found');
+                        return;
+                    }
+
+                    dynamicContent.innerHTML = `
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Thêm hoạt động mới</h5>
+                                <button type="button" class="btn-close" onclick="hideForm()"></button>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-danger d-none" id="addActivityError"></div>
+                                <form id="addActivityForm" class="needs-validation" action="{{ path('app_activities_new') }}" method="POST" enctype="multipart/form-data" novalidate>
+                                    <input type="hidden" name="_token" value="{{ csrf_token('add_activity') }}">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {{ add_form_fields.title|raw }}
+                                            {{ add_form_fields.date|raw }}
+                                            {{ add_form_fields.time|raw }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ add_form_fields.location|raw }}
+                                            {{ add_form_fields.status|raw }}
+                                            <div class="mb-3">
+                                                <label class="form-label" for="activity_image">Hình ảnh</label>
+                                                <input type="file" id="activity_image" name="activity[image]" class="form-control" accept="image/*">
+                                                <div class="form-text">Chấp nhận file: JPG, PNG, GIF (tối đa 5MB)</div>
+                                                <div id="imagePreview" class="mt-2 d-none">
+                                                    <img src="" alt="Preview" class="img-thumbnail" style="max-height: 100px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{ add_form_fields.description|raw }}
+                                    <button type="submit" class="btn btn-sm btn-success w-100 mt-4">
+                                        <span class="spinner-border spinner-border-sm d-none" id="addActivitySpinner"></span>
+                                        Thêm hoạt động
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    `;
+                    console.debug('[Show Add Form] Form HTML injected');
+
+                    initAddActivityForm();
+                    console.debug('[Show Add Form] Form initialized');
+                };
+
+                // Hàm khởi tạo form handler
+                function initAddActivityForm() {
+                    console.debug('[Init Add Form] Starting initialization...');
+                    const form = document.getElementById('addActivityForm');
+                    if (!form) {
+                        console.warn('[Init Add Form] Form element not found');
+                        return;
+                    }
+
+                    console.debug('[Init Add Form] Form element found:', form);
+
+                    // Xử lý preview ảnh
+                    const imageInput = form.querySelector('input[type="file"]');
+                    if (imageInput) {
+                        imageInput.addEventListener('change', function() {
+                            console.debug('[Image Event] Change event triggered');
+                            formUtils.handleImagePreview(this, 'imagePreview');
+                        });
+                    }
+
+                    form.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        console.debug('[Form Event] Submit event triggered');
+
+                        if (!this.checkValidity()) {
+                            console.warn('[Form Event] Form validation failed');
+                            e.stopPropagation();
+                            this.classList.add('was-validated');
+                            return;
+                        }
+
+                        console.debug('[Form Event] Form validation passed');
+                        const formData = new FormData(this);
+                        
+                        // Log form data before submission
+                        const formDataDebug = {};
+                        for (let [key, value] of formData.entries()) {
+                            formDataDebug[key] = value instanceof File ? 
+                                { name: value.name, type: value.type, size: value.size } : 
+                                value;
+                        }
+                        console.debug('[Form Submit] Form data to be sent:', formDataDebug);
+
+                        try {
+                            const submitBtn = this.querySelector('button[type="submit"]');
+                            const spinner = document.getElementById('addActivitySpinner');
+                            const errorDiv = document.getElementById('addActivityError');
+
+                            submitBtn.disabled = true;
+                            spinner.classList.remove('d-none');
+                            if (errorDiv) errorDiv.classList.add('d-none');
+
+                            const response = await fetch(this.action, {
+                                method: 'POST',
+                                body: formData
+                            });
+
+                            console.debug('[Form Submit] Response status:', response.status);
+                            const contentType = response.headers.get('content-type');
+                            console.debug('[Form Submit] Response content type:', contentType);
+
+                            if (contentType && contentType.includes('application/json')) {
+                                const result = await response.json();
+                                console.debug('[Form Submit] JSON response:', result);
+
+                                if (result.success) {
+                                    showToast('success', 'Thêm hoạt động thành công!');
+                                    if (result.redirect) {
+                                        window.location.href = result.redirect;
+                                    } else {
+                                        window.location.reload();
+                                    }
+                                } else {
+                                    throw new Error(result.error || 'Có lỗi xảy ra khi thêm hoạt động.');
+                                }
+                            } else {
+                                const text = await response.text();
+                                console.debug('[Form Submit] Text response:', text.substring(0, 200));
+                                if (response.ok) {
+                                    window.location.href = response.url;
+                                } else {
+                                    throw new Error('Có lỗi xảy ra khi thêm hoạt động.');
+                                }
+                            }
+                        } catch (error) {
+                            console.error('[Form Submit] Error:', error);
+                            const errorDiv = document.getElementById('addActivityError');
+                            if (errorDiv) {
+                                errorDiv.textContent = error.message;
+                                errorDiv.classList.remove('d-none');
+                            }
+                            showToast('error', error.message);
+                        } finally {
+                            const submitBtn = form.querySelector('button[type="submit"]');
+                            const spinner = document.getElementById('addActivitySpinner');
+                            if (submitBtn) submitBtn.disabled = false;
+                            if (spinner) spinner.classList.add('d-none');
+                        }
+                    });
                 }
 
                 function loadAttendanceModal(activityId) {
@@ -865,36 +1190,78 @@
                         });
                     }
                 });
-            });
 
-            function previewImage(input, previewId) {
-                const preview = document.getElementById(previewId);
-                const previewImg = preview.querySelector('img');
-                
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
+                function previewImage(input, previewId) {
+                    const preview = document.getElementById(previewId);
+                    const previewImg = preview.querySelector('img');
                     
-                    reader.onload = function(e) {
-                        previewImg.src = e.target.result;
-                        preview.classList.remove('d-none');
+                    if (input.files && input.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            previewImg.src = e.target.result;
+                            preview.classList.remove('d-none');
+                        }
+                        
+                        reader.readAsDataURL(input.files[0]);
+                    } else {
+                        previewImg.src = '';
+                        preview.classList.add('d-none');
                     }
-                    
-                    reader.readAsDataURL(input.files[0]);
-                } else {
-                    previewImg.src = '';
-                    preview.classList.add('d-none');
                 }
-            }
 
-            // Thêm validation cho form
-            document.querySelectorAll('form.needs-validation').forEach(form => {
-                form.addEventListener('submit', function(event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
+                // Thêm validation cho form
+                document.querySelectorAll('form.needs-validation').forEach(form => {
+                    form.addEventListener('submit', function(event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    });
                 });
+
+                window.showEditActivityForm = function(activityId) {
+                    const activity = activitiesData.find(a => a.id === activityId);
+                    if (!activity) return;
+
+                    const dynamicContent = document.getElementById('dynamicContent');
+                    const formFields = editFormFields[activityId];
+                    if (!formFields) return;
+
+                    dynamicContent.innerHTML = `
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Chỉnh sửa hoạt động: ${activity.title}</h5>
+                                <button type="button" class="btn-close" onclick="hideForm()"></button>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-danger d-none" id="editActivityError${activityId}"></div>
+                                <form id="editActivityForm${activityId}" class="needs-validation">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            ${formFields.title}
+                                            ${formFields.date}
+                                            ${formFields.time}
+                                        </div>
+                                        <div class="col-md-6">
+                                            ${formFields.location}
+                                            ${formFields.status}
+                                            ${formFields.image}
+                                        </div>
+                                    </div>
+                                    ${formFields.description}
+                                    <button type="submit" class="btn btn-sm btn-primary w-100">
+                                        <span class="spinner-border spinner-border-sm d-none" id="editActivitySpinner${activityId}"></span>
+                                        Lưu thay đổi
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    `;
+
+                    initEditActivityForm(activityId);
+                };
             });
         </script>
     </div>
