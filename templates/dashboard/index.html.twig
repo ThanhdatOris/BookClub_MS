@@ -6,7 +6,7 @@
 
 <div class="container-fluid py-4">
     <!-- Chào user -->
-    <div class="card shadow-sm mb-4 pb-0">
+    {# <div class="card shadow-sm mb-4 pb-0">
         <div class="card-body">
             {% if user is not null %}
                 <h3 class="text-dark">👋 Chào <span class="text-primary">{{ user.name }}</span> (<span class="text-muted">{{ user.studentId }}</span>)!</h3>
@@ -16,7 +16,7 @@
                 <p class="text-dark">Vui lòng <a href="{{ path('app_login') }}" class="text-primary">đăng nhập</a> để tiếp tục.</p>
             {% endif %}
         </div>
-    </div>
+    </div> #}
 
     <!-- Thống kê nhanh -->
     <div class="row">
@@ -129,28 +129,19 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="text-capitalize mb-0">Biến động quỹ</h6>
                         <div class="btn-group">
-                            <select id="yearFilter" class="form-select form-select-sm me-2">
-                                {% for y in years %}
-                                    <option value="{{ y }}" {{ y == currentYear ? 'selected' : '' }}>{{ y }}</option>
-                                {% endfor %}
-                            </select>
-                            <select id="monthFilter" class="form-select form-select-sm me-2">
-                                <option value="">Tất cả tháng</option>
-                                {% for m in 1..12 %}
-                                    <option value="{{ m }}" {{ m == currentMonth ? 'selected' : '' }}>Tháng {{ m }}</option>
-                                {% endfor %}
-                            </select>
-                            <select id="typeFilter" class="form-select form-select-sm">
-                                <option value="">Tất cả</option>
-                                <option value="income" {{ currentType == 'income' ? 'selected' : '' }}>Thu</option>
-                                <option value="expense" {{ currentType == 'expense' ? 'selected' : '' }}>Chi</option>
+                            <select id="timeRange" class="form-select form-select-sm">
+                                <option value="7">7 ngày gần nhất</option>
+                                <option value="30">30 ngày gần nhất</option>
+                                <option value="90">3 tháng gần nhất</option>
+                                <option value="180">6 tháng gần nhất</option>
+                                <option value="365">1 năm gần nhất</option>
                             </select>
                         </div>
                     </div>
                 </div>
                 <div class="card-body p-3">
-                    <div class="chart">
-                        <canvas id="chart-line" class="chart-canvas" height="300"></canvas>
+                    <div class="chart" style="position: relative; height: 300px;">
+                        <canvas id="fundChart" style="width: 100%; height: 100%;"></canvas>
                     </div>
                 </div>
             </div>
@@ -270,43 +261,68 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block javascripts %}
-{{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Format tiền tệ
-        const formatCurrency = (value) => {
-            return new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND',
-                maximumFractionDigits: 0
-            }).format(value);
+        console.log('DOM đã được tải');
+        console.log('Chart.js version:', Chart.version);
+        
+        const fundChart = document.getElementById('fundChart');
+        if (!fundChart) {
+            console.error('Không tìm thấy phần tử fundChart');
+            return;
+        }
+
+        const ctx = fundChart.getContext('2d');
+        if (!ctx) {
+            console.error('Không thể lấy context của canvas');
+            return;
+        }
+
+        // Hàm định dạng ngày
+        const formatDate = (dateStr) => {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('vi-VN', { 
+                day: '2-digit',
+                month: '2-digit'
+            });
         };
 
+        // Hàm formatCurrency giống extension PHP
+        function formatCurrency(amount) {
+            amount = Number(amount);
+            if (amount >= 1000000) {
+                return (Math.round(amount / 100000) / 10) + ' triệu';
+            } else if (amount >= 1000) {
+                return (Math.round(amount / 100) / 10) + ' nghìn';
+            }
+            return amount.toLocaleString('vi-VN');
+        }
+
         // Khởi tạo biểu đồ
-        var ctx = document.getElementById('chart-line').getContext('2d');
-        var chart = new Chart(ctx, {
+        const chart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: {{ fundLabels|json_encode|raw }},
-                datasets: [{
-                    label: 'Thu',
-                    data: {{ incomeData|json_encode|raw }},
-                    backgroundColor: 'rgba(66, 153, 225, 0.5)',
-                    borderColor: 'rgb(66, 153, 225)',
-                    borderWidth: 1,
-                    stack: 'stack'
-                }, {
-                    label: 'Chi',
-                    data: {{ expenseData|json_encode|raw }},
-                    backgroundColor: 'rgba(245, 101, 101, 0.5)',
-                    borderColor: 'rgb(245, 101, 101)',
-                    borderWidth: 1,
-                    stack: 'stack'
-                }]
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Thu',
+                        data: [],
+                        backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                        borderColor: '#28a745',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Chi',
+                        data: [],
+                        backgroundColor: 'rgba(220, 53, 69, 0.8)',
+                        borderColor: '#dc3545',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    }
+                ]
             },
             options: {
                 responsive: true,
@@ -315,70 +331,118 @@
                     intersect: false,
                     mode: 'index'
                 },
-                scales: {
-                    x: {
-                        stacked: true
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                const date = new Date(context[0].label);
+                                return date.toLocaleDateString('vi-VN', {
+                                    weekday: 'long',
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric'
+                                });
+                            },
+                            label: function(context) {
+                                return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
+                            }
+                        }
                     },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    }
+                },
+                scales: {
                     y: {
-                        stacked: true,
                         beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
                         ticks: {
                             callback: function(value) {
                                 return formatCurrency(value);
                             }
                         }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ' + formatCurrency(context.raw);
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            callback: function(value, index, values) {
+                                return formatDate(this.getLabelForValue(value));
                             }
                         }
-                    },
-                    legend: {
-                        position: 'top'
                     }
                 }
             }
         });
 
-        // Xử lý filter
-        function updateChart() {
-            const year = document.getElementById('yearFilter').value;
-            const month = document.getElementById('monthFilter').value;
-            const type = document.getElementById('typeFilter').value;
-            
-            let url = new URL(window.location.href);
-            
-            // Xử lý năm
-            if (year) {
-                url.searchParams.set('year', year);
-            } else {
-                url.searchParams.delete('year');
-            }
-            
-            // Xử lý tháng
-            if (month && month !== '') {
-                url.searchParams.set('month', month);
-            } else {
-                url.searchParams.delete('month');
-            }
-            
-            // Xử lý loại giao dịch
-            if (type && type !== '') {
-                url.searchParams.set('type', type);
-            } else {
-                url.searchParams.delete('type');
-            }
-            
-            window.location.href = url.toString();
-        }
+        console.log('Biểu đồ đã được khởi tạo:', chart);
 
-        document.getElementById('yearFilter').addEventListener('change', updateChart);
-        document.getElementById('monthFilter').addEventListener('change', updateChart);
-        document.getElementById('typeFilter').addEventListener('change', updateChart);
+        // Hàm cập nhật dữ liệu biểu đồ
+        const updateChartData = async (days) => {
+            try {
+                console.log('Bắt đầu cập nhật dữ liệu cho', days, 'ngày');
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(endDate.getDate() - days);
+
+                console.log('Ngày bắt đầu:', startDate.toISOString());
+                console.log('Ngày kết thúc:', endDate.toISOString());
+
+                const response = await fetch(`/api/funds/chart?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
+                console.log('Đã gửi request API, status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Dữ liệu nhận được từ API:', data);
+
+                if (data.error) {
+                    console.error('Lỗi từ API:', data.error);
+                    return;
+                }
+
+                if (!data.labels || !data.income || !data.expense) {
+                    console.error('Dữ liệu không đầy đủ:', data);
+                    return;
+                }
+
+                console.log('Cập nhật dữ liệu cho biểu đồ');
+                chart.data.labels = data.labels;
+                chart.data.datasets[0].data = data.income;
+                chart.data.datasets[1].data = data.expense.map(value => -value); // Chuyển chi thành số âm
+                
+                console.log('Gọi chart.update()');
+                chart.update();
+                console.log('Biểu đồ đã được cập nhật');
+            } catch (error) {
+                console.error('Lỗi khi cập nhật dữ liệu:', error);
+            }
+        };
+
+        // Xử lý sự kiện khi thay đổi khoảng thời gian
+        const timeRangeSelect = document.getElementById('timeRange');
+        if (timeRangeSelect) {
+            console.log('Đã tìm thấy phần tử timeRange');
+            timeRangeSelect.addEventListener('change', function() {
+                console.log('Đã thay đổi khoảng thời gian:', this.value);
+                updateChartData(parseInt(this.value));
+            });
+
+            // Khởi tạo dữ liệu ban đầu với giá trị được chọn trong filter
+            console.log('Bắt đầu khởi tạo dữ liệu ban đầu');
+            updateChartData(parseInt(timeRangeSelect.value));
+        } else {
+            console.error('Không tìm thấy phần tử timeRange');
+        }
     });
 </script>
 {% endblock %}

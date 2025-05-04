@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class DashboardController extends AbstractController
 {
@@ -230,6 +231,79 @@ class DashboardController extends AbstractController
                 'currentType' => '',
                 'error' => 'Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.'
             ]);
+        }
+    }
+
+    #[Route('/api/funds/chart', name: 'app_funds_chart', methods: ['GET'])]
+    public function getFundsChartData(Request $request, FundsRepository $fundsRepository): JsonResponse
+    {
+        try {
+            error_log('Bắt đầu xử lý API chart data');
+            
+            $startDate = new \DateTime($request->query->get('startDate'));
+            $endDate = new \DateTime($request->query->get('endDate'));
+            
+            error_log('Ngày bắt đầu: ' . $startDate->format('Y-m-d'));
+            error_log('Ngày kết thúc: ' . $endDate->format('Y-m-d'));
+
+            // Tạo mảng ngày trong khoảng thời gian
+            $labels = [];
+            $incomeData = [];
+            $expenseData = [];
+            
+            $interval = new \DateInterval('P1D');
+            $period = new \DatePeriod($startDate, $interval, $endDate);
+
+            foreach ($period as $date) {
+                $dateStr = $date->format('Y-m-d');
+                $labels[] = $dateStr;
+                $incomeData[] = 0;
+                $expenseData[] = 0;
+            }
+
+            // Lấy dữ liệu thu chi theo ngày trong khoảng thời gian
+            $results = $fundsRepository->createQueryBuilder('f')
+                ->select('f.date', 'f.transaction_type', 'SUM(f.amount) as total')
+                ->where('f.date BETWEEN :startDate AND :endDate')
+                ->setParameter('startDate', $startDate)
+                ->setParameter('endDate', $endDate)
+                ->groupBy('f.date', 'f.transaction_type')
+                ->orderBy('f.date', 'ASC')
+                ->getQuery()
+                ->getResult();
+
+            error_log('Số lượng kết quả tìm thấy: ' . count($results));
+
+            // Cập nhật dữ liệu vào mảng theo ngày
+            foreach ($results as $result) {
+                $dateStr = $result['date']->format('Y-m-d');
+                $index = array_search($dateStr, $labels);
+
+                if ($index !== false) {
+                    if ($result['transaction_type'] === 'income') {
+                        $incomeData[$index] = (float) $result['total'];
+                    } else {
+                        $expenseData[$index] = (float) $result['total'];
+                    }
+                }
+            }
+
+            $responseData = [
+                'labels' => $labels,
+                'income' => $incomeData,
+                'expense' => $expenseData
+            ];
+            
+            error_log('Dữ liệu trả về: ' . json_encode($responseData));
+
+            return new JsonResponse($responseData);
+        } catch (\Exception $e) {
+            error_log('Lỗi trong API chart data: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+            
+            return new JsonResponse([
+                'error' => 'Có lỗi xảy ra khi lấy dữ liệu biểu đồ: ' . $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

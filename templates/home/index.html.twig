@@ -2,29 +2,192 @@
 
 {% block title %}Trang chủ{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .bg-gradient-primary {
+            background-image: linear-gradient(90deg, #1cb5e0 0%, #000851 100%);
+        }
+        .bg-gradient-info {
+            background-image: linear-gradient(90deg, #36d1c4 0%, #1e90ff 100%);
+        }
+        .bg-gradient-success {
+            background-image: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+        }
+        .bg-gradient-warning {
+            background-image: linear-gradient(90deg, #f7971e 0%, #ffd200 100%);
+        }
+        .bg-gradient-danger {
+            background-image: linear-gradient(90deg, #ff5f6d 0%, #ffc371 100%);
+        }
+        .bg-gradient-danger {
+            background: linear-gradient(90deg, #ff5f6d 0%, #ffc371 100%);
+        }
+        .card {
+            border-radius: 20px;
+        }
+        .card-body {
+            text-align: center;
+        }
+        .welcome-section .icon {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 50%;
+        }
+        .argon-fb-embed {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 15px rgba(44, 62, 80, 0.08), 0 0.5px 1.5px rgba(44, 62, 80, 0.03);
+            background: #fff;
+            border: 1px solid #e9ecef;
+            padding: 0;
+        }
+        .argon-fb-embed iframe {
+            display: block;
+            width: 100%;
+            min-height: 400px;
+            border: none;
+            background: #fff;
+        }
+        .bg-clb {
+            background: url('{{ asset('assets/img/bg-clb.jpg') }}') no-repeat center center / cover !important;
+            position: relative;
+        }
+        .bg-clb::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Dark overlay */
+            z-index: 1;
+        }
+        .bg-clb .card-body {
+            position: relative;
+            z-index: 2; /* Ensure text is above the overlay */
+        }
+        }
+        .p-4 {
+            padding: 2rem !important;
+        }
+        .h-100 {
+            height: 100% !important;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
     <div class="welcome-section">
         <h1>{{ 'Chào mừng đến với BookClub MS' }}</h1>
         <p class="text-muted">{{ 'Hệ thống quản lý câu lạc bộ sách dành cho sinh viên' }}</p>
-        
-        <img src="{{ asset('assets/img/dhdb.png') }}" alt="Banner" class="welcome-banner">
+        <img src="{{ asset('assets/img/dh3.jpg') }}" alt="Banner" class="welcome-banner shadow">
+        <div class="row">
+            <!-- Cột trái -->
+            <div class="col-lg-6 mb-4">
+                <div class="p-4 bg-white shadow rounded-4 h-100 d-flex flex-column justify-content-between">
+                    <h5 class="fw-bold text-primary">Thông tin nhanh</h5>
+
+                    <div class="pb-2 mt-auto">
+                        <a href="path('app_home')" target="_blankblank" class="text-decoration-none">
+                            <div class="card shadow-sm h-100 bg-clb">
+                                <div class="card-body d-flex flex-column justify-content-between p-3">
+                                    <div class="d-flex align-items-center justify-content-between text-white text-start">
+                                        <div class="numbers">
+                                            <h6 class="text-white mb-1 font-weight-bold">CLB Sinh Viên Yêu Thích Sách</h6>
+                                            <p class="text-white text-sm mb-0">Sách là đam mê</p>
+                                        </div>
+                                        <div class="icon icon-shape text-center rounded-circle ms-3">
+                                            <i class="fas fa-book text-white fs-3 opacity-10 top-0" aria-hidden="true"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="row">
+                        {% set quickLinks = [
+                            {
+                                'url': 'https://drive.google.com/drive/folders/1rWeBXLT4zFY4GpDyvxcVOCfK8zJx7-TT?usp=drive_link',
+                                'target': '_blank',
+                                'style': 'bg-gradient-danger',
+                                'icon': 'fas fa-folder-open',
+                                'title': 'Minh chứng điểm danh',
+                                'description': 'Tổng hợp minh chứng hoạt động'
+                            },
+                            {
+                                'url': 'https://www.facebook.com/profile.php?id=100048446863883',
+                                'target': '_blank',
+                                'style': 'bg-gradient-info',
+                                'icon': 'fab fa-facebook',
+                                'title': 'Fanpage',
+                                'description': 'Cập nhật thông tin CLB'
+                            },
+                            {
+                                'url': 'https://zalo.me/g/ufsgge924',
+                                'target': '_blank',
+                                'style': 'bg-gradient-success',
+                                'icon': 'fab fa-facebook-messenger',
+                                'title': 'Group Chat',
+                                'description': 'Trao đổi, thông báo nhanh'
+                            },
+                            {
+                                'url': 'mailto:bookclub.ctut@gmail.com',
+                                'target': '_self',
+                                'style': 'bg-gradient-warning',
+                                'icon': 'fas fa-envelope',
+                                'title': 'Mail góp ý',
+                                'description': 'bookclub.ctut@gmail.com'
+                            }
+                        ] %}
+                        {% for link in quickLinks %}
+                            <div class="col-12 pb-2">
+                                <a href="{{ link.url }}" target="{{ link.target }}" class="text-decoration-none">
+                                    <div class="card shadow-sm h-100 {{ link.style }}">
+                                        <div class="card-body d-flex flex-column justify-content-between p-3">
+                                            <div class="d-flex align-items-center justify-content-between text-white text-start">
+                                                <div class="numbers">
+                                                    <h6 class="text-white mb-1 font-weight-bold">{{ link.title }}</h6>
+                                                    <p class="text-white text-sm mb-0">{{ link.description }}</p>
+                                                </div>
+                                                <div class="icon icon-shape text-center rounded-circle ms-3">
+                                                    <i class="{{ link.icon }} text-white fs-3 opacity-10 top-0" aria-hidden="true"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-auto">
+                        <p class="text-muted mb-0 font-weight-bolder">Câu lạc bộ sinh viên yêu thích sách</p>
+                        <p class="text-muted mb-0">Trường Đại học Kỹ thuật - Công nghệ Cần Thơ</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Cột phải -->
+            <div class="col-lg-6 mb-4">
+                <div class="p-4 bg-white shadow rounded-4 h-100 d-flex flex-column justify-content-between">
+                    <h5 class="mb-3 fw-bold text-primary">Hoạt động gần đây từ Fanpage</h5>
+                    <div class="argon-fb-embed flex-grow-1">
+                        <iframe 
+                            src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2F100048446863883&tabs=timeline&width=410&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId"
+                            width="100%"
+                            height="500"
+                            style="border:none;overflow:hidden;"
+                            scrolling="no"
+                            frameborder="0"
+                            allowTransparency="true"
+                            allow="encrypted-media">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         {% if app.user %}
-            <div class="alert alert-success">
-                <i class="fas fa-user-check me-2"></i>
-                Xin chào, {{ app.user.name }}! Bạn đã đăng nhập với mã sinh viên: {{ app.user.studentId }}.
-            </div>
-
-            <div class="action-buttons">
-                <a href="{{ path('app_dashboard') }}" class="action-button primary">
-                    <i class="fas fa-tachometer-alt me-2"></i>
-                    Vào Dashboard
-                </a>
-                <a href="{{ path('profile', { studentId: app.user.studentId}) }}" class="action-button secondary">
-                    <i class="fas fa-user me-2"></i>
-                    Hồ sơ
-                </a>
-            </div>
         {% else %}
             <div class="alert alert-warning text-dark">
                 <i class="fas fa-exclamation-triangle me-2"></i> Bạn chưa đăng nhập. Hãy đăng nhập để trải nghiệm đầy đủ hệ thống!
@@ -34,4 +197,10 @@
             </a>
         {% endif %}
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v18.0" nonce="YOUR_NONCE_VALUE"></script>
 {% endblock %}
