@@ -244,7 +244,7 @@
         <parameter>ROLE_MEMBER</parameter>
       </parameter>
     </parameter>
-    <parameter key="security.access.denied_url">/access-denied</parameter>
+    <parameter key="security.access.denied_url">null</parameter>
     <parameter key="security.authentication.manager.erase_credentials">true</parameter>
     <parameter key="security.authentication.session_strategy.strategy">migrate</parameter>
     <parameter key="security.authentication.hide_user_not_found">true</parameter>
@@ -507,6 +507,9 @@
     <service id="App\Repository\UsersRepository" class="App\Repository\UsersRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
       <argument type="service" id="doctrine"/>
+    </service>
+    <service id="App\Security\AccessDeniedHandler" class="App\Security\AccessDeniedHandler" autowire="true" autoconfigure="true">
+      <argument type="service" id="router.default"/>
     </service>
     <service id="App\Security\AppAuthenticator" class="App\Security\AppAuthenticator" autowire="true" autoconfigure="true">
       <argument type="service" id="router.default"/>
@@ -6874,13 +6877,6 @@
         <argument>null</argument>
       </call>
       <call method="add">
-        <argument type="service" id=".security.request_matcher.WjOc1OS"/>
-        <argument type="collection">
-          <argument>ROLE_ADMIN</argument>
-        </argument>
-        <argument>null</argument>
-      </call>
-      <call method="add">
         <argument type="service" id=".security.request_matcher.BhpRUZK"/>
         <argument type="collection">
           <argument>PUBLIC_ACCESS</argument>
@@ -7053,7 +7049,7 @@
       <argument type="service" id="security.http_utils"/>
       <argument type="abstract">Provider-shared Key</argument>
       <argument type="service" id="security.authentication.entry_point" on-invalid="null"/>
-      <argument>/access-denied</argument>
+      <argument>null</argument>
       <argument type="service" id="security.access.denied_handler" on-invalid="null"/>
       <argument type="service" id="monolog.logger.security" on-invalid="null"/>
       <argument>false</argument>
@@ -7607,7 +7603,7 @@
       <argument type="service" id="security.http_utils"/>
       <argument>main</argument>
       <argument type="service" id="security.authenticator.form_login.main"/>
-      <argument>/access-denied</argument>
+      <argument>null</argument>
       <argument>null</argument>
       <argument type="service" id="monolog.logger.security" on-invalid="null"/>
       <argument>false</argument>
@@ -7647,14 +7643,6 @@
         <argument type="service" id=".security.request_matcher.SbN0Tkg"/>
       </argument>
     </service>
-    <service id=".security.request_matcher.gb2qQzJ" class="Symfony\Component\HttpFoundation\RequestMatcher\PathRequestMatcher">
-      <argument>^/dashboard</argument>
-    </service>
-    <service id=".security.request_matcher.WjOc1OS" class="Symfony\Component\HttpFoundation\ChainRequestMatcher">
-      <argument type="collection">
-        <argument type="service" id=".security.request_matcher.gb2qQzJ"/>
-      </argument>
-    </service>
     <service id=".security.request_matcher.T8BdVIN" class="Symfony\Component\HttpFoundation\RequestMatcher\PathRequestMatcher">
       <argument>^/login</argument>
     </service>
@@ -7685,6 +7673,14 @@
     <service id=".security.request_matcher.MwKrXBU" class="Symfony\Component\HttpFoundation\ChainRequestMatcher">
       <argument type="collection">
         <argument type="service" id=".security.request_matcher.2XfS9IM"/>
+      </argument>
+    </service>
+    <service id=".security.request_matcher.gb2qQzJ" class="Symfony\Component\HttpFoundation\RequestMatcher\PathRequestMatcher">
+      <argument>^/dashboard</argument>
+    </service>
+    <service id=".security.request_matcher.WjOc1OS" class="Symfony\Component\HttpFoundation\ChainRequestMatcher">
+      <argument type="collection">
+        <argument type="service" id=".security.request_matcher.gb2qQzJ"/>
       </argument>
     </service>
     <service id=".security.request_matcher.pQEhc60" class="Symfony\Component\HttpFoundation\RequestMatcher\PathRequestMatcher">
