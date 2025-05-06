@@ -200,43 +200,6 @@ class AppFixtures extends Fixture
             ['type' => 'income', 'amount' => 1600000, 'desc' => 'Thu từ bán vé xem phim'],
             ['type' => 'expense', 'amount' => 900000, 'desc' => 'Chi phí tổ chức hội thảo'],
             ['type' => 'income', 'amount' => 1800000, 'desc' => 'Tài trợ từ cựu sinh viên'],
-            ['type' => 'expense', 'amount' => 1000000, 'desc' => 'Chi phí mua quà tặng cho cán bộ'],
-            ['type' => 'income', 'amount' => 2000000, 'desc' => 'Thu từ bán vé tham quan'],
-            ['type' => 'expense', 'amount' => 1100000, 'desc' => 'Chi phí tổ chức ngày hội'],
-            ['type' => 'income', 'amount' => 2200000, 'desc' => 'Tài trợ từ công ty'],
-            ['type' => 'expense', 'amount' => 1200000, 'desc' => 'Chi phí mua quà tặng cho khách mời'],
-            ['type' => 'income', 'amount' => 2400000, 'desc' => 'Thu từ bán vé thể thao'],
-            ['type' => 'expense', 'amount' => 1300000, 'desc' => 'Chi phí tổ chức buổi giao lưu'],
-            ['type' => 'income', 'amount' => 2600000, 'desc' => 'Tài trợ từ trường'],
-            ['type' => 'expense', 'amount' => 1400000, 'desc' => 'Chi phí mua quà tặng cho giảng viên'],
-            ['type' => 'income', 'amount' => 2800000, 'desc' => 'Thu từ bán áo lớp'],
-            ['type' => 'expense', 'amount' => 1500000, 'desc' => 'Chi phí tổ chức hội thảo'],
-            ['type' => 'income', 'amount' => 3000000, 'desc' => 'Tài trợ từ học bổng'],
-            ['type' => 'expense', 'amount' => 1600000, 'desc' => 'Chi phí mua quà tặng cho sinh viên'],
-            ['type' => 'income', 'amount' => 3200000, 'desc' => 'Thu từ bán sách tình nguyện'],
-            ['type' => 'expense', 'amount' => 1700000, 'desc' => 'Chi phí tổ chức buổi giao lưu'],
-            ['type' => 'income', 'amount' => 3400000, 'desc' => 'Tài trợ từ cựu sinh viên'],
-            ['type' => 'expense', 'amount' => 1800000, 'desc' => 'Chi phí mua quà tặng cho cán bộ'],
-            ['type' => 'income', 'amount' => 3600000, 'desc' => 'Thu từ bán vé xem phim'],
-            ['type' => 'expense', 'amount' => 1900000, 'desc' => 'Chi phí tổ chức hội thảo'],
-            ['type' => 'income', 'amount' => 3800000, 'desc' => 'Tài trợ từ công ty'],
-            ['type' => 'expense', 'amount' => 2000000, 'desc' => 'Chi phí mua quà tặng cho khách mời'],
-            ['type' => 'income', 'amount' => 4000000, 'desc' => 'Thu từ bán vé tham quan'],
-            ['type' => 'expense', 'amount' => 2100000, 'desc' => 'Chi phí tổ chức ngày hội'],
-            ['type' => 'income', 'amount' => 4200000, 'desc' => 'Tài trợ từ công ty'],
-            ['type' => 'expense', 'amount' => 2200000, 'desc' => 'Chi phí mua quà tặng cho khách mời'],
-            ['type' => 'income', 'amount' => 4400000, 'desc' => 'Thu từ bán vé tham quan'],
-            ['type' => 'expense', 'amount' => 2300000, 'desc' => 'Chi phí tổ chức ngày hội'],
-            ['type' => 'income', 'amount' => 4600000, 'desc' => 'Tài trợ từ công ty'],
-            ['type' => 'expense', 'amount' => 2400000, 'desc' => 'Chi phí mua quà tặng cho khách mời'],
-            ['type' => 'income', 'amount' => 4800000, 'desc' => 'Thu từ bán vé tham quan'],
-            ['type' => 'expense', 'amount' => 2500000, 'desc' => 'Chi phí tổ chức ngày hội'],
-            ['type' => 'income', 'amount' => 5000000, 'desc' => 'Tài trợ từ công ty'],
-            ['type' => 'expense', 'amount' => 2600000, 'desc' => 'Chi phí mua quà tặng cho khách mời'],
-            ['type' => 'income', 'amount' => 5200000, 'desc' => 'Thu từ bán vé tham quan'],
-            ['type' => 'expense', 'amount' => 2700000, 'desc' => 'Chi phí tổ chức ngày hội'],
-            ['type' => 'income', 'amount' => 5400000, 'desc' => 'Tài trợ từ công ty'],
-            ['type' => 'expense', 'amount' => 2800000, 'desc' => 'Chi phí mua quà tặng cho khách mời'],
         ];
 
         foreach ($fundSamples as $sample) {
@@ -308,22 +271,6 @@ class AppFixtures extends Fixture
             $manager->persist($proposal);
         }
 
-        // Xóa phần tạo Proposals cũ
-        // foreach ($userss as $user) {
-        //     foreach ($proposalSamples as $sample) {
-        //         $proposal = new Proposals();
-        //         $proposal->setUserId($user);
-        //         $proposal->setType($sample['type']);
-        //         $proposal->setContent($sample['content']);
-        //         $proposal->setStatus($faker->randomElement(['pending', 'approved', 'rejected']));
-        //         $createdAt = $faker->dateTimeThisYear();
-        //         $updatedAt = $faker->dateTimeBetween($createdAt, 'now');
-        //         $proposal->setCreatedAt($createdAt);
-        //         $proposal->setUpdatedAt($updatedAt);
-        //         $manager->persist($proposal);
-        //     }
-        // }
-
         // Tạo Attendances (5-7 record cho mỗi user cố định)
         foreach ($users as $user) {
             for ($i = 0; $i < 7; $i++) {
@@ -338,7 +285,7 @@ class AppFixtures extends Fixture
             }
         }
 
-        // Tạo 100 activities (để kiểm tra phân trang)
+        // Tạo 20 activities (để kiểm tra phân trang)
         $activities = [];
         for ($i = 0; $i < 20; $i++) {
             $activity = new Activities();
@@ -356,29 +303,17 @@ class AppFixtures extends Fixture
             $manager->persist($activity);
         }
 
-        // Xóa phần tạo Proposals mẫu cũ
-        // for ($i = 0; $i < 15; $i++) {
-        //     $proposal = new Proposals();
-        //     $proposal->setUserId($faker->randomElement($users));
-        //     $proposal->setType($faker->randomElement(['event', 'purchase', 'other']));
-        //     $proposal->setContent($faker->paragraph());
-        //     $proposal->setStatus($faker->randomElement(['pending', 'approved', 'rejected']));
-        //     $proposal->setCreatedAt(new \DateTime());
-        //     $proposal->setUpdatedAt(new \DateTime());
-        //     $manager->persist($proposal);
-        // }
-
         // Tạo dữ liệu mẫu cho bảng Attendances
-        for ($i = 0; $i < 100; $i++) {
-            $attendance = new Attendances();
-            $attendance->setUserId($faker->randomElement($userss));
-            $attendance->setActivityId($faker->randomElement($activities));
-            $attendance->setMarkedBy($faker->randomElement($users));
-            $attendance->setStatus($faker->randomElement(['present', 'absent', 'late']));
-            $attendance->setRemark($faker->sentence());
-            $attendance->setMarkedAt(new \DateTime());
-            $manager->persist($attendance);
-        }
+        // for ($i = 0; $i < 100; $i++) {
+        //     $attendance = new Attendances();
+        //     $attendance->setUserId($faker->randomElement($userss));
+        //     $attendance->setActivityId($faker->randomElement($activities));
+        //     $attendance->setMarkedBy($faker->randomElement($users));
+        //     $attendance->setStatus($faker->randomElement(['present', 'absent', 'late']));
+        //     $attendance->setRemark($faker->sentence());
+        //     $attendance->setMarkedAt(new \DateTime());
+        //     $manager->persist($attendance);
+        // }
 
         $manager->flush();
     }
