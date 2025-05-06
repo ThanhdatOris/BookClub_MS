@@ -5,6 +5,11 @@
 {% block body %}
 
 <div class="container-fluid py-4">
+    {% if app.user is not null and app.user.role != 'ROLE_ADMIN' %}
+        <script>
+            window.location.href = "{{ path('app_home') }}";
+        </script>
+    {% endif %}
     <!-- Chào user -->
     {# <div class="card shadow-sm mb-4 pb-0">
         <div class="card-body">

@@ -3,7 +3,7 @@
 {% block title %}Tài khoản cá nhân - {{ user.name }}{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-2">
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <div class="card shadow-sm">
@@ -13,7 +13,7 @@
                         <p class="mb-0 fw-bold text-sm">{{ user.name }}</p>
                     </div>
                     <div class="col-md-4 text-end d-flex justify-content-end">
-                        {% if app.user and app.user.id == user.id and (is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER')) %}
+                        {% if app.user and app.user.id == user.id and is_granted('ROLE_ADMIN') %}
                             <a href="{{ path('profile_edit', {'studentId': user.studentId}) }}" class="btn btn-light btn-sm mb-0">Chỉnh sửa thông tin</a>
                         {% else %}
                             <a href="{{ path('profile_suggest', {'studentId': user.studentId}) }}" class="btn btn-warning btn-sm mb-0">Đề xuất chỉnh sửa</a>
@@ -23,64 +23,60 @@
                 <div class="card-body">
                     <!-- Thông tin cá nhân -->
                     <h4 class="text-primary mb-3">Thông tin cá nhân</h4>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
-                            <tbody>
-                                <tr>
-                                    <th scope="row" class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tên</th>
-                                    <td>{{ user.name }}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row" class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email</th>
-                                    <td>{{ user.email }}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row" class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mã sinh viên</th>
-                                    <td>{{ user.studentId }}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row" class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Lớp</th>
-                                    <td>{{ user.classId ?: 'Chưa có thông tin' }}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row" class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Khoa</th>
-                                    <td>{{ user.faculty ?: 'Chưa có thông tin' }}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row" class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thông tin liên hệ</th>
-                                    <td>{{ user.contactInfo ?: 'Chưa có thông tin' }}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row" class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
-                                    <td>
-                                        <span class="badge bg-{{ user.status == 'active' ? 'success' : 'danger' }}">{{ user.status }}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row" class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày tạo</th>
-                                    <td>{{ user.createdAt ? user.createdAt|date('d/m/Y H:i:s') : 'Chưa có thông tin' }}</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row" class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày cập nhật</th>
-                                    <td>{{ user.updatedAt ? user.updatedAt|date('d/m/Y H:i:s') : 'Chưa có thông tin' }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tên:</strong>
+                            <p class="mb-0">{{ user.name }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email:</strong>
+                            <p class="mb-0">{{ user.email }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mã sinh viên:</strong>
+                            <p class="mb-0">{{ user.studentId }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Lớp:</strong>
+                            <p class="mb-0">{{ user.classId ?: 'Chưa có thông tin' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Khoa:</strong>
+                            <p class="mb-0">{{ user.faculty ?: 'Chưa có thông tin' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái:</strong>
+                            <p class="mb-0">
+                                <span class="badge bg-{{ user.status == 'active' ? 'success' : 'danger' }}">{{ user.status }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thông tin liên hệ:</strong>
+                            <p class="mb-0">{{ user.contactInfo ?: 'Chưa có thông tin' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày tạo:</strong>
+                            <p class="mb-0">{{ user.createdAt ? user.createdAt|date('d/m/Y H:i:s') : 'Chưa có thông tin' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày cập nhật:</strong>
+                            <p class="mb-0">{{ user.updatedAt ? user.updatedAt|date('d/m/Y H:i:s') : 'Chưa có thông tin' }}</p>
+                        </div>
                     </div>
 
                     <!-- Lịch sử hoạt động -->
-                    <div class="alert alert-info text-white">
+                    <div class="alert alert-info text-white mt-2">
                         <p class="mb-0"><strong>Số hoạt động đã tham gia:</strong> {{ activityCount }}</p>
                     </div>
                     <h4 class="text-primary mt-4 mb-3">Lịch sử hoạt động</h4>
                     {% if participatedActivities|length > 0 %}
                         <div class="card">
-                            <div class="card-header pb-0">
+                            <div class="card-header">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Danh sách hoạt động đã tham gia</h6>
+                                    <h6 class="text-uppercase text-secondary font-weight-bold">Danh sách hoạt động đã tham gia</h6>
                                     <div class="d-flex align-items-center">
                                         <input type="text" id="historySearchInput" class="form-control me-2" placeholder="Tìm kiếm hoạt động..." style="max-width: 300px;">
-                                        <button type="button" id="historyClearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                                        <button type="button" id="historyClearSearchBtn" class="btn btn-secondary ms-2 d-none">Xóa bộ lọc</button>
                                     </div>
                                 </div>
                             </div>
