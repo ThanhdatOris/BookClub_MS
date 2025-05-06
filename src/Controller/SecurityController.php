@@ -13,6 +13,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class SecurityController extends AbstractController
 {
@@ -53,7 +54,7 @@ class SecurityController extends AbstractController
     public function connectGoogle(): Response
     {
         $googleAuthUrl = sprintf(
-            'https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=%s&redirect_uri=%s&scope=%s',
+            'https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&prompt=select_account',
             urlencode($_ENV['GOOGLE_CLIENT_ID']),
             urlencode($_ENV['GOOGLE_REDIRECT_URI']),
             urlencode('email profile')
@@ -202,6 +203,14 @@ class SecurityController extends AbstractController
 
         return $this->render('security/error.html.twig', [
             'login_error' => $errorMessage,
+        ]);
+    }
+
+    #[Route('/access-denied', name: 'app_access_denied')]
+    public function accessDenied(): Response
+    {
+        return $this->render('security/access_denied.html.twig', [
+            'exception' => new AccessDeniedException('Bạn không có quyền truy cập trang này.')
         ]);
     }
 }
