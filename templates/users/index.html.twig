@@ -283,60 +283,24 @@
 
             // Hàm hiển thị form thêm thành viên
             window.showAddUserForm = function() {
-                const formStart = `{{ form_start(form, {
-                    'attr': {
-                        'id': 'addUserForm',
-                        'novalidate': 'novalidate'
-                    }
-                })|e('js') }}`;
-                
-                const formEnd = `{{ form_end(form, {'render_rest': false})|e('js') }}`;
-
-                dynamicContent.innerHTML = `
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Thêm thành viên mới</h5>
-                            <button type="button" class="btn-close" onclick="hideForm()"></button>
-                        </div>
-                        <div class="card-body">
-                            ${formStart}
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    {{ form_fields.student_id|e('js') }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form_fields.name|e('js') }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form_fields.email|e('js') }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form_fields.gender|e('js') }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form_fields.faculty|e('js') }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form_fields.class_id|e('js') }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form_fields.role|e('js') }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form_fields.contact_info|e('js') }}
-                                </div>
+                fetch('/members/new', {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    dynamicContent.innerHTML = `
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Thêm thành viên mới</h5>
+                                <button type="button" class="btn-close" onclick="hideForm()"></button>
                             </div>
-                            <div class="d-flex justify-content-end gap-2 mt-4">
-                                <button type="button" class="btn btn-secondary" onclick="hideForm()">Đóng</button>
-                                <button type="submit" class="btn btn-primary">Thêm thành viên</button>
+                            <div class="card-body">
+                                ${data.form}
                             </div>
-                            ${formEnd}
                         </div>
-                    </div>
-                `;
-
-                // Khởi tạo form handler
-                initAddUserForm();
+                    `;
+                    initAddUserForm();
+                });
             };
 
             // Hàm khởi tạo xử lý form thêm thành viên
@@ -460,9 +424,9 @@
 
                                     {% if is_granted('ROLE_ADMIN') %}
                                     <div class="d-flex justify-content-end gap-2 mt-4">
-                                        <a href="{{ path('app_users_edit', {'id': '${user.id}'}) }}" class="btn btn-primary">
+                                        <button type="button" class="btn btn-primary" onclick="showEditUserForm(${user.id})">
                                             <i class="fas fa-edit me-2"></i>Chỉnh sửa
-                                        </a>
+                                        </button>
                                         <form method="post" action="{{ path('app_users_toggle_status', {'id': '${user.id}'}) }}" class="d-inline">
                                             <input type="hidden" name="_token" value="{{ csrf_token('toggle-status') }}">
                                             <button type="submit" class="btn ${user.status === 'active' ? 'btn-danger' : 'btn-success'}">
@@ -491,6 +455,59 @@
                     </div>
                 `;
             };
+
+            // Hàm hiển thị form chỉnh sửa
+            window.showEditUserForm = function(userId) {
+                fetch(`/members/${userId}/edit`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    dynamicContent.innerHTML = `
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Chỉnh sửa thông tin thành viên</h5>
+                                <button type="button" class="btn-close" onclick="hideForm()"></button>
+                            </div>
+                            <div class="card-body">
+                                ${data.form}
+                            </div>
+                        </div>
+                    `;
+                    initEditUserForm(userId);
+                });
+            };
+
+            // Hàm khởi tạo xử lý form chỉnh sửa
+            function initEditUserForm(userId) {
+                const form = document.getElementById('editUserForm') || dynamicContent.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        try {
+                            const formData = new FormData(this);
+                            const response = await fetch(`/members/${userId}/edit`, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            });
+
+                            const data = await response.json();
+                            if (data.success) {
+                                alert(data.message);
+                                window.location.reload();
+                            } else {
+                                alert(data.error || 'Có lỗi xảy ra khi cập nhật thông tin');
+                            }
+                        } catch (error) {
+                            console.error('Lỗi khi gửi form:', error);
+                            alert('Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại sau.');
+                        }
+                    });
+                }
+            }
         });
     </script>
 {% endblock %}

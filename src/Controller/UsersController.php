@@ -94,16 +94,27 @@ final class UsersController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_users_new', methods: ['POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    #[Route('/new', name: 'app_users_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): JsonResponse|Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $user = new Users();
         $form = $this->createForm(UsersType::class, $user);
-        
         $form->handleRequest($request);
-        
+
+        // Nếu là AJAX GET, trả về HTML form
+        if ($request->isXmlHttpRequest() && $request->isMethod('GET')) {
+            return new JsonResponse([
+                'form' => $this->renderView('users/_form.html.twig', [
+                    'form' => $form->createView(),
+                    'button_label' => 'Thêm thành viên',
+                    'action' => $this->generateUrl('app_users_new'),
+                    'id' => 'addUserForm'
+                ])
+            ]);
+        }
+
         if ($form->isSubmitted()) {
             // Kiểm tra trùng lặp mã sinh viên
             $existingUser = $entityManager->getRepository(Users::class)->findOneBy([
@@ -132,8 +143,8 @@ final class UsersController extends AbstractController
                     // Thiết lập các giá trị mặc định
                     $user->setStatus('active');
                     $user->setPassword('not_used');
-                    $user->setCreatedAt(new \DateTime());
-                    $user->setUpdatedAt(new \DateTime());
+                    $user->setCreateAt(new \DateTime());
+                    $user->setUpdateAt(new \DateTime());
 
                     $entityManager->persist($user);
                     $entityManager->flush();
@@ -161,10 +172,7 @@ final class UsersController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        return new JsonResponse([
-            'success' => false,
-            'error' => 'Invalid form submission.'
-        ], Response::HTTP_BAD_REQUEST);
+        return $this->redirectToRoute('app_users_index');
     }
 
     #[Route('/{id}', name: 'app_users_show', methods: ['GET', 'POST'])]
@@ -210,19 +218,63 @@ final class UsersController extends AbstractController
         $form = $this->createForm(UsersType::class, $user);
         $form->handleRequest($request);
 
+        // Nếu là AJAX GET, trả về HTML form
+        if ($request->isXmlHttpRequest() && $request->isMethod('GET')) {
+            return new JsonResponse([
+                'form' => $this->renderView('users/_form.html.twig', [
+                    'form' => $form->createView(),
+                    'button_label' => 'Cập nhật'
+                ])
+            ]);
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $currentUser = $this->getUser();
             if ($currentUser instanceof Users && $currentUser->getId() === $user->getId()) {
                 $originalRole = $entityManager->getUnitOfWork()->getOriginalEntityData($user)['role'] ?? $user->getRole();
                 if ($user->getRole() !== $originalRole) {
+                    if ($request->isXmlHttpRequest()) {
+                        return new JsonResponse([
+                            'success' => false,
+                            'error' => 'Bạn không được phép tự thay đổi vai trò của mình.'
+                        ], Response::HTTP_BAD_REQUEST);
+                    }
                     $this->addFlash('warning', 'Bạn không được phép tự thay đổi vai trò của mình.');
                     return $this->redirectToRoute('app_users_edit', ['id' => $user->getId()]);
                 }
             }
 
-            $entityManager->flush();
-            $this->addFlash('success', 'Cập nhật thông tin thành công!');
-            return $this->redirectToRoute('app_users_index', [], Response::HTTP_SEE_OTHER);
+            try {
+                $entityManager->flush();
+                if ($request->isXmlHttpRequest()) {
+                    return new JsonResponse([
+                        'success' => true,
+                        'message' => 'Cập nhật thông tin thành công!'
+                    ]);
+                }
+                $this->addFlash('success', 'Cập nhật thông tin thành công!');
+                return $this->redirectToRoute('app_users_index', [], Response::HTTP_SEE_OTHER);
+            } catch (\Exception $e) {
+                if ($request->isXmlHttpRequest()) {
+                    return new JsonResponse([
+                        'success' => false,
+                        'error' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                    ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
+                $this->addFlash('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+                return $this->redirectToRoute('app_users_edit', ['id' => $user->getId()]);
+            }
+        }
+
+        if ($request->isXmlHttpRequest()) {
+            $errors = [];
+            foreach ($form->getErrors(true) as $error) {
+                $errors[] = $error->getMessage();
+            }
+            return new JsonResponse([
+                'success' => false,
+                'error' => implode(', ', $errors)
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         return $this->render('users/edit.html.twig', [
