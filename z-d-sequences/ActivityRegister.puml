@@ -1,0 +1,20 @@
+@startuml
+' File: ActivityManagement.puml
+
+start
+
+' Quy trình đăng ký tham gia
+:Người dùng đăng nhập vào hệ thống;
+:Người dùng chọn "Hoạt động" từ menu;
+:Người dùng xem danh sách hoạt động;
+:Người dùng chọn hoạt động muốn tham gia;
+if (Hoạt động đang lên kế hoạch, đang diễn ra?) then (Có)
+    :Đăng ký tham gia;
+    :Cập nhật số lượng người tham gia;
+else (Không)
+    :Không cho phép đăng ký;
+endif
+
+stop
+
+@enduml

@@ -23,7 +23,7 @@ repeat
     else (Không)
         :Hiển thị thông báo lỗi;
     endif
-repeat while (Thông tin không hợp lệ?)
+repeat while (Thông tin chưa hợp lệ)
 
 ' Lưu vào cơ sở dữ liệu
 :Thêm hoạt động vào tbl:Activities;

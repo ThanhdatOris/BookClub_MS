@@ -1,0 +1,74 @@
+@startuml
+' File: ProposalProcess.puml
+
+start
+
+' Quy trình tạo đề xuất
+:Thành viên đăng nhập;
+:Thành viên tạo đề xuất mới;
+
+' Kiểm tra loại đề xuất
+if (Loại đề xuất?) then (Chỉnh sửa thông tin)
+    :Hiển thị form chỉnh sửa thông tin;
+    :Sinh viên nhập thông tin cần chỉnh sửa;
+    :Validate thông tin nhập vào;
+else (Đề xuất chung)
+    :Hiển thị form đề xuất chung;
+    :Sinh viên nhập nội dung đề xuất;
+    :Validate nội dung đề xuất;
+endif
+
+' Kiểm tra thông tin
+if (Thông tin hợp lệ?) then (Có)
+    :Backup dữ liệu hiện tại;
+    :Gán user_id = ID của sinh viên;
+    :Gán created_at = thời gian hiện tại;
+    :Gán updated_at = thời gian hiện tại;
+    :Gán status = "pending";
+    :Lưu đề xuất vào CSDL;
+    :Hiển thị thông báo "Tạo đề xuất thành công";
+else (Không)
+    :Hiển thị thông báo lỗi;
+endif
+
+' Quy trình duyệt đề xuất
+' :Admin đăng nhập;
+' :Admin xem danh sách đề xuất;
+' :Admin lọc đề xuất theo:
+'     - Trạng thái
+'     - Loại đề xuất
+'     - Thời gian
+' :Admin chọn đề xuất cần xử lý;
+
+' if (Loại đề xuất?) then (Chỉnh sửa thông tin)
+'     :Hiển thị thông tin chi tiết đề xuất;
+'     :Hiển thị lịch sử thay đổi;
+'     :Admin chọn các trường cần phê duyệt;
+'     if (Quyết định?) then (Phê duyệt)
+'         :Kiểm tra tính hợp lệ của thay đổi;
+'         if (Thay đổi hợp lệ?) then (Có)
+'             :Cập nhật thông tin sinh viên;
+'             :Gán status = "approved";
+'             :Lưu lịch sử thay đổi;
+'         else (Không)
+'             :Hiển thị thông báo "Thay đổi không hợp lệ";
+'         endif
+'     else (Từ chối)
+'         :Admin nhập lý do từ chối;
+'         :Gán status = "rejected";
+'     endif
+' else (Đề xuất chung)
+'     :Hiển thị nội dung đề xuất;
+'     :Hiển thị lịch sử xử lý;
+'     if (Quyết định?) then (Phê duyệt)
+'         :Gán status = "approved";
+'     else (Từ chối)
+'         :Admin nhấn từ chối;
+'         :Gán status = "rejected";
+'     endif
+' endif
+
+' :Log hoạt động xử lý đề xuất;
+stop
+
+@enduml 

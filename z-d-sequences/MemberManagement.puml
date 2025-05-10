@@ -1,0 +1,94 @@
+@startuml
+' File: MemberManagement.puml
+
+start
+
+' Quy trình đăng ký thành viên
+:Sinh viên truy cập trang web;
+:Sinh viên nhấn "Đăng ký thành viên";
+
+' Nhập thông tin đăng ký
+repeat
+    :Nhập thông tin cá nhân;
+    :Validate thông tin:
+        - Email hợp lệ
+        - Mật khẩu đủ mạnh
+        - MSSV hợp lệ
+        - Số điện thoại hợp lệ
+    
+    ' Kiểm tra thông tin
+    if (Thông tin hợp lệ?) then (Có)
+        :Kiểm tra email đã tồn tại?;
+        if (Email đã tồn tại?) then (Có)
+            :Hiển thị thông báo "Email đã được sử dụng";
+        else (Không)
+            :Mã hóa mật khẩu;
+            :Gán role = "ROLE_USER";
+            :Gán status = "pending";
+            :Gán created_at = thời gian hiện tại;
+            :Lưu thông tin vào CSDL;
+            :Tạo mã xác thực;
+            :Gửi email xác nhận với mã xác thực;
+            :Hiển thị thông báo "Vui lòng kiểm tra email để xác nhận";
+        endif
+    else (Không)
+        :Hiển thị thông báo lỗi chi tiết;
+    endif
+repeat while (Thông tin hợp lệ)
+
+' Quy trình xác thực email
+:Sinh viên nhận email xác nhận;
+:Sinh viên nhập mã xác thực;
+if (Mã xác thực đúng?) then (Có)
+    :Gán status = "active";
+    :Cập nhật thông tin vào CSDL;
+    :Gửi email chào mừng;
+    :Hiển thị thông báo "Đăng ký thành công";
+else (Không)
+    :Hiển thị thông báo "Mã xác thực không đúng";
+endif
+
+' Quy trình quản lý thành viên
+:Admin đăng nhập;
+:Admin truy cập quản lý thành viên;
+
+' Xem danh sách thành viên
+:Admin xem danh sách thành viên;
+:Admin có thể lọc theo:
+    - Trạng thái
+    - Vai trò
+    - Khoa
+    - Lớp
+    - Thời gian đăng ký
+
+' Cập nhật thông tin thành viên
+:Admin chọn thành viên cần cập nhật;
+:Admin chỉnh sửa thông tin;
+:Validate thông tin mới;
+
+if (Thông tin hợp lệ?) then (Có)
+    :Backup thông tin cũ;
+    :Gán updated_at = thời gian hiện tại;
+    :Cập nhật thông tin vào CSDL;
+    :Gửi email thông báo cho thành viên;
+    :Hiển thị thông báo "Cập nhật thành công";
+else (Không)
+    :Hiển thị thông báo lỗi chi tiết;
+endif
+
+' Khóa/Mở khóa tài khoản
+:Admin chọn thành viên;
+if (Trạng thái hiện tại?) then (active)
+    :Admin nhập lý do khóa;
+    :Gán status = "inactive";
+    :Gửi email thông báo cho thành viên;
+    :Hiển thị thông báo "Đã khóa tài khoản";
+else (inactive)
+    :Gán status = "active";
+    :Gửi email thông báo cho thành viên;
+    :Hiển thị thông báo "Đã mở khóa tài khoản";
+endif
+
+stop
+
+@enduml 

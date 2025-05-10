@@ -1,0 +1,60 @@
+@startuml
+' File: AttendanceProcess.puml
+
+start
+
+' Quy trình điểm danh hoạt động
+:Admin đăng nhập;
+:Admin truy cập trang quản lý hoạt động;
+:Admin chọn hoạt động cần điểm danh;
+
+' Hiển thị thông tin hoạt động
+:Hiển thị thông tin hoạt động:
+- Tên hoạt động
+- Thời gian bắt đầu
+- Trạng thái hoạt động
+- Mô tả hoạt động;
+
+' Xem danh sách người tham gia
+:Hiển thị danh sách người tham gia:
+- Tên thành viên, MSSV
+- Trạng thái điểm danh;
+
+' Điểm danh thành viên
+repeat
+    :Admin chọn thành viên cần điểm danh;
+    if (Trạng thái?) then (Chưa điểm danh)
+        :Admin chọn trạng thái:
+        - Có mặt
+        - Vắng mặt
+        :Validate thông tin điểm danh;
+        if (Thông tin hợp lệ?) then (Có)
+            :Gán marked_by = ID của admin;
+            :Gán marked_at = thời gian hiện tại;
+            :Lưu thông tin điểm danh vào CSDL;
+            :Cập nhật trạng thái tham gia của thành viên;
+            :Hiển thị thông báo "Điểm danh thành công";
+        else (Không)
+            :Hiển thị thông báo lỗi chi tiết;
+        endif
+    else (Đã điểm danh)
+        :Hiển thị trong DS tham gia;
+    endif
+repeat while (Còn thành viên chưa điểm danh)
+
+' Thống kê điểm danh
+:Hiển thị thống kê:
+- Tổng số người tham gia
+- Số người có mặt
+- Số người vắng mặt;
+
+' Cập nhật trạng thái hoạt động
+if (Hoàn tất điểm danh) then (Có)
+    :Cập nhật trạng thái = "completed";
+else (Không)
+    :Giữ nguyên trạng thái;
+endif
+
+stop
+
+@enduml

@@ -1,0 +1,87 @@
+@startuml
+' File: ActivityManagement.puml
+
+start
+
+' Quy trình thêm hoạt động
+:BCN đăng nhập với vai trò quản trị viên;
+:BCN nhấn "Quản lý hoạt động";
+:BCN nhấn "Thêm mới";
+
+' Nhập thông tin hoạt động
+repeat
+    :Nhập thông tin hoạt động;
+    ' note right
+    '     Validate thông tin:
+    '     - Tên hoạt động
+    '     - Thời gian bắt đầu/kết thúc
+    '     - Địa điểm
+    ' end note
+    
+    ' Kiểm tra thông tin
+    if (Thông tin hợp lệ?) then (Có)
+        :Gán created_by = ID của BCN;
+        :Gán created_at = thời gian hiện tại;
+        :Gán updated_at = thời gian hiện tại;
+        :Gán status = "planned";
+        :Lưu hoạt động vào CSDL;
+        :Tạo lịch nhắc nhở;
+        :Gửi thông báo cho thành viên;
+        :Hiển thị thông báo "Thêm hoạt động thành công";
+    else (Không)
+        :Hiển thị thông báo lỗi chi tiết;
+    endif
+repeat while (Thông tin hợp lệ)
+
+' ' Quy trình cập nhật hoạt động
+' :BCN chọn hoạt động cần cập nhật;
+' :BCN chỉnh sửa thông tin;
+' :Validate thông tin mới;
+
+' if (Thông tin hợp lệ?) then (Có)
+'     :Kiểm tra trùng lịch với hoạt động khác;
+'     if (Không trùng lịch?) then (Có)
+'         :Gán updated_at = thời gian hiện tại;
+'         :Cập nhật thông tin vào CSDL;
+'         :Cập nhật lịch nhắc nhở;
+'         :Gửi thông báo cho thành viên đã đăng ký;
+'         :Hiển thị thông báo "Cập nhật thành công";
+'     else (Không)
+'         :Hiển thị thông báo "Trùng lịch với hoạt động khác";
+'     endif
+' else (Không)
+'     :Hiển thị thông báo lỗi chi tiết;
+' endif
+
+' ' Quy trình xóa hoạt động
+' :BCN chọn hoạt động cần xóa;
+' if (Xác nhận xóa?) then (Có)
+'     :Kiểm tra điều kiện xóa:
+'         - Chưa có người đăng ký
+'         - Chưa đến ngày diễn ra
+'     if (Có thể xóa?) then (Có)
+'         :Xóa hoạt động khỏi CSDL;
+'         :Xóa lịch nhắc nhở;
+'         :Gửi thông báo cho thành viên đã đăng ký;
+'         :Hiển thị thông báo "Xóa thành công";
+'     else (Không)
+'         :Hiển thị thông báo "Không thể xóa hoạt động";
+'     endif
+' else (Không)
+'     :Hủy thao tác;
+' endif
+
+' ' Quy trình đăng ký tham gia
+' :Sinh viên xem danh sách hoạt động;
+' :Sinh viên chọn hoạt động muốn tham gia;
+' if (Hoạt động còn chỗ?) then (Có)
+'     :Đăng ký tham gia;
+'     :Gửi email xác nhận;
+'     :Cập nhật số lượng người tham gia;
+' else (Không)
+'     :Hiển thị thông báo "Đã hết chỗ";
+' endif
+
+stop
+
+@enduml

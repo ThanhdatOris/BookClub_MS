@@ -87,20 +87,20 @@ class ActivityParticipant {
 }
 
 ' Mối quan hệ giữa các lớp
-Users "1" --> "0..*" Activities
-Users "1" --> "0..*" Attendances
-Users "1" --> "0..*" Attendances
-Activities "1" --> "0..*" Attendances
-Users "1" --> "0..*" Funds
-Users "1" --> "0..*" Proposals
-Users "1" --> "0..*" ActivityParticipant
-Activities "1" --> "0..*" ActivityParticipant
+Users "1" -- "0..*" Activities
+Users "1" -- "0..*" Attendances
+Users "1" -- "0..*" Attendances
+Activities "1" -- "0..*" Attendances
+Users "1" -- "0..*" Funds
+Users "1" -- "0..*" Proposals
+Users "1" -- "0..*" ActivityParticipant
+Activities "1" -- "0..*" ActivityParticipant
 
 ' Ghi chú về vai trò
 note right of Users
   Vai trò (role):
   - MEMBER
-  - ADMINADMIN
+  - ADMIN
   - TREASURER
 end note
 
