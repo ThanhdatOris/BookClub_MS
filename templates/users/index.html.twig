@@ -15,144 +15,263 @@
         'contact_info': form_row(form.contact_info)
     } %}
 
-    <div class="container-fluid py-4">
-        <div class="row">
-            <!-- Thống kê -->
-            <div class="col-12 px-0">
-                <div class="row mb-md-4">
-                    <div class="col-xl-4 col-md-4 col-sm-6">
-                        <div class="card">
-                            <div class="card-body p-3">
-                                <div class="row">
-                                    <div class="col-8">
-                                        <div class="numbers">
-                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Tổng số</p>
-                                            <h5 class="font-weight-bolder mb-0">
-                                                {{ total_users }} thành viên
-                                            </h5>
-                                        </div>
-                                    </div>
-                                    <div class="col-4 text-end">
-                                        <div class="icon icon-shape bg-gradient-info shadow text-center border-radius-md">
-                                            <i class="fas fa-users text-lg opacity-10" aria-hidden="true"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    {# Thêm CSRF token vào JavaScript #}
+    <script>
+        // Định nghĩa CSRF token
+        const CSRF_TOKEN = '{{ csrf_token('toggle-status') }}';
 
-                    <div class="col-xl-4 col-md-4 col-sm-6">
-                        <div class="card">
-                            <div class="card-body p-3">
-                                <div class="row">
-                                    <div class="col-8">
-                                        <div class="numbers">
-                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Hoạt động</p>
-                                            <h5 class="font-weight-bolder mb-0">
-                                                {{ active_users }} thành viên
-                                            </h5>
-                                        </div>
-                                    </div>
-                                    <div class="col-4 text-end">
-                                        <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
-                                            <i class="fas fa-user-check text-lg opacity-10" aria-hidden="true"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        // Định nghĩa các hàm xử lý ở global scope
+        function handleToggleStatus(userId, currentStatus) {
+            const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            const actionText = newStatus === 'inactive' ? 'vô hiệu hóa' : 'kích hoạt';
+            const button = event.target;
+            
+            if (confirm(`Bạn có chắc chắn muốn ${actionText} thành viên này?`)) {
+                const formData = new FormData();
+                formData.append('_token', CSRF_TOKEN);
+                
+                fetch(`/members/${userId}/toggle-status`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Hiển thị thông báo thành công
+                        alert(data.message);
+                        // Load lại trang sau khi thao tác thành công
+                        window.location.reload();
+                    } else {
+                        // Hiển thị thông báo lỗi từ server
+                        alert(data.error || `Có lỗi xảy ra khi ${actionText} thành viên`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(`Có lỗi xảy ra khi ${actionText} thành viên. Vui lòng thử lại sau.`);
+                });
+            }
+        }
 
-                    <div class="col-xl-4 col-md-4 col-sm-6">
-                        <div class="card">
-                            <div class="card-body p-3">
-                                <div class="row">
-                                    <div class="col-8">
-                                        <div class="numbers">
-                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Ngưng hoạt động</p>
-                                            <h5 class="font-weight-bolder mb-0">
-                                                {{ inactive_users }} thành viên
-                                            </h5>
+        function showUserDetail(user) {
+            dynamicContent.innerHTML = `
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Chi tiết thành viên</h5>
+                        <button type="button" class="btn-close" onclick="hideForm()"></button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <!-- Avatar và thông tin cơ bản -->
+                            <div class="col-md-4 text-center">
+                                <img src="{{ asset('img/default.png') }}" class="rounded-circle shadow-sm mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                                <h5 class="fw-bold mb-1">${user.name}</h5>
+                                <p class="text-muted small mb-2">${user.studentId}</p>
+                                <span class="badge bg-${user.role === 'ROLE_ADMIN' ? 'primary' : user.role === 'ROLE_TREASURER' ? 'warning' : 'success'} px-3 py-2">
+                                    ${user.role === 'ROLE_ADMIN' ? 'Quản lý' : user.role === 'ROLE_TREASURER' ? 'Thủ quỹ' : 'Thành viên'}
+                                </span>
+                            </div>
+
+                            <!-- Thông tin chi tiết -->
+                            <div class="col-md-8">
+                                <div class="row g-3">
+                                    <!-- Thông tin cá nhân -->
+                                    <div class="col-12">
+                                        <div class="card border-0 shadow-sm">
+                                            <div class="card-body">
+                                                <h6 class="fw-bold mb-3">Thông tin cá nhân</h6>
+                                                <div class="row g-3">
+                                                    <div class="col-12">
+                                                        <p class="text-muted small mb-1"><i class="fas fa-envelope me-2"></i>Email</p>
+                                                        <p class="mb-0 text-break" style="word-wrap: break-word; max-width: 100%;">${user.email}</p>
+                                                    </div>
+                                                    <div class="col-sm-8">
+                                                        <p class="text-muted small mb-1"><i class="fas fa-university me-2"></i>Khoa</p>
+                                                        <p class="mb-0">${user.faculty || '<span class="text-danger">Chưa cập nhật</span>'}</p>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <p class="text-muted small mb-1"><i class="fas fa-users me-2"></i>Lớp</p>
+                                                        <p class="mb-0">${user.classId || '<span class="text-danger">Chưa cập nhật</span>'}</p>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <p class="text-muted small mb-1"><i class="fas fa-venus-mars me-2"></i>Giới tính</p>
+                                                        <p class="mb-0">${user.gender === 'male' ? 'Nam' : user.gender === 'female' ? 'Nữ' : 'Khác'}</p>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <p class="text-muted small mb-1"><i class="fas fa-phone-alt me-2"></i>Liên hệ</p>
+                                                        <p class="mb-0">${user.contactInfo || '<span class="text-danger">Chưa cập nhật</span>'}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-4 text-end">
-                                        <div class="icon icon-shape bg-gradient-danger shadow text-center border-radius-md">
-                                            <i class="fas fa-user-times text-lg opacity-10" aria-hidden="true"></i>
+
+                                    <!-- Thống kê hoạt động -->
+                                    <div class="col-12">
+                                        <div class="card border-0 shadow-sm">
+                                            <div class="card-body">
+                                                <h6 class="fw-bold mb-3">Thống kê hoạt động</h6>
+                                                <div class="row g-3">
+                                                    <div class="col-sm-6">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="bg-primary bg-opacity-10 border-radius-md p-3 me-3">
+                                                                <i class="fas fa-calendar text-primary"></i>
+                                                            </div>
+                                                            <div>
+                                                                <h3 class="fw-bold mb-0">${user.participatedActivities ? user.participatedActivities.length : '0'}</h3>
+                                                                <p class="text-muted small mb-0">Tổng hoạt động</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="bg-success bg-opacity-10 border-radius-md p-3 me-3">
+                                                                <i class="fas fa-check text-success"></i>
+                                                            </div>
+                                                            <div>
+                                                                <h3 class="fw-bold mb-0">${user.participatedActivities ? user.participatedActivities.filter(a => a.status === 'attended').length : '0'}</h3>
+                                                                <p class="text-muted small mb-0">Đã điểm danh</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                {% if is_granted('ROLE_ADMIN') %}
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                    <button type="button" class="btn btn-primary" onclick="showEditUserForm(${user.id})">
+                                        <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                                    </button>
+                                    <button type="button" 
+                                            class="btn ${user.status === 'active' ? 'btn-danger' : 'btn-success'}"
+                                            onclick="handleToggleStatus(${user.id}, '${user.status}')">
+                                        ${user.status === 'active' ? '<i class="fas fa-user-times me-2"></i> Vô hiệu hóa' : '<i class="fas fa-user-check me-2"></i> Kích hoạt'}
+                                    </button>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
+            `;
+        }
+
+        // Các hàm khác...
+    </script>
+
+    <div class="container-fluid py-4">
+        <div class="row">
+            <!-- Thống kê -->
+            <div class="col-12 px-0">
+                {% set stats = {
+                    'total': {
+                        'title': 'Tổng số',
+                        'value': total_users,
+                        'unit': 'thành viên',
+                        'icon': 'fas fa-users',
+                        'color': 'info'
+                    },
+                    'active': {
+                        'title': 'Hoạt động', 
+                        'value': active_users,
+                        'unit': 'thành viên',
+                        'icon': 'fas fa-user-check',
+                        'color': 'success'
+                    },
+                    'inactive': {
+                        'title': 'Ngưng hoạt động',
+                        'value': inactive_users,
+                        'unit': 'thành viên', 
+                        'icon': 'fas fa-user-times',
+                        'color': 'danger'
+                    }
+                } %}
+
+                <div class="row mb-md-4">
+                    {% for stat in stats %}
+                    <div class="col-xl-4 col-md-4 col-sm-6">
+                        <div class="card">
+                            <div class="card-body p-3">
+                                <div class="row">
+                                    <div class="col-8">
+                                        <div class="numbers">
+                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">{{ stat.title }}</p>
+                                            <h5 class="font-weight-bolder mb-0">
+                                                {{ stat.value }} {{ stat.unit }}
+                                            </h5>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <div class="icon icon-shape bg-gradient-{{ stat.color }} shadow text-center border-radius-md">
+                                            <i class="{{ stat.icon }} text-lg opacity-10" aria-hidden="true"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% set role_stats = {
+                    'admin': {
+                        'title': 'Quản lý',
+                        'value': admin_users,
+                        'unit': 'thành viên',
+                        'icon': 'fas fa-user-shield',
+                        'color': 'primary'
+                    },
+                    'treasurer': {
+                        'title': 'Thủ quỹ',
+                        'value': treasurer_users,
+                        'unit': 'thành viên',
+                        'icon': 'fas fa-user-tie',
+                        'color': 'warning'
+                    },
+                    'member': {
+                        'title': 'Thành viên',
+                        'value': member_users,
+                        'unit': 'thành viên',
+                        'icon': 'fas fa-user',
+                        'color': 'success'
+                    }
+                } %}
 
                 <div class="row mb-4">
+                    {% for stat in role_stats %}
                     <div class="col-xl-4 col-md-4 col-sm-6">
                         <div class="card">
                             <div class="card-body p-3">
                                 <div class="row">
                                     <div class="col-8">
                                         <div class="numbers">
-                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Quản lý</p>
+                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">{{ stat.title }}</p>
                                             <h5 class="font-weight-bolder mb-0">
-                                                {{ admin_users }} thành viên
+                                                {{ stat.value }} {{ stat.unit }}
                                             </h5>
                                         </div>
                                     </div>
                                     <div class="col-4 text-end">
-                                        <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
-                                            <i class="fas fa-user-shield text-lg opacity-10" aria-hidden="true"></i>
+                                        <div class="icon icon-shape bg-gradient-{{ stat.color }} shadow text-center border-radius-md">
+                                            <i class="{{ stat.icon }} text-lg opacity-10" aria-hidden="true"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="col-xl-4 col-md-4 col-sm-6">
-                        <div class="card">
-                            <div class="card-body p-3">
-                                <div class="row">
-                                    <div class="col-8">
-                                        <div class="numbers">
-                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Thủ quỹ</p>
-                                            <h5 class="font-weight-bolder mb-0">
-                                                {{ treasurer_users }} thành viên
-                                            </h5>
-                                        </div>
-                                    </div>
-                                    <div class="col-4 text-end">
-                                        <div class="icon icon-shape bg-gradient-warning shadow text-center border-radius-md">
-                                            <i class="fas fa-user-tie text-lg opacity-10" aria-hidden="true"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-4 col-md-4 col-sm-6">
-                        <div class="card">
-                            <div class="card-body p-3">
-                                <div class="row">
-                                    <div class="col-8">
-                                        <div class="numbers">
-                                            <p class="text-sm mb-0 text-uppercase font-weight-bold">Thành viên</p>
-                                            <h5 class="font-weight-bolder mb-0">
-                                                {{ member_users }} thành viên
-                                            </h5>
-                                        </div>
-                                    </div>
-                                    <div class="col-4 text-end">
-                                        <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
-                                            <i class="fas fa-user text-lg opacity-10" aria-hidden="true"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
 
@@ -333,115 +452,6 @@
                     });
                 }
             }
-
-            // Hàm hiển thị chi tiết thành viên
-            window.showUserDetail = function(user) {
-                dynamicContent.innerHTML = `
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Chi tiết thành viên</h5>
-                            <button type="button" class="btn-close" onclick="hideForm()"></button>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-4">
-                                <!-- Avatar và thông tin cơ bản -->
-                                <div class="col-md-4 text-center">
-                                    <img src="{{ asset('img/default.png') }}" class="rounded-circle shadow-sm mb-3" style="width: 120px; height: 120px; object-fit: cover;">
-                                    <h5 class="fw-bold mb-1">${user.name}</h5>
-                                    <p class="text-muted small mb-2">${user.studentId}</p>
-                                    <span class="badge bg-${user.role === 'ROLE_ADMIN' ? 'primary' : user.role === 'ROLE_TREASURER' ? 'warning' : 'success'} px-3 py-2">
-                                        ${user.role === 'ROLE_ADMIN' ? 'Quản lý' : user.role === 'ROLE_TREASURER' ? 'Thủ quỹ' : 'Thành viên'}
-                                    </span>
-                                </div>
-
-                                <!-- Thông tin chi tiết -->
-                                <div class="col-md-8">
-                                    <div class="row g-3">
-                                        <!-- Thông tin cá nhân -->
-                                        <div class="col-12">
-                                            <div class="card border-0 shadow-sm">
-                                                <div class="card-body">
-                                                    <h6 class="fw-bold mb-3">Thông tin cá nhân</h6>
-                                                    <div class="row g-3">
-                                                        <div class="col-12">
-                                                            <p class="text-muted small mb-1"><i class="fas fa-envelope me-2"></i>Email</p>
-                                                            <p class="mb-0 text-break" style="word-wrap: break-word; max-width: 100%;">${user.email}</p>
-                                                        </div>
-                                                        <div class="col-sm-8">
-                                                            <p class="text-muted small mb-1"><i class="fas fa-university me-2"></i>Khoa</p>
-                                                            <p class="mb-0">${user.faculty || '<span class="text-danger">Chưa cập nhật</span>'}</p>
-                                                        </div>
-                                                        <div class="col-sm-6">
-                                                            <p class="text-muted small mb-1"><i class="fas fa-users me-2"></i>Lớp</p>
-                                                            <p class="mb-0">${user.classId || '<span class="text-danger">Chưa cập nhật</span>'}</p>
-                                                        </div>
-                                                        <div class="col-sm-6">
-                                                            <p class="text-muted small mb-1"><i class="fas fa-venus-mars me-2"></i>Giới tính</p>
-                                                            <p class="mb-0">${user.gender === 'male' ? 'Nam' : user.gender === 'female' ? 'Nữ' : 'Khác'}</p>
-                                                        </div>
-                                                        <div class="col-12">
-                                                            <p class="text-muted small mb-1"><i class="fas fa-phone-alt me-2"></i>Liên hệ</p>
-                                                            <p class="mb-0">${user.contactInfo || '<span class="text-danger">Chưa cập nhật</span>'}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Thống kê hoạt động -->
-                                        <div class="col-12">
-                                            <div class="card border-0 shadow-sm">
-                                                <div class="card-body">
-                                                    <h6 class="fw-bold mb-3">Thống kê hoạt động</h6>
-                                                    <div class="row g-3">
-                                                        <div class="col-sm-6">
-                                                            <div class="d-flex align-items-center">
-                                                                <div class="bg-primary bg-opacity-10 border-radius-md p-3 me-3">
-                                                                    <i class="fas fa-calendar text-primary"></i>
-                                                                </div>
-                                                                <div>
-                                                                    <h3 class="fw-bold mb-0">${user.participatedActivities ? user.participatedActivities.length : '0'}</h3>
-                                                                    <p class="text-muted small mb-0">Tổng hoạt động</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-sm-6">
-                                                            <div class="d-flex align-items-center">
-                                                                <div class="bg-success bg-opacity-10 border-radius-md p-3 me-3">
-                                                                    <i class="fas fa-check text-success"></i>
-                                                                </div>
-                                                                <div>
-                                                                    <h3 class="fw-bold mb-0">${user.participatedActivities ? user.participatedActivities.filter(a => a.status === 'attended').length : '0'}</h3>
-                                                                    <p class="text-muted small mb-0">Đã điểm danh</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {% if is_granted('ROLE_ADMIN') %}
-                                    <div class="d-flex justify-content-end gap-2 mt-4">
-                                        <button type="button" class="btn btn-primary" onclick="showEditUserForm(${user.id})">
-                                            <i class="fas fa-edit me-2"></i>Chỉnh sửa
-                                        </button>
-                                        <form method="post" action="{{ path('app_users_toggle_status', {'id': '${user.id}'}) }}" class="d-inline">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle-status') }}">
-                                            <button type="submit" class="btn ${user.status === 'active' ? 'btn-danger' : 'btn-success'}">
-                                                <i class="fas ${user.status === 'active' ? 'fa-user-times' : 'fa-user-check'} me-2"></i>
-                                                ${user.status === 'active' ? 'Vô hiệu hóa' : 'Kích hoạt'}
-                                            </button>
-                                        </form>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            };
 
             // Hàm ẩn form/chi tiết
             window.hideForm = function() {

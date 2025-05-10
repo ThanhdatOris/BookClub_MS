@@ -283,25 +283,52 @@ final class UsersController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_users_delete', methods: ['POST'])]
-    public function delete(Request $request, Users $user, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}/toggle-status', name: 'app_users_toggle_status', methods: ['POST'])]
+    public function toggleStatus(Request $request, Users $user, EntityManagerInterface $entityManager): JsonResponse
     {
+        if (!$request->isXmlHttpRequest()) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Chỉ chấp nhận AJAX request'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // Kiểm tra nếu người dùng hiện tại tự vô hiệu hóa chính mình
+        // Kiểm tra nếu người dùng hiện tại tự thay đổi trạng thái của mình
         $currentUser = $this->getUser();
         if ($currentUser instanceof Users && $currentUser->getId() === $user->getId()) {
-            $this->addFlash('warning', 'Bạn không được phép tự vô hiệu hóa tài khoản của mình.');
-            return $this->redirectToRoute('app_users_show', ['id' => $user->getId()]);
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Bạn không được phép tự thay đổi trạng thái tài khoản của mình.'
+            ], Response::HTTP_BAD_REQUEST);
         }
 
-        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->getPayload()->getString('_token'))) {
-            $user->setStatus('inactive');
+        // Kiểm tra CSRF token
+        if (!$this->isCsrfTokenValid('toggle-status', $request->request->get('_token'))) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'CSRF token không hợp lệ'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $newStatus = $user->getStatus() === 'active' ? 'inactive' : 'active';
+            $user->setStatus($newStatus);
+            $user->setUpdateAt(new \DateTime());
             $entityManager->flush();
-            $this->addFlash('success', 'Thành viên đã được vô hiệu hóa.');
-        }
 
-        return $this->redirectToRoute('app_users_index', [], Response::HTTP_SEE_OTHER);
+            return new JsonResponse([
+                'success' => true,
+                'message' => $newStatus === 'active' ? 'Thành viên đã được kích hoạt lại.' : 'Thành viên đã bị vô hiệu hóa.',
+                'newStatus' => $newStatus
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     #[Route('/user/history', name: 'app_user_history')]
@@ -317,23 +344,5 @@ final class UsersController extends AbstractController
         return $this->render('user/history.html.twig', [
             'participatedActivities' => $participatedActivities,
         ]);
-    }
-
-    #[Route('/{id}/toggle-status', name: 'app_users_toggle_status', methods: ['POST'])]
-    public function toggleStatus(Request $request, Users $user, EntityManagerInterface $entityManager): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        if ($this->isCsrfTokenValid('toggle-status'.$user->getId(), $request->request->get('_token'))) {
-            // Toggle the status
-            $newStatus = $user->getStatus() === 'active' ? 'inactive' : 'active';
-            $user->setStatus($newStatus);
-            $entityManager->flush();
-
-            $message = $newStatus === 'active' ? 'Thành viên đã được kích hoạt lại.' : 'Thành viên đã bị vô hiệu hóa.';
-            $this->addFlash('success', $message);
-        }
-
-        return $this->redirectToRoute('app_users_index');
     }
 }
