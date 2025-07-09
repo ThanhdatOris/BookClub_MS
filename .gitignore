@@ -31,3 +31,5 @@
 /var/cache/
 /var/log/
 /var/sessions/
+/vendor
+/vendor
