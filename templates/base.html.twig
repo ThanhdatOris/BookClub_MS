@@ -1,195 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    {% block head %}
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/apple-icon-_mA87V4.png') }}">
-        <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon-_mA87V4.png') }}">
-        <title>
-            {% block title %}Book Club CTUT{% endblock %}
-        </title>
-        <!-- Fonts and icons -->
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
-        <!-- Font Awesome Icons -->
-        {# <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous" defer></script> #}
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-        <!-- CSS Files -->
-        <link id="pagestyle" href="{{ asset('assets/styles/argon-dashboard-SIGT4pJ.css') }}" rel="stylesheet" />
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <style>
-            .sys-bg {
-                background-image: url('{{ asset('assets/img/bg-iN96iui.png') }}');
-                background-size: cover;
-                background-position: center;
-            }
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}Book Club CTUT{% endblock %}</title>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('assets/styles/app.css') }}">
+    {% endblock %}
 
-            .table-hover tbody tr:hover {
-                background-color: #f5f5f5; /* Màu nền khi hover */
-                cursor: pointer;
-            }
-
-            .table-hover tbody tr:active {
-                background-color: #e0e0e0; /* Màu nền khi nhấp */
-            }
-        </style>
-        {% block stylesheets %}
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-            <link href="{{ asset('assets/styles/custom.css') }}" rel="stylesheet">
-        {% endblock %}
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
     {% endblock %}
 </head>
-
-<body class="g-sidenav-show bg-gray-100">
-    <div class="min-height-300 sys-bg position-absolute w-100"></div>
-    <aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4" id="sidenav-main" style="z-index: 1;">
-        <div class="sidenav-header">
-            <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-            <a class="navbar-brand m-0" href="{{ path('app_home') }}">
-                <img src="{{ asset('assets/img/logo-ct-dark-mn76con.png')}}" width="26px" height="26px" class="navbar-brand-img h-100" alt="main_logo">
-                <span class="ms-1 font-weight-bold">BOOK CLUB CTUT</span>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-xl flex-shrink-0 hidden md:flex flex-col">
+        <div class="h-16 flex items-center px-6 border-b border-slate-100">
+            <a href="{{ path('app_home') }}" class="flex items-center gap-3 font-bold text-lg text-indigo-600">
+                <i class="fas fa-book-reader text-2xl"></i>
+                <span>BOOK CLUB CTUT</span>
             </a>
         </div>
-        <hr class="horizontal dark mt-0" style="height: 3px;" tabindex="-1">
-        <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link {{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}" href="{{ path('app_home') }}">
-                        <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                            <i class="fas fa-home text-dark text-sm opacity-10"></i>
-                        </div>
-                        <span class="nav-link-text ms-1">Trang chủ</span>
+        <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="{{ path('app_home') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors {{ app.request.attributes.get('_route') == 'app_home' ? 'bg-indigo-50 text-indigo-600 font-medium' : '' }}">
+                <i class="fas fa-home w-5 text-center"></i>
+                Trang chủ
+            </a>
+
+            {% if app.user %}
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors {{ app.request.attributes.get('_route') == 'app_dashboard' ? 'bg-indigo-50 text-indigo-600 font-medium' : '' }}">
+                        <i class="fas fa-tachometer-alt w-5 text-center"></i>
+                        Dashboard
                     </a>
-                </li>
-                {% if app.user %}
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <li class="nav-item">
-                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_dashboard' ? 'active' : '' }}" href="{{ path('app_dashboard') }}">
-                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-tachometer-alt text-dark text-sm opacity-10"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">Dashboard</span>
-                            </a>
-                        </li>
-                    {% endif %}
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <li class="nav-item mt-3">
-                            <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Quản lý</h6>
-                        </li>
-                    {% endif %}
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <li class="nav-item">
-                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_users_index' ? 'active' : '' }}" href="{{ path('app_users_index') }}">
-                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-users text-dark text-sm opacity-10"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">Thành viên</span>
-                            </a>
-                        </li>
-                    {% endif %}
-                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
-                        <li class="nav-item">
-                            <a class="nav-link {{ app.request.attributes.get('_route') == 'app_funds_index' ? 'active' : '' }}" href="{{ path('app_funds_index') }}">
-                                <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-money-bill-wave text-dark text-sm opacity-10"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">Quỹ</span>
-                            </a>
-                        </li>
-                    {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link {{ app.request.attributes.get('_route') == 'app_activities_index' ? 'active' : '' }}" href="{{ path('app_activities_index') }}">
-                            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                <i class="fas fa-calendar-alt text-dark text-sm opacity-10"></i>
-                            </div>
-                            <span class="nav-link-text ms-1">Hoạt động</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ app.request.attributes.get('_route') == 'app_proposals_index' ? 'active' : '' }}" href="{{ path('app_proposals_index') }}">
-                            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                <i class="fas fa-file-alt text-dark text-sm opacity-10"></i>
-                            </div>
-                            <span class="nav-link-text ms-1">Đề xuất</span>
-                        </a>
-                    </li>
-                    {% if is_granted('ROLE_ADMIN')%}
-                        <li class="nav-item mt-3">
-                            <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>
-                        </li>
-                    {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link {{ app.request.attributes.get('_route') == 'profile' ? 'active' : '' }}" href="{{ path('profile', { studentId: app.user.studentId}) }}">
-                            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                                <i class="fas fa-user text-dark text-sm opacity-10"></i>
-                            </div>
-                            <span class="nav-link-text ms-1">Hồ sơ</span>
-                        </a>
-                    </li>
+                    
+                    <div class="pt-4 pb-1">
+                        <p class="px-3 text-xs font-bold uppercase tracking-wider text-slate-400">Quản lý</p>
+                    </div>
+                    
+                    <a href="{{ path('app_users_index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors {{ app.request.attributes.get('_route') == 'app_users_index' ? 'bg-indigo-50 text-indigo-600 font-medium' : '' }}">
+                        <i class="fas fa-users w-5 text-center"></i>
+                        Thành viên
+                    </a>
                 {% endif %}
-            </ul>
-        </div>
-        <div class="sidenav-footer mx-3 d-none d-lg-block">
-            <div class="card card-plain shadow-none" id="sidenavCard">
-            <img class="w-50 mx-auto" src="{{ asset('assets/img/illustrations/icon-documentation-DcItuRq.svg') }}" alt="sidebar_illustration">
-            <div class="card-body text-center p-3 w-100 pt-0">
-                <div class="docs-info">
-                <h6 class="mb-0">Book Club CTUT</h6>
-                <p class="text-xs font-weight-bold mb-0">Management System</p>
+
+                {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                    <a href="{{ path('app_funds_index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors {{ app.request.attributes.get('_route') == 'app_funds_index' ? 'bg-indigo-50 text-indigo-600 font-medium' : '' }}">
+                        <i class="fas fa-money-bill-wave w-5 text-center"></i>
+                        Quỹ
+                    </a>
+                {% endif %}
+
+                <a href="{{ path('app_activities_index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors {{ app.request.attributes.get('_route') == 'app_activities_index' ? 'bg-indigo-50 text-indigo-600 font-medium' : '' }}">
+                    <i class="fas fa-calendar-alt w-5 text-center"></i>
+                    Hoạt động
+                </a>
+                
+                <a href="{{ path('app_proposals_index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors {{ app.request.attributes.get('_route') == 'app_proposals_index' ? 'bg-indigo-50 text-indigo-600 font-medium' : '' }}">
+                    <i class="fas fa-file-alt w-5 text-center"></i>
+                    Đề xuất
+                </a>
+
+                <div class="pt-4 pb-1">
+                    <p class="px-3 text-xs font-bold uppercase tracking-wider text-slate-400">Tài khoản</p>
                 </div>
-            </div>
-            </div>
+                
+                <a href="{{ path('profile', { studentId: app.user.studentId}) }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors {{ app.request.attributes.get('_route') == 'profile' ? 'bg-indigo-50 text-indigo-600 font-medium' : '' }}">
+                    <i class="fas fa-user w-5 text-center"></i>
+                    Hồ sơ
+                </a>
+                
+                <a href="{{ path('logout') }}" class="flex items-center gap-3 px-3 py-2 mt-4 rounded-lg text-red-500 hover:bg-red-50 transition-colors">
+                    <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                    Đăng xuất
+                </a>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="flex items-center gap-3 px-3 py-2 mt-4 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md">
+                    <i class="fas fa-sign-in-alt w-5 text-center"></i>
+                    Đăng nhập
+                </a>
+            {% endif %}
         </div>
     </aside>
-    <main class="main-content position-relative border-radius-lg">
-        <div class="container-fluid py-4">
-            {% include 'navbar.html.twig' %}
-            {% block body %}{% endblock %}
-            {% include 'footer.html.twig' %}
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <!-- Top Navbar (Mobile only) -->
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:hidden">
+            <a href="{{ path('app_home') }}" class="font-bold text-lg text-indigo-600">
+                BOOK CLUB CTUT
+            </a>
+            <button id="mobile-menu-btn" class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </header>
+
+        <!-- Main scrollable area -->
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 p-6">
+            <div class="max-w-7xl mx-auto">
+                {% block body %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden">
+        <div class="w-64 bg-white h-full shadow-xl flex flex-col">
+            <div class="h-16 flex items-center justify-between px-4 border-b border-slate-100">
+                <span class="font-bold text-indigo-600">Menu</span>
+                <button class="p-2 text-slate-500" onclick="document.getElementById('mobile-menu').classList.add('hidden')">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                <!-- Mobile links, same as sidebar but for mobile -->
+                <a href="{{ path('app_home') }}" class="block px-3 py-2 rounded-lg text-slate-600">Trang chủ</a>
+                {% if app.user %}
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_dashboard') }}" class="block px-3 py-2 rounded-lg text-slate-600">Dashboard</a>
+                        <a href="{{ path('app_users_index') }}" class="block px-3 py-2 rounded-lg text-slate-600">Thành viên</a>
+                    {% endif %}
+                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                        <a href="{{ path('app_funds_index') }}" class="block px-3 py-2 rounded-lg text-slate-600">Quỹ</a>
+                    {% endif %}
+                    <a href="{{ path('app_activities_index') }}" class="block px-3 py-2 rounded-lg text-slate-600">Hoạt động</a>
+                    <a href="{{ path('app_proposals_index') }}" class="block px-3 py-2 rounded-lg text-slate-600">Đề xuất</a>
+                    <a href="{{ path('profile', { studentId: app.user.studentId}) }}" class="block px-3 py-2 rounded-lg text-slate-600">Hồ sơ</a>
+                    <a href="{{ path('logout') }}" class="block px-3 py-2 mt-4 rounded-lg text-red-500">Đăng xuất</a>
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="block px-3 py-2 rounded-lg text-indigo-600 font-bold">Đăng nhập</a>
+                {% endif %}
+            </div>
         </div>
-    </main>
-
-    <!-- JavaScript Files -->
-    <script src="{{ asset('assets/js/plugins/chartjs.min-_Dnnqxc.js') }}" defer></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Toggle sidebar on mobile
-            const iconNavbarSidenav = document.getElementById('iconNavbarSidenav');
-            const iconSidenav = document.getElementById('iconSidenav');
-            const sidenav = document.getElementById('sidenav-main');
-            const body = document.body;
-
-            if (iconNavbarSidenav) {
-                iconNavbarSidenav.addEventListener('click', function () {
-                    if (!body.classList.contains('g-sidenav-pinned')) {
-                        body.classList.add('g-sidenav-pinned');
-                        sidenav.classList.add('active');
-                    } else {
-                        body.classList.remove('g-sidenav-pinned');
-                        sidenav.classList.remove('active');
-                    }
-                });
-            }
-
-            if (iconSidenav) {
-                iconSidenav.addEventListener('click', function () {
-                    body.classList.remove('g-sidenav-pinned');
-                    sidenav.classList.remove('active');
-                });
-            }
-
-            // Đóng sidebar khi click bên ngoài trên mobile
-            document.addEventListener('click', function (event) {
-                if (body.classList.contains('g-sidenav-pinned') && !sidenav.contains(event.target) && !iconNavbarSidenav.contains(event.target)) {
-                    body.classList.remove('g-sidenav-pinned');
-                    sidenav.classList.remove('active');
-                }
-            });
-        });
-    </script>
+    </div>
 </body>
-
 </html>

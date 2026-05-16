@@ -8,6 +8,7 @@ doctrine:
 
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
+        schema_filter: ~^(activities|activity_participant|attendances|funds|proposals|users|doctrine_migration_versions|messenger_messages)$~
     orm:
         auto_generate_proxy_classes: true
         enable_native_lazy_objects: true
@@ -27,8 +28,8 @@ doctrine:
             auto_mapping: false
         dql:
             string_functions:
-                MONTH: DoctrineExtensions\Query\Mysql\Month
-                YEAR: DoctrineExtensions\Query\Mysql\Year
+                MONTH: DoctrineExtensions\Query\Postgresql\Month
+                YEAR: DoctrineExtensions\Query\Postgresql\Year
 
 when@test:
     doctrine:
