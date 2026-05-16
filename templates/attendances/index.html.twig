@@ -1,0 +1,343 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Quản lý điểm danh{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <!-- Thông báo flash -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        <!-- Header và Danh sách điểm danh trong một card -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý điểm danh</h6>
+                            <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center me-2 mb-0">
+                                    <input type="text" id="attendancesSearchInput" class="form-control me-2" placeholder="Tìm kiếm điểm danh..." style="max-width: 300px;">
+                                    <button type="button" id="attendancesClearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
+                                </div>
+                                <button type="button" class="btn btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addAttendanceModal">
+                                    <i class="fas fa-plus me-1"></i> Thêm điểm danh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0 px-3" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-hover align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="#" class="sort-link" data-sort="userName">Tên người dùng</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="#" class="sort-link" data-sort="activityTitle">Hoạt động</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="#" class="sort-link" data-sort="status">Trạng thái</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="#" class="sort-link" data-sort="remark">Ghi chú</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="#" class="sort-link" data-sort="markedAt">Thời gian điểm danh</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            <a href="#" class="sort-link" data-sort="markedBy">Người điểm danh</a>
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendancesTableBody">
+                                    {% for attendance in attendances %}
+                                        <tr data-url="{{ path('app_attendances_show', {'id': attendance.id}) }}" style="cursor: pointer;">
+                                            <td>
+                                                <div class="d-flex px-2 py-1">
+                                                    <div class="d-flex flex-column justify-content-center">
+                                                        <h6 class="mb-0 text-sm">{{ attendance.userId.name }}</h6>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ attendance.activityId.title }}</p>
+                                            </td>
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0 text-{{ attendance.status == 'present' ? 'success' : 'danger' }}">{{ attendance.status }}</p>
+                                            </td>
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ attendance.remark ?? 'N/A' }}</p>
+                                            </td>
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ attendance.markedAt|date('Y-m-d H:i:s') }}</p>
+                                            </td>
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">{{ attendance.markedBy.name }}</p>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="{{ path('app_attendances_show', {'id': attendance.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
+                                                <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editAttendanceModal{{ attendance.id }}" onclick="event.stopPropagation();">Sửa</button>
+                                                <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ attendance.id }}" data-csrf-token="{{ csrf_token('delete' ~ attendance.id) }}" onclick="event.stopPropagation();">Xóa</button>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="7" class="text-center">Không có điểm danh nào.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Phân trang client-side -->
+                        <div class="navigation mt-4 d-flex justify-content-center">
+                            <nav>
+                                <ul class="pagination" id="attendancesPagination"></ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Thêm điểm danh -->
+        <div class="modal fade" id="addAttendanceModal" tabindex="-1" aria-labelledby="addAttendanceModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addAttendanceModalLabel">Thêm điểm danh</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="addAttendanceError" class="alert alert-danger d-none"></div>
+                        {{ form_start(addAttendanceForm, {'attr': {'id': 'addAttendanceForm'}}) }}
+                            <div class="mb-3">
+                                {{ form_label(addAttendanceForm.user_id) }}
+                                {{ form_widget(addAttendanceForm.user_id, {'attr': {'class': 'form-select'}}) }}
+                                <div class="text-danger">{{ form_errors(addAttendanceForm.user_id) }}</div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(addAttendanceForm.activity_id) }}
+                                {{ form_widget(addAttendanceForm.activity_id, {'attr': {'class': 'form-select'}}) }}
+                                <div class="text-danger">{{ form_errors(addAttendanceForm.activity_id) }}</div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(addAttendanceForm.status) }}
+                                {{ form_widget(addAttendanceForm.status, {'attr': {'class': 'form-select'}}) }}
+                                <div class="text-danger">{{ form_errors(addAttendanceForm.status) }}</div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(addAttendanceForm.remark) }}
+                                {{ form_widget(addAttendanceForm.remark, {'attr': {'class': 'form-control'}}) }}
+                                <div class="text-danger">{{ form_errors(addAttendanceForm.remark) }}</div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(addAttendanceForm.marked_at) }}
+                                {{ form_widget(addAttendanceForm.marked_at, {'attr': {'class': 'form-control'}}) }}
+                                <div class="text-danger">{{ form_errors(addAttendanceForm.marked_at) }}</div>
+                            </div>
+                            {{ form_row(addAttendanceForm.marked_by, {'attr': {'class': 'd-none'}}) }}
+                            {{ form_row(addAttendanceForm._token) }}
+                            <button type="submit" class="btn btn-primary" id="addAttendanceSubmitBtn">
+                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="addAttendanceSpinner"></span>
+                                Lưu
+                            </button>
+                        {{ form_end(addAttendanceForm) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Sửa điểm danh -->
+        {% for attendance in attendances %}
+            <div class="modal fade" id="editAttendanceModal{{ attendance.id }}" tabindex="-1" aria-labelledby="editAttendanceModalLabel{{ attendance.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editAttendanceModalLabel{{ attendance.id }}">Sửa điểm danh</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="editAttendanceError{{ attendance.id }}" class="alert alert-danger d-none"></div>
+                            {{ form_start(editAttendanceForms[attendance.id], {'attr': {'id': 'editAttendanceForm' ~ attendance.id}}) }}
+                                <div class="mb-3">
+                                    {{ form_label(editAttendanceForms[attendance.id].user_id) }}
+                                    {{ form_widget(editAttendanceForms[attendance.id].user_id, {'attr': {'class': 'form-select'}}) }}
+                                    <div class="text-danger">{{ form_errors(editAttendanceForms[attendance.id].user_id) }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_label(editAttendanceForms[attendance.id].activity_id) }}
+                                    {{ form_widget(editAttendanceForms[attendance.id].activity_id, {'attr': {'class': 'form-select'}}) }}
+                                    <div class="text-danger">{{ form_errors(editAttendanceForms[attendance.id].activity_id) }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_label(editAttendanceForms[attendance.id].status) }}
+                                    {{ form_widget(editAttendanceForms[attendance.id].status, {'attr': {'class': 'form-select'}}) }}
+                                    <div class="text-danger">{{ form_errors(editAttendanceForms[attendance.id].status) }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_label(editAttendanceForms[attendance.id].remark) }}
+                                    {{ form_widget(editAttendanceForms[attendance.id].remark, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(editAttendanceForms[attendance.id].remark) }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_label(editAttendanceForms[attendance.id].marked_at) }}
+                                    {{ form_widget(editAttendanceForms[attendance.id].marked_at, {'attr': {'class': 'form-control'}}) }}
+                                    <div class="text-danger">{{ form_errors(editAttendanceForms[attendance.id].marked_at) }}</div>
+                                </div>
+                                {{ form_row(editAttendanceForms[attendance.id].marked_by, {'attr': {'class': 'd-none'}}) }}
+                                {{ form_row(editAttendanceForms[attendance.id]._token) }}
+                                <button type="submit" class="btn btn-primary" id="editAttendanceSubmitBtn{{ attendance.id }}">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="editAttendanceSpinner{{ attendance.id }}"></span>
+                                    Cập nhật
+                                </button>
+                            {{ form_end(editAttendanceForms[attendance.id]) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <!-- Include table-layout.js -->
+        <script src="{{ asset('js/table-layout.js') }}"></script>
+
+        <!-- JavaScript để khởi tạo TableLayout -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const attendancesTable = new TableLayout({
+                    data: [
+                        {% for attendance in attendances %}
+                            {
+                                userName: '{{ attendance.userId.name|e('js') }}',
+                                activityTitle: '{{ attendance.activityId.title|e('js') }}',
+                                status: '{{ attendance.status|e('js') }}',
+                                remark: '{{ attendance.remark ? attendance.remark|e('js') : 'N/A' }}',
+                                markedAt: '{{ attendance.markedAt|date('Y-m-d H:i:s') }}',
+                                markedBy: '{{ attendance.markedBy.name|e('js') }}',
+                                detailUrl: '{{ path('app_attendances_show', {'id': attendance.id}) }}',
+                                actions: `
+                                    <a href="{{ path('app_attendances_show', {'id': attendance.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
+                                    <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editAttendanceModal{{ attendance.id }}" onclick="event.stopPropagation();">Sửa</button>
+                                    <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ attendance.id }}" data-csrf-token="{{ csrf_token('delete' ~ attendance.id) }}" onclick="event.stopPropagation();">Xóa</button>
+                                `
+                            },
+                        {% endfor %}
+                    ],
+                    tableBodyId: 'attendancesTableBody',
+                    searchInputId: 'attendancesSearchInput',
+                    clearSearchBtnId: 'attendancesClearSearchBtn',
+                    paginationId: 'attendancesPagination',
+                    columns: [
+                        {
+                            field: 'userName',
+                            formatter: (value) => `
+                                <div class="d-flex px-2 py-1">
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <h6 class="mb-0 text-sm">${value}</h6>
+                                    </div>
+                                </div>
+                            `
+                        },
+                        { field: 'activityTitle' },
+                        {
+                            field: 'status',
+                            formatter: (value) => `
+                                <p class="text-xs font-weight-bold mb-0 text-${value === 'present' ? 'success' : 'danger'}">${value}</p>
+                            `
+                        },
+                        { field: 'remark' },
+                        { field: 'markedAt', type: 'datetime' },
+                        { field: 'markedBy' }
+                    ],
+                    onRowClick: (row) => {
+                        const detailUrl = row.getAttribute('data-url');
+                        if (detailUrl) window.location.href = detailUrl;
+                    },
+                    onDelete: (button) => {
+                        if (!confirm('Bạn có chắc chắn muốn xóa điểm danh này?')) return;
+                        const id = button.getAttribute('data-id');
+                        const csrfToken = button.getAttribute('data-csrf-token');
+                        fetch(`/attendances/${id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `_token=${csrfToken}`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) window.location.reload();
+                            else alert(data.error);
+                        })
+                        .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+                    },
+                    scrollPositionKey: 'attendances_table_scroll_position'
+                });
+
+                // Xử lý form thêm điểm danh
+                const addAttendanceForm = document.getElementById('addAttendanceForm');
+                if (addAttendanceForm) {
+                    const addAttendanceSubmitBtn = document.getElementById('addAttendanceSubmitBtn');
+                    const addAttendanceSpinner = document.getElementById('addAttendanceSpinner');
+                    const addAttendanceError = document.getElementById('addAttendanceError');
+
+                    addAttendanceForm.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        attendancesTable.showLoading(addAttendanceSubmitBtn, addAttendanceSpinner);
+                        attendancesTable.hideError(addAttendanceError);
+
+                        fetch(this.action, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            attendancesTable.hideLoading(addAttendanceSubmitBtn, addAttendanceSpinner);
+                            if (data.success) window.location.reload();
+                            else attendancesTable.showError(addAttendanceError, data.error);
+                        })
+                        .catch(error => {
+                            attendancesTable.hideLoading(addAttendanceSubmitBtn, addAttendanceSpinner);
+                            attendancesTable.showError(addAttendanceError, 'Có lỗi xảy ra: ' + error.message);
+                        });
+                    });
+                }
+
+                // Xử lý form sửa điểm danh
+                document.querySelectorAll('[id^="editAttendanceForm"]').forEach(form => {
+                    const formId = form.id;
+                    const submitBtn = document.getElementById('editAttendanceSubmitBtn' + formId.replace('editAttendanceForm', ''));
+                    const spinner = document.getElementById('editAttendanceSpinner' + formId.replace('editAttendanceForm', ''));
+                    const errorDiv = document.getElementById('editAttendanceError' + formId.replace('editAttendanceForm', ''));
+
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        attendancesTable.showLoading(submitBtn, spinner);
+                        attendancesTable.hideError(errorDiv);
+
+                        fetch(this.action, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            attendancesTable.hideLoading(submitBtn, spinner);
+                            if (data.success) window.location.reload();
+                            else attendancesTable.showError(errorDiv, data.error);
+                        })
+                        .catch(error => {
+                            attendancesTable.hideLoading(submitBtn, spinner);
+                            attendancesTable.showError(errorDiv, 'Có lỗi xảy ra: ' + error.message);
+                        });
+                    });
+                });
+            });
+        </script>
+    </div>
+{% endblock %}

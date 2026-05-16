@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chỉnh sửa thành viên{% endblock %}
+
+{% block body %}
+<div class="card shadow-lg border-0">
+    <div class="card-header bg-gradient-primary text-white">
+        <h3 class="mb-0">Chỉnh sửa thành viên</h3>
+    </div>
+    <div class="card-body">
+        {{ include('users/_form.html.twig', {'button_label': 'Update'}) }}
+    </div>
+    <div class="card-footer d-flex justify-content-between">
+        <a href="{{ path('app_users_index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+        {{ include('users/_delete_form.html.twig') }}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chi tiết đề xuất{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="px-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Chi tiết đề xuất</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="text-primary mb-4">Thông tin đề xuất</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title text-muted mb-3">Thông tin cơ bản</h5>
+                                    <div class="mb-3">
+                                        <label class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Loại đề xuất</label>
+                                        <p class="mb-0">{{ proposal.type == 'edit_profile' ? 'Chỉnh sửa thông tin cá nhân' : 'Đề xuất chung' }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Người đề xuất</label>
+                                        <p class="mb-0">{{ proposal.userId.name }} ({{ proposal.userId.studentId }})</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nội dung</label>
+                                        <p class="mb-0">{{ proposal.content }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title text-muted mb-3">Trạng thái và thời gian</h5>
+                                    <div class="mb-3">
+                                        <label class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</label>
+                                        <p class="mb-0">
+                                            <span class="badge bg-{{ proposal.status == 'pending' ? 'warning' : (proposal.status == 'approved' ? 'success' : 'danger') }}">
+                                                {% if proposal.status == 'pending' %}
+                                                    Đang chờ
+                                                {% elseif proposal.status == 'approved' %}
+                                                    Đã duyệt
+                                                {% else %}
+                                                    Từ chối
+                                                {% endif %}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày tạo</label>
+                                        <p class="mb-0">{{ proposal.createdAt|date('d/m/Y H:i:s') }}</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày cập nhật</label>
+                                        <p class="mb-0">{{ proposal.updatedAt|date('d/m/Y H:i:s') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if proposal.type == 'edit_profile' and proposal.proposedChanges %}
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title text-muted mb-3">Thông tin đề xuất chỉnh sửa</h5>
+                            <div class="row">
+                                {% for field, value in proposal.proposedChanges %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-subtitle mb-2 text-muted">{{ field|capitalize }}</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <div>
+                                                    <small class="text-muted">Giá trị hiện tại:</small>
+                                                    <p class="mb-0">
+                                                        {% if field == 'name' %}
+                                                            {{ proposal.userId.name }}
+                                                        {% elseif field == 'email' %}
+                                                            {{ proposal.userId.email }}
+                                                        {% elseif field == 'class_id' %}
+                                                            {{ proposal.userId.classId ?: 'Chưa có' }}
+                                                        {% elseif field == 'faculty' %}
+                                                            {{ proposal.userId.faculty ?: 'Chưa có' }}
+                                                        {% elseif field == 'contact_info' %}
+                                                            {{ proposal.userId.contactInfo ?: 'Chưa có' }}
+                                                        {% endif %}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted">Giá trị đề xuất:</small>
+                                                    <p class="mb-0">{{ value }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if is_granted('ROLE_ADMIN') and proposal.status == 'pending' %}
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="text-primary mb-3">Duyệt đề xuất</h4>
+                                <form method="post" action="{{ path('app_proposals_approve', {'id': proposal.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn phê duyệt đề xuất này?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ proposal.id) }}">
+                                    {% if proposal.type == 'edit_profile' and proposal.proposedChanges is not empty %}
+                                        <div class="mb-3">
+                                            <label class="form-label">Chọn các trường để phê duyệt:</label>
+                                            {% for field, value in proposal.proposedChanges %}
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" name="approved_fields[]" value="{{ field }}">
+                                                    <label class="form-check-label">{{ field }}: {{ value }}</label>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <button type="submit" class="btn btn-success">Phê duyệt</button>
+                                </form>
+
+                                <form method="post" action="{{ path('app_proposals_reject', {'id': proposal.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn từ chối đề xuất này?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ proposal.id) }}">
+                                    <button type="submit" class="btn btn-danger">Từ chối</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <a href="{{ path('app_proposals_index') }}" class="btn btn-secondary">Quay lại</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Thành viên{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0 text-white">Chi tiết thành viên</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th scope="row">ID</th>
+                            <td>{{ user.id }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">MSSV</th>
+                            <td>{{ user.studentId }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Họ tên</th>
+                            <td>{{ user.name }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Email</th>
+                            <td>{{ user.email }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Vai trò</th>
+                            <td>
+                                {% if user.role == 'ROLE_ADMIN' %}
+                                    Quản Lý
+                                {% elseif user.role == 'ROLE_TREASURER' %}
+                                    Thủ Quỹ
+                                {% elseif user.role == 'ROLE_MEMBER' %}
+                                    Thành Viên
+                                {% else %}
+                                    {{ user.role }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Trạng thái</th>
+                            <td>
+                                {% if user.status == 'active' %}
+                                    Đang hoạt động
+                                {% elseif user.status == 'inactive' %}
+                                    Không hoạt động
+                                {% else %}
+                                    {{ user.status }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Mã lớp</th>
+                            <td>{{ user.classId }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Khoa</th>
+                            <td>{{ user.faculty }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Thông tin liên hệ</th>
+                            <td>{{ user.contactInfo }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Ngày tạo</th>
+                            <td>{{ user.createdAt ? user.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Ngày sửa</th>
+                            <td>{{ user.updatedAt ? user.updatedAt|date('Y-m-d H:i:s') : '' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <div class="d-flex justify-content-start">
+                    <a href="{{ path('app_users_index') }}" class="btn btn-secondary me-2">
+                        <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                    </a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="#" class="btn btn-warning me-2 {% if app.user and app.user.id == user.id %}disabled{% endif %}" 
+                           {% if app.user and app.user.id != user.id %}data-bs-toggle="modal" data-bs-target="#editUserModal"{% endif %}>
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </a>
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Chỉnh sửa -->
+    {% if is_granted('ROLE_ADMIN') and (app.user is null or app.user.id != user.id) %}
+        <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editUserModalLabel">Chỉnh sửa thành viên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ include('users/_form.html.twig', { form: editForm, button_label: 'Cập nhật' }) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Modal: Xóa -->
+    {% if is_granted('ROLE_ADMIN') %}
+        <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteUserModalLabel">Xác nhận xóa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Bạn có chắc chắn muốn vô hiệu hóa thành viên này không?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <form method="post" action="{{ path('app_users_delete', {'id': user.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                            <button type="submit" class="btn btn-danger">Vô hiệu hóa</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

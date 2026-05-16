@@ -1,0 +1,11 @@
+vendor/
+var/
+node_modules/
+public/assets/
+public/build/
+public/uploads/
+public/origin_theme/
+assets/vendor/
+assets/scss/argon-dashboard/bootstrap/tests/
+*.min.js
+*.min.css

@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chi tiết hoạt động{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <h6>Chi tiết hoạt động: {{ activity.title }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Tiêu đề:</strong> {{ activity.title }}</p>
+                                <p><strong>Mô tả:</strong> {{ activity.description ?? 'N/A' }}</p>
+                                <p><strong>Ngày:</strong> {{ activity.date ? activity.date|date('Y-m-d') : 'N/A' }}</p>
+                                <p><strong>Thời gian:</strong> {{ activity.time ? activity.time|date('H:i') : 'N/A' }}</p>
+                                <p><strong>Địa điểm:</strong> {{ activity.location ?? 'N/A' }}</p>
+                                <p><strong>Trạng thái:</strong> {{ activity.status }}</p>
+                                <p><strong>Người tạo:</strong> {{ activity.createdBy.name }}</p>
+                                <p><strong>Ngày tạo:</strong> {{ activity.createdAt|date('Y-m-d H:i:s') }}</p>
+                                <p><strong>Ngày cập nhật:</strong> {{ activity.updatedAt|date('Y-m-d H:i:s') }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                {% if activity.image %}
+                                    <p><strong>Hình ảnh:</strong></p>
+                                    <img src="{{ asset('uploads/images/' ~ activity.image) }}" alt="{{ activity.title }}" class="img-fluid" style="max-width: 300px;">
+                                {% else %}
+                                    <p><strong>Hình ảnh:</strong> Không có</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{{ path('app_activities_index') }}" class="btn btn-secondary">Quay lại</a>
+                            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_TREASURER') %}
+                                <a href="{{ path('app_activity_participant_index', {'activityId': activity.id}) }}" class="btn btn-info">Quản lý người tham gia</a>
+                            {% endif %}
+                            {% if hasJoined %}
+                                <form method="post" action="{{ path('app_activity_participant_leave', {'activityId': activity.id}) }}" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn hủy tham gia hoạt động này?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('leave' ~ activity.id) }}">
+                                    <button type="submit" class="btn btn-warning">Hủy tham gia</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{{ path('app_activity_participant_join', {'activityId': activity.id}) }}" style="display:inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('join' ~ activity.id) }}">
+                                    <button type="submit" class="btn btn-success">Tham gia</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

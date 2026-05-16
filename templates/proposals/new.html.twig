@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tạo đề xuất mới{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Tạo đề xuất mới</h3>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form) }}
+                        <div class="mb-3">
+                            {{ form_label(form.type) }}
+                            {{ form_widget(form.type) }}
+                            <div class="text-danger">{{ form_errors(form.type) }}</div>
+                        </div>
+
+                        <div id="generalFields" class="proposal-type-fields">
+                            <div class="mb-3">
+                                {{ form_label(form.content) }}
+                                {{ form_widget(form.content) }}
+                                <div class="text-danger">{{ form_errors(form.content) }}</div>
+                            </div>
+                        </div>
+
+                        <div id="editProfileFields" class="proposal-type-fields d-none">
+                            <div class="mb-3">
+                                {{ form_label(form.name) }}
+                                {{ form_widget(form.name) }}
+                                <div class="text-danger">{{ form_errors(form.name) }}</div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(form.email) }}
+                                {{ form_widget(form.email) }}
+                                <div class="text-danger">{{ form_errors(form.email) }}</div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(form.class_id) }}
+                                {{ form_widget(form.class_id) }}
+                                <div class="text-danger">{{ form_errors(form.class_id) }}</div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(form.faculty) }}
+                                {{ form_widget(form.faculty) }}
+                                <div class="text-danger">{{ form_errors(form.faculty) }}</div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(form.contact_info) }}
+                                {{ form_widget(form.contact_info) }}
+                                <div class="text-danger">{{ form_errors(form.contact_info) }}</div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Gửi đề xuất</button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const typeSelect = document.querySelector('#proposals_type');
+            const generalFields = document.querySelector('#generalFields');
+            const editProfileFields = document.querySelector('#editProfileFields');
+
+            function toggleFields() {
+                if (typeSelect.value === 'edit_profile') {
+                    generalFields.classList.add('d-none');
+                    editProfileFields.classList.remove('d-none');
+                } else {
+                    generalFields.classList.remove('d-none');
+                    editProfileFields.classList.add('d-none');
+                }
+            }
+
+            typeSelect.addEventListener('change', toggleFields);
+            toggleFields(); // Gọi lần đầu để thiết lập trạng thái ban đầu
+        });
+    </script>
+</div>
+{% endblock %}

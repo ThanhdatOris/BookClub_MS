@@ -1,0 +1,27 @@
+{# {% extends 'base.html.twig' %}
+
+{% block title %}Edit Proposals{% endblock %}
+
+{% block body %}
+    <h1>Edit Proposals</h1>
+
+    {{ include('proposals/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_proposals_index') }}">back to list</a>
+
+    {{ include('proposals/_delete_form.html.twig') }}
+{% endblock %} #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Proposal{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            {% include 'proposals/_form.html.twig' with {'form': form, 'button_label': 'Update'} %}
+        </div>
+    </div>
+</div>
+{% endblock %}

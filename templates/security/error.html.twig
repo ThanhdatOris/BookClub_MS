@@ -1,0 +1,47 @@
+{% block head %}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/apple-icon-_mA87V4.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon-_mA87V4.png') }}">
+    <title>Không Tìm Thấy Trang</title>
+    <!-- Fonts and icons -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+    <!-- Font Awesome Icons -->
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous" defer></script>
+    <!-- CSS Files -->
+    <link id="pagestyle" href="{{ asset('assets/styles/argon-dashboard-SIGT4pJ.css') }}" rel="stylesheet" />
+    <style>
+        .sys-bg {
+            background-image: url('{{ asset('assets/img/bg-iN96iui.png') }}');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+    <div class="min-height-300 bg-gradient-primary position-absolute w-100" style="opacity: 0.8;"></div>
+    <main class="main-content position-relative border-radius-lg">
+        <div class="min-vh-100 sys-bg">
+            <div class="container h-100">
+                <div class="row h-100 justify-content-center align-items-center">
+                    <div class="col-lg-6 col-md-8 text-center">
+                        <div class="card card-plain shadow-lg bg-white border-radius-xl p-4">
+                            <!-- SVG cho số 404 -->
+                            <img src="{{ asset('assets/img/error.png') }}" class="w-50 mx-auto mb-4" alt="404" />
+                            <h2 class="font-weight-bolder text-dark mb-3">Ôi! Không Tìm Thấy Trang</h2>
+                            {% if login_error %}
+                                <div class="alert alert-danger text-center">
+                                    {{ login_error }}
+                                </div>
+                            {% endif %}
+                            <p class="text-muted mb-4">Liên hệ trực tiếp với Ban Chủ Nhiệm CLB để biết thêm thông tin về tài khoản của bạn</p>
+                            <a href="{{ path('app_home') }}" class="btn btn-primary btn-lg">Quay Về Trang Chủ</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

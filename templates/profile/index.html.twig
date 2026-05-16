@@ -1,0 +1,231 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tài khoản cá nhân - {{ user.name }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-2">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="card-title mb-0">Tài khoản cá nhân</h3>
+                        <p class="mb-0 fw-bold text-sm">{{ user.name }}</p>
+                    </div>
+                    <div class="col-md-4 text-end d-flex justify-content-end">
+                        {% if app.user and app.user.id == user.id and is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('profile_edit', {'studentId': user.studentId}) }}" class="btn btn-light btn-sm mb-0">Chỉnh sửa thông tin</a>
+                        {% else %}
+                            <a href="{{ path('profile_suggest', {'studentId': user.studentId}) }}" class="btn btn-warning btn-sm mb-0">Đề xuất chỉnh sửa</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Thông tin cá nhân -->
+                    <h4 class="text-primary mb-3">Thông tin cá nhân</h4>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tên:</strong>
+                            <p class="mb-0">{{ user.name }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email:</strong>
+                            <p class="mb-0">{{ user.email }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mã sinh viên:</strong>
+                            <p class="mb-0">{{ user.studentId }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Lớp:</strong>
+                            <p class="mb-0">{{ user.classId ?: 'Chưa có thông tin' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Khoa:</strong>
+                            <p class="mb-0">{{ user.faculty ?: 'Chưa có thông tin' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái:</strong>
+                            <p class="mb-0">
+                                <span class="badge bg-{{ user.status == 'active' ? 'success' : 'danger' }}">{{ user.status }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thông tin liên hệ:</strong>
+                            <p class="mb-0">{{ user.contactInfo ?: 'Chưa có thông tin' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày tạo:</strong>
+                            <p class="mb-0">{{ user.createdAt ? user.createdAt|date('d/m/Y H:i:s') : 'Chưa có thông tin' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày cập nhật:</strong>
+                            <p class="mb-0">{{ user.updatedAt ? user.updatedAt|date('d/m/Y H:i:s') : 'Chưa có thông tin' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Lịch sử hoạt động -->
+                    <div class="alert alert-info text-white mt-2">
+                        <p class="mb-0"><strong>Số hoạt động đã tham gia:</strong> {{ activityCount }}</p>
+                    </div>
+                    <h4 class="text-primary mt-4 mb-3">Lịch sử hoạt động</h4>
+                    {% if participatedActivities|length > 0 %}
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="text-uppercase text-secondary font-weight-bold">Danh sách hoạt động đã tham gia</h6>
+                                    <div class="d-flex align-items-center">
+                                        <input type="text" id="historySearchInput" class="form-control me-2" placeholder="Tìm kiếm hoạt động..." style="max-width: 300px;">
+                                        <button type="button" id="historyClearSearchBtn" class="btn btn-secondary ms-2 d-none">Xóa bộ lọc</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body px-0 pt-0 pb-2">
+                                <div class="table-responsive p-0 px-3" style="max-height: 400px; overflow-y: auto;">
+                                    <table class="table table-hover align-items-center mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tiêu đề</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày diễn ra</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thời gian</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Địa điểm</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thời gian tham gia</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="historyTableBody"></tbody>
+                                    </table>
+                                </div>
+                                <div class="navigation mt-4 d-flex justify-content-center">
+                                    <nav>
+                                        <ul class="pagination" id="historyPagination"></ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <p class="mb-0">Chưa tham gia hoạt động nào.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ asset('js/table-layout.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const historyTable = new TableLayout({
+                data: [
+                    {% for participant in participatedActivities %}
+                        {
+                            id: '{{ participant.activityId.id }}',
+                            title: '{{ participant.activityId.title|e('js') }}',
+                            date: '{{ participant.activityId.date ? participant.activityId.date|date('d/m/Y') : 'Chưa xác định' }}',
+                            time: '{{ participant.activityId.time ? participant.activityId.time|date('H:i') : 'Chưa xác định' }}',
+                            location: '{{ participant.activityId.location ? participant.activityId.location|e('js') : 'Chưa xác định' }}',
+                            status: '{{ participant.activityId.status|e('js') }}',
+                            joinedAt: '{{ participant.joinedAt|date('d/m/Y H:i:s') }}',
+                            detailUrl: '{{ path('app_activities_show', {'id': participant.activityId.id}) }}',
+                            leaveCsrfToken: '{{ csrf_token('leave' ~ participant.activityId.id) }}'
+                        },
+                    {% endfor %}
+                ],
+                tableBodyId: 'historyTableBody',
+                searchInputId: 'historySearchInput',
+                clearSearchBtnId: 'historyClearSearchBtn',
+                paginationId: 'historyPagination',
+                columns: [
+                    {
+                        field: 'title',
+                        formatter: (value, data) => `
+                            <div class="d-flex px-2 py-1" data-url="${data.detailUrl}">
+                                <div class="d-flex flex-column justify-content-center">
+                                    <h6 class="mb-0 text-sm">${value.length > 25 ? value.slice(0, 25) + '...' : value}</h6>
+                                </div>
+                            </div>
+                        `
+                    },
+                    { field: 'date', type: 'date' },
+                    { field: 'time' },
+                    {
+                        field: 'location',
+                        formatter: (value) => `<p class="text-xs font-weight-bold mb-0">${value.length > 20 ? value.slice(0, 20) + '...' : value}</p>`
+                    },
+                    {
+                        field: 'status',
+                        formatter: (value) => {
+                            const statusMap = {
+                                'planned': 'primary',
+                                'ongoing': 'success',
+                                'completed': 'info',
+                                'cancelled': 'danger'
+                            };
+                            const color = statusMap[value] || 'secondary';
+                            return `<span class="badge bg-${color}">${value}</span>`;
+                        }
+                    },
+                    { field: 'joinedAt', type: 'datetime' },
+                    {
+                        field: 'id',
+                        formatter: (value, data) => `
+                            <div class="text-center">
+                                ${data.status === 'planned' ? `
+                                    <button type="button" class="btn btn-sm btn-warning leave-btn mb-0" 
+                                            data-id="${data.id}" 
+                                            data-csrf-token="${data.leaveCsrfToken}"
+                                            onclick="event.stopPropagation();">
+                                        Hủy tham gia
+                                    </button>
+                                ` : ''}
+                            </div>
+                        `
+                    }
+                ],
+                onRowClick: (row) => {
+                    const detailUrl = row.getAttribute('data-url');
+                    if (detailUrl) {
+                        window.location.href = detailUrl;
+                    } else {
+                        console.error('No detail URL found for row:', row);
+                    }
+                },
+                scrollPositionKey: 'history_table_scroll_position'
+            });
+
+            // Xử lý hủy tham gia
+            document.addEventListener('click', (e) => {
+                const leaveBtn = e.target.closest('.leave-btn');
+                if (leaveBtn) {
+                    if (confirm('Bạn có chắc chắn muốn hủy tham gia hoạt động này?')) {
+                        const activityId = leaveBtn.getAttribute('data-id');
+                        const csrfToken = leaveBtn.getAttribute('data-csrf-token');
+                        const formData = new FormData();
+                        formData.append('_token', csrfToken);
+
+                        fetch(`/activity_participant/leave/${activityId}`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(response => {
+                                if (response.redirected) {
+                                    window.location.href = response.url;
+                                } else {
+                                    return response.text().then(text => {
+                                        throw new Error('Có lỗi xảy ra khi hủy tham gia: ' + text.slice(0, 50));
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Leave error:', error);
+                                alert('Lỗi: ' + error.message);
+                            });
+                    }
+                }
+            });
+        });
+    </script>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+
+###> symfony/framework-bundle ###
+/.env
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
+
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
+
+###> symfony/asset-mapper ###
+/public/assets/
+/assets/vendor/
+###< symfony/asset-mapper ###
+
+### Additional Symfony Ignored Files ###
+/node_modules/
+/public/build/
+/public/uploads/*
+!/public/uploads/.gitkeep
+!/public/uploads/activities/
+!/public/uploads/activities/.gitkeep
+/translations/*.bak
+/var/cache/
+/var/log/
+/var/sessions/
+/vendor
+/.vscode/
+
+### Local secrets and generated config ###
+/.env
+/.env.local.php
+/.env.*.local
+/bookclub.conf
+/htttpd.conf
+/check_apache.bat
+
+### Local database dumps ###
+/*.sql
+/*.sql.gz
+
+### Report diagram build artifacts ###
+/out/
+/z-d-sequences/
+/*.plantuml
+/*.puml
+
+### Vendored/template source dumps ###
+/public/origin_theme/

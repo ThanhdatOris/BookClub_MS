@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        h1 {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    {% if status_code == 404 %}
+        <h1>Page Not Found</h1>
+        <p>We couldn't find the page you were looking for.</p>
+    {% elseif status_code == 500 %}
+        <h1>Internal Server Error</h1>
+        <p>Something went wrong on our end. Please try again later.</p>
+    {% else %}
+        <h1>Oops! Something went wrong.</h1>
+        <p>Error Code: {{ status_code }}</p>
+        <p>{{ status_text }}</p>
+    {% endif %}
+</body>
+</html>

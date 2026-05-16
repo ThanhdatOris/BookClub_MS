@@ -1,0 +1,197 @@
+{% block head %}
+    <title>{% block title %}Đăng nhập{% endblock %}</title>
+    <!-- Fonts and icons -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/apple-icon-_mA87V4.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon-_mA87V4.png') }}">
+    <!-- Fonts and icons -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+    <!-- Font Awesome Icons -->
+    {# <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous" defer></script> #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- CSS Files -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+    <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-icons.css" rel="stylesheet" />
+    <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-svg.css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+    <link id="pagestyle" href="{{ asset('assets/styles/argon-dashboard-SIGT4pJ.css') }}" rel="stylesheet" />
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('{{ asset('assets/img/bg-iN96iui.png') }}') center/cover;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        .login-header {
+            text-align: center;
+            padding: 2.5rem 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+        .login-logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+        .login-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #344767;
+            margin-bottom: 0.5rem;
+        }
+        .login-subtitle {
+            color: #67748e;
+            font-size: 0.875rem;
+        }
+        .google-btn {
+            background: #fff;
+            color: #344767;
+            border: 1px solid #e9ecef;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .google-btn:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .google-btn i {
+            color: #ea4335;
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+        }
+        .back-home {
+            color: #344767;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .back-home:hover {
+            color: #667eea;
+        }
+        .back-home i {
+            margin-right: 0.5rem;
+        }
+        .alert {
+            border: none;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .alert-danger {
+            background: rgba(234, 67, 53, 0.1);
+            color: #ea4335;
+        }
+        .alert-success {
+            background: rgba(52, 199, 89, 0.1);
+            color: #34c759;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="login-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-7">
+                    <div class="card login-card">
+                        <div class="login-header">
+                            <img src="{{ asset('assets/img/logo-ct-dark-mn76con.png') }}" alt="Logo" class="login-logo">
+                            <h4 class="login-title">Book Club CTUT</h4>
+                            <p class="login-subtitle">Hệ thống quản lý CLB SV Yêu Thích Sách</p>
+                        </div>
+                        
+                        <div class="card-body">
+                            {% for message in app.flashes('success') %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+
+                            {% if error %}
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                                </div>
+                            {% endif %}
+
+                            {% if app.session.get('login_error') %}
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    {{ app.session.get('login_error') }}
+                                </div>
+                                {% do app.session.remove('login_error') %}
+                            {% endif %}
+
+                            {% if app.user %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Bạn đã đăng nhập với tài khoản {{ app.user.studentId }}
+                                </div>
+                                <div class="text-center">
+                                    <a href="{{ path('logout') }}" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                                    </a>
+                                    <a href="{{ path('app_home') }}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-home me-2"></i>Về trang chủ
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center">
+                                    <a href="{{ path('connect_google_start') }}" class="btn google-btn btn-lg w-100 mb-0">
+                                        <i class="fab fa-google me-2"></i>Đăng nhập bằng Google
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-footer text-center py-1">
+                            <div class="text-center py-2">
+                                <a href="{{ path('app_home') }}" class="back-home">
+                                    <i class="fas fa-arrow-left"></i>Quay lại trang chủ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
