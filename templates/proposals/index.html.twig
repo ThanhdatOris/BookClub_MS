@@ -3,196 +3,152 @@
 {% block title %}Đề xuất{% endblock %}
 
 {% block body %}
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                {# Thống kê tổng quan #}
-                <div class="row mb-4">
-                    {% set stats = [
-                        {
-                            'title': 'Tổng đề xuất',
-                            'count': proposals|length,
-                            'style': 'bg-gradient-primary',
-                            'icon': 'fas fa-clipboard-list',
-                            'text_class': ''
-                        },
-                        {
-                            'title': 'Đang chờ',
-                            'count': proposals|filter(p => p.status == 'pending')|length,
-                            'style': 'bg-gradient-warning',
-                            'icon': 'fas fa-clock',
-                            'text_class': 'text-warning'
-                        },
-                        {
-                            'title': 'Đã duyệt',
-                            'count': proposals|filter(p => p.status == 'approved')|length,
-                            'style': 'bg-gradient-success',
-                            'icon': 'fas fa-check',
-                            'text_class': 'text-success'
-                        },
-                        {
-                            'title': 'Đã từ chối',
-                            'count': proposals|filter(p => p.status == 'rejected')|length,
-                            'style': 'bg-gradient-danger',
-                            'icon': 'fas fa-times',
-                            'text_class': 'text-danger'
-                        }
-                    ] %}
-                    
-                    {% for stat in stats %}
-                        <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                            <div class="card h-100">
-                                <div class="card-body p-3">
-                                    <div class="row">
-                                        <div class="col-8">
-                                            <div class="numbers">
-                                                <p class="text-sm mb-0 text-uppercase font-weight-bold">{{ stat.title }}</p>
-                                                <h5 class="font-weight-bolder mb-0 {{ stat.text_class }}">
-                                                    {{ stat.count }} đề xuất
-                                                </h5>
-                                            </div>
-                                        </div>
-                                        <div class="col-4 text-end">
-                                            <div class="icon icon-shape {{ stat.style }} shadow text-center border-radius-md">
-                                                <i class="{{ stat.icon }} text-lg opacity-10" aria-hidden="true"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-
-                {# Bảng danh sách đề xuất #}
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Danh sách đề xuất</h6>
-                            <div class="d-flex align-items-center">
-                                <div class="d-flex align-items-center me-2 mb-0">
-                                    <input type="text" id="searchInput" class="form-control me-2" placeholder="Tìm kiếm đề xuất..." style="max-width: 300px;">
-                                    <button type="button" id="clearSearchBtn" class="btn btn-sm btn-secondary mb-0 ms-2 d-none">
-                                        <i class="fas fa-times me-1"></i> Xóa bộ lọc
-                                    </button>
-                                </div>
-                                {% if is_granted('ROLE_MEMBER') and not is_granted('ROLE_ADMIN') %}
-                                    <a href="{{ path('app_proposals_new') }}" class="btn btn-sm btn-success mb-0">
-                                        <i class="fas fa-plus me-1"></i> Tạo đề xuất mới
-                                    </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body px-0 pt-0 pb-2">
-                        <div class="table-responsive p-0 px-3" style="max-height: 1080px; overflow-y: auto;">
-                            <table class="table table-hover align-items-center mb-0">
-                                <thead>
-                                    <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">ID</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Thể loại</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Nội dung</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Trạng thái</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Ngày tạo</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-center">Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="proposalsTableBody">
-                                    <!-- Populated via JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="navigation mt-4">
-                            {{ knp_pagination_render(proposals, null, {'search': search}) }}
-                        </div>
-                    </div>
-                </div>
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Quản lý đề xuất</h1>
+                <p class="mt-2 text-sm text-gray-500">Xem xét và xử lý các đề xuất từ thành viên câu lạc bộ.</p>
             </div>
+            {% if is_granted('ROLE_MEMBER') and not is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('app_proposals_new') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    Tạo đề xuất mới
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {% set stats = [
+                {'title': 'Tổng đề xuất', 'count': proposals.getTotalItemCount, 'color': 'indigo', 'icon': 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'},
+                {'title': 'Đang chờ', 'count': proposals|filter(p => p.status == 'pending')|length, 'color': 'amber', 'icon': 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'},
+                {'title': 'Đã duyệt', 'count': proposals|filter(p => p.status == 'approved')|length, 'color': 'emerald', 'icon': 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'},
+                {'title': 'Đã từ chối', 'count': proposals|filter(p => p.status == 'rejected')|length, 'color': 'rose', 'icon': 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'}
+            ] %}
+            
+            {% for stat in stats %}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ stat.title }}</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ stat.count }}</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-{{ stat.color }}-50 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-{{ stat.color }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ stat.icon }}"></path></svg>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-8">
+            <form action="{{ path('app_proposals_index') }}" method="GET" class="flex flex-col sm:flex-row gap-4" id="searchForm">
+                <div class="flex-1 relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" name="search" value="{{ app.request.query.get('search') }}" class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors" placeholder="Tìm kiếm nội dung đề xuất...">
+                </div>
+                <button type="submit" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    Tìm kiếm
+                </button>
+            </form>
+        </div>
+
+        <!-- Proposals List Table -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thể loại</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nội dung</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100">
+                        {% for proposal in proposals %}
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    #{{ proposal.id }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if proposal.type == 'edit_profile' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                            Sửa hồ sơ
+                                        </span>
+                                    {% elseif proposal.type == 'general' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            Chung
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                            Không xác định
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-700 max-w-xs">
+                                    <div class="truncate" title="{{ proposal.content }}">
+                                        {{ proposal.content|length > 40 ? proposal.content|slice(0, 40) ~ '...' : proposal.content }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    {% if proposal.status == 'pending' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Đang chờ</span>
+                                    {% elseif proposal.status == 'approved' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Đã duyệt</span>
+                                    {% elseif proposal.status == 'rejected' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800">Đã từ chối</span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Không xác định</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ proposal.createdAt|date('d/m/Y H:i') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="flex justify-center items-center gap-2">
+                                        <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Xem chi tiết">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        </a>
+                                        {% if is_granted('ROLE_ADMIN') and proposal.status == 'pending' %}
+                                            <form method="post" action="{{ path('app_proposals_approve', {'id': proposal.id}) }}" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn duyệt đề xuất này?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ proposal.id) }}">
+                                                <button type="submit" class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Duyệt đề xuất">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{{ path('app_proposals_reject', {'id': proposal.id}) }}" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn từ chối đề xuất này?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ proposal.id) }}">
+                                                <button type="submit" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Từ chối đề xuất">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    </div>
+                                    <h3 class="text-sm font-medium text-gray-900">Không có đề xuất nào</h3>
+                                    <p class="mt-1 text-sm text-gray-500">Chưa có đề xuất nào được tạo hoặc phù hợp với tìm kiếm.</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if proposals.getTotalItemCount > 0 %}
+                {{ knp_pagination_render(proposals) }}
+            {% endif %}
         </div>
     </div>
-
-    <!-- Include table-layout.js -->
-    <script src="{{ asset('js/table-layout.js') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const tableLayout = new TableLayout({
-                data: [
-                    {% for proposal in proposals %}
-                        {
-                            id: '{{ proposal.id }}',
-                            type: '{{ proposal.type }}',
-                            content: '{{ proposal.content|e('js') }}',
-                            status: '{{ proposal.status }}',
-                            createdAt: '{{ proposal.createdAt ? proposal.createdAt|date('Y-m-d H:i:s') : '' }}',
-                            detailUrl: '{{ path('app_proposals_show', {'id': proposal.id}) }}',
-                            actions: `
-                                <div class="d-flex justify-content-center gap-2">
-                                    <a href="{{ path('app_proposals_show', {'id': proposal.id}) }}" class="btn btn-sm btn-info mb-0" title="Xem chi tiết">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    {% if is_granted('ROLE_ADMIN') and proposal.status == 'pending' %}
-                                        <form method="post" action="{{ path('app_proposals_approve', {'id': proposal.id}) }}" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn duyệt đề xuất này?');">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ proposal.id) }}">
-                                            <button type="submit" class="btn btn-sm btn-success mb-0" title="Duyệt đề xuất">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
-                                        <form method="post" action="{{ path('app_proposals_reject', {'id': proposal.id}) }}" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn từ chối đề xuất này?');">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ proposal.id) }}">
-                                            <button type="submit" class="btn btn-sm btn-danger mb-0" title="Từ chối đề xuất">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </form>
-                                    {% endif %}
-                                </div>
-                            `
-                        },
-                    {% endfor %}
-                ],
-                tableBodyId: 'proposalsTableBody',
-                searchInputId: 'searchInput',
-                clearSearchBtnId: 'clearSearchBtn',
-                paginationId: 'proposalsPagination',
-                columns: [
-                    { field: 'id', class: 'text-center' },
-                    {
-                        field: 'type',
-                        class: 'text-center',
-                        formatter: (value) => {
-                            if (value === 'general') return '<span class="badge bg-primary">Chung</span>';
-                            if (value === 'edit_profile') return '<span class="badge bg-info">Sửa hồ sơ</span>';
-                            return '<span class="badge bg-secondary">Không xác định</span>';
-                        }
-                    },
-                    {
-                        field: 'content',
-                        formatter: (value) => `<p class="text-sm mb-0">${value ? (value.length > 20 ? value.slice(0, 20) + '...' : value) : ''}</p>`
-                    },
-                    {
-                        field: 'status',
-                        class: 'text-center',
-                        formatter: (value) => {
-                            if (value === 'pending') return '<span class="badge bg-warning text-dark">Đang chờ</span>';
-                            if (value === 'approved') return '<span class="badge bg-success">Đã duyệt</span>';
-                            if (value === 'rejected') return '<span class="badge bg-danger">Đã từ chối</span>';
-                            return '<span class="badge bg-secondary">Không xác định</span>';
-                        }
-                    },
-                    {
-                        field: 'createdAt',
-                        class: 'text-center',
-                        formatter: (value) => `<p class="text-sm mb-0">${value}</p>`
-                    },
-                    {
-                        field: 'actions',
-                        class: 'text-center'
-                    }
-                ],
-                onRowClick: (row) => {
-                    const detailUrl = row.getAttribute('data-url');
-                    if (detailUrl) window.location.href = detailUrl;
-                }
-            });
-        });
-    </script>
 {% endblock %}

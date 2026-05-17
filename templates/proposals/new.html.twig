@@ -3,60 +3,105 @@
 {% block title %}Tạo đề xuất mới{% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="card-title mb-0">Tạo đề xuất mới</h3>
-                </div>
-                <div class="card-body">
-                    {{ form_start(form) }}
-                        <div class="mb-3">
-                            {{ form_label(form.type) }}
-                            {{ form_widget(form.type) }}
-                            <div class="text-danger">{{ form_errors(form.type) }}</div>
-                        </div>
+    <div class="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Tạo đề xuất mới</h1>
+                <p class="mt-2 text-sm text-gray-500">Gửi đề xuất chung hoặc yêu cầu cập nhật thông tin cá nhân của bạn.</p>
+            </div>
+            <a href="{{ path('app_proposals_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                <svg class="w-5 h-5 mr-2 -ml-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Quay lại
+            </a>
+        </div>
 
-                        <div id="generalFields" class="proposal-type-fields">
-                            <div class="mb-3">
-                                {{ form_label(form.content) }}
-                                {{ form_widget(form.content) }}
-                                <div class="text-danger">{{ form_errors(form.content) }}</div>
-                            </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 sm:p-8">
+                {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'proposalForm'}}) }}
+                    
+                    <div class="mb-6">
+                        {{ form_label(form.type, 'Loại đề xuất', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        <div class="relative">
+                            {{ form_widget(form.type, {'attr': {'class': 'block w-full pl-3 pr-10 py-3 text-base border-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-xl bg-gray-50 transition-colors cursor-pointer'}}) }}
                         </div>
+                        <div class="mt-1 text-sm text-red-600">{{ form_errors(form.type) }}</div>
+                    </div>
 
-                        <div id="editProfileFields" class="proposal-type-fields d-none">
-                            <div class="mb-3">
-                                {{ form_label(form.name) }}
-                                {{ form_widget(form.name) }}
-                                <div class="text-danger">{{ form_errors(form.name) }}</div>
-                            </div>
-                            <div class="mb-3">
-                                {{ form_label(form.email) }}
-                                {{ form_widget(form.email) }}
-                                <div class="text-danger">{{ form_errors(form.email) }}</div>
-                            </div>
-                            <div class="mb-3">
-                                {{ form_label(form.class_id) }}
-                                {{ form_widget(form.class_id) }}
-                                <div class="text-danger">{{ form_errors(form.class_id) }}</div>
-                            </div>
-                            <div class="mb-3">
-                                {{ form_label(form.faculty) }}
-                                {{ form_widget(form.faculty) }}
-                                <div class="text-danger">{{ form_errors(form.faculty) }}</div>
-                            </div>
-                            <div class="mb-3">
-                                {{ form_label(form.contact_info) }}
-                                {{ form_widget(form.contact_info) }}
-                                <div class="text-danger">{{ form_errors(form.contact_info) }}</div>
+                    <!-- General Proposal Fields -->
+                    <div id="generalFields" class="proposal-type-fields space-y-6 transition-all duration-300">
+                        <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-indigo-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-indigo-800">Đề xuất chung</h3>
+                                    <div class="mt-2 text-sm text-indigo-700">
+                                        <p>Bạn có thể đóng góp ý kiến về hoạt động của câu lạc bộ, yêu cầu thiết bị, hoặc bất kỳ vấn đề nào khác.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Gửi đề xuất</button>
-                    {{ form_end(form) }}
-                </div>
+                        <div>
+                            {{ form_label(form.content, 'Nội dung đề xuất', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.content, {'attr': {'class': 'block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 sm:text-sm transition-colors', 'rows': 6, 'placeholder': 'Viết chi tiết đề xuất của bạn ở đây...'}}) }}
+                            <div class="mt-1 text-sm text-red-600">{{ form_errors(form.content) }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Profile Fields -->
+                    <div id="editProfileFields" class="proposal-type-fields space-y-6 transition-all duration-300 hidden">
+                        <div class="bg-blue-50 rounded-xl p-4 border border-blue-100 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-blue-800">Cập nhật hồ sơ</h3>
+                                    <div class="mt-2 text-sm text-blue-700">
+                                        <p>Điền thông tin mới của bạn vào các trường dưới đây. Ban chủ nhiệm sẽ xem xét và cập nhật lại hồ sơ của bạn.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                {{ form_label(form.name, 'Họ và tên', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.name, {'attr': {'class': 'block w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 sm:text-sm transition-colors'}}) }}
+                                <div class="mt-1 text-sm text-red-600">{{ form_errors(form.name) }}</div>
+                            </div>
+                            <div>
+                                {{ form_label(form.email, 'Email', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.email, {'attr': {'class': 'block w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 sm:text-sm transition-colors'}}) }}
+                                <div class="mt-1 text-sm text-red-600">{{ form_errors(form.email) }}</div>
+                            </div>
+                            <div>
+                                {{ form_label(form.class_id, 'Lớp', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.class_id, {'attr': {'class': 'block w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 sm:text-sm transition-colors'}}) }}
+                                <div class="mt-1 text-sm text-red-600">{{ form_errors(form.class_id) }}</div>
+                            </div>
+                            <div>
+                                {{ form_label(form.faculty, 'Khoa', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.faculty, {'attr': {'class': 'block w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 sm:text-sm transition-colors'}}) }}
+                                <div class="mt-1 text-sm text-red-600">{{ form_errors(form.faculty) }}</div>
+                            </div>
+                            <div class="md:col-span-2">
+                                {{ form_label(form.contact_info, 'Thông tin liên hệ (SĐT)', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.contact_info, {'attr': {'class': 'block w-full px-4 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 sm:text-sm transition-colors'}}) }}
+                                <div class="mt-1 text-sm text-red-600">{{ form_errors(form.contact_info) }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-gray-100 flex justify-end">
+                        <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                            <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                            Gửi đề xuất
+                        </button>
+                    </div>
+                {{ form_end(form) }}
             </div>
         </div>
     </div>
@@ -68,18 +113,24 @@
             const editProfileFields = document.querySelector('#editProfileFields');
 
             function toggleFields() {
+                if (!typeSelect) return;
+                
                 if (typeSelect.value === 'edit_profile') {
-                    generalFields.classList.add('d-none');
-                    editProfileFields.classList.remove('d-none');
+                    generalFields.classList.add('hidden');
+                    editProfileFields.classList.remove('hidden');
+                    
+                    // Add simple animation classes if desired (optional)
+                    editProfileFields.classList.add('opacity-100');
                 } else {
-                    generalFields.classList.remove('d-none');
-                    editProfileFields.classList.add('d-none');
+                    generalFields.classList.remove('hidden');
+                    editProfileFields.classList.add('hidden');
                 }
             }
 
-            typeSelect.addEventListener('change', toggleFields);
-            toggleFields(); // Gọi lần đầu để thiết lập trạng thái ban đầu
+            if (typeSelect) {
+                typeSelect.addEventListener('change', toggleFields);
+                toggleFields();
+            }
         });
     </script>
-</div>
 {% endblock %}

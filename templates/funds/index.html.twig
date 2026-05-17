@@ -2,709 +2,480 @@
 
 {% block title %}Quản lý quỹ{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/funds.css') }}">
-{% endblock %}
-
 {% block body %}
-    <div class="container-fluid">
-        {# Thống kê tổng quan #}
-        <div class="row mb-4">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Quản lý quỹ</h1>
+                <p class="mt-2 text-sm text-gray-500">Quản lý thu chi, ngân sách và giao dịch của câu lạc bộ.</p>
+            </div>
+            {% if is_granted('ROLE_TREASURER') %}
+                <div class="flex gap-3">
+                    <a href="{{ path('app_funds_export') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                        <svg class="w-5 h-5 mr-2 -ml-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Xuất Excel
+                    </a>
+                    <button type="button" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" onclick="showAddForm()">
+                        <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        Thêm giao dịch
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {% set stats = [
-                {
-                    'title': 'Tổng số dư',
-                    'count': balance|number_format(0, ',', '.') ~ ' VNĐ',
-                    'style': 'bg-gradient-warning',
-                    'icon': 'fas fa-wallet',
-                    'text_class': 'text-warning'
-                },
-                {
-                    'title': 'Tổng thu',
-                    'count': totalIncome|number_format(0, ',', '.') ~ ' VNĐ',
-                    'style': 'bg-gradient-success',
-                    'icon': 'fas fa-arrow-down',
-                    'text_class': 'text-success'
-                },
-                {
-                    'title': 'Tổng chi',
-                    'count': totalExpense|number_format(0, ',', '.') ~ ' VNĐ',
-                    'style': 'bg-gradient-danger',
-                    'icon': 'fas fa-arrow-up',
-                    'text_class': 'text-danger'
-                },
-                {
-                    'title': 'Giao dịch',
-                    'count': funds.getTotalItemCount ~ ' giao dịch',
-                    'style': 'bg-gradient-info',
-                    'icon': 'fas fa-exchange-alt',
-                    'text_class': ''
-                }
+                {'title': 'Tổng số dư', 'count': balance|round(0, 'floor')|format_currency('VND'), 'color': 'indigo', 'icon': 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z'},
+                {'title': 'Tổng thu', 'count': totalIncome|round(0, 'floor')|format_currency('VND'), 'color': 'emerald', 'icon': 'M5 10l7-7m0 0l7 7m-7-7v18'},
+                {'title': 'Tổng chi', 'count': totalExpense|round(0, 'floor')|format_currency('VND'), 'color': 'rose', 'icon': 'M19 14l-7 7m0 0l-7-7m7 7V3'},
+                {'title': 'Giao dịch', 'count': funds.getTotalItemCount ~ ' GD', 'color': 'blue', 'icon': 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4'}
             ] %}
             
             {% for stat in stats %}
-                <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body p-3">
-                            <div class="row">
-                                <div class="col-8">
-                                    <div class="numbers">
-                                        <p class="text-sm mb-0 text-uppercase font-weight-bold">{{ stat.title }}</p>
-                                        <h5 class="font-weight-bolder mb-0 {{ stat.text_class }}">
-                                            {{ stat.count }}
-                                        </h5>
-                                    </div>
-                                </div>
-                                <div class="col-4 text-end">
-                                    <div class="icon icon-shape {{ stat.style }} shadow text-center border-radius-md">
-                                        <i class="{{ stat.icon }} text-lg opacity-10" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ stat.title }}</p>
+                        <p class="mt-1 text-2xl font-bold text-gray-900">{{ stat.count }}</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-{{ stat.color }}-50 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-{{ stat.color }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ stat.icon }}"></path></svg>
                     </div>
                 </div>
             {% endfor %}
         </div>
 
-        <!-- Biểu đồ biến động quỹ -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card z-index-2 h-100 shadow-sm">
-                    <div class="card-header bg-transparent">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="text-capitalize mb-0">Biến động quỹ</h6>
-                            <div class="btn-group">
-                                <select id="timeRange" class="form-select form-select-sm">
-                                    <option value="7">7 ngày gần nhất</option>
-                                    <option value="30">30 ngày gần nhất</option>
-                                    <option value="90">3 tháng gần nhất</option>
-                                    <option value="180">6 tháng gần nhất</option>
-                                    <option value="365">1 năm gần nhất</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="chart" style="position: relative; height: 300px;">
-                            <canvas id="fundChart" style="width: 100%; height: 100%;"></canvas>
-                        </div>
-                    </div>
-                </div>
+        <!-- Chart -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-gray-800">Biến động quỹ</h3>
+                <select id="timeRange" class="block pl-3 pr-10 py-2 text-sm border-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-xl bg-gray-50">
+                    <option value="7">7 ngày gần nhất</option>
+                    <option value="30">30 ngày gần nhất</option>
+                    <option value="90">3 tháng gần nhất</option>
+                    <option value="180">6 tháng gần nhất</option>
+                    <option value="365">1 năm gần nhất</option>
+                </select>
+            </div>
+            <div class="flex-1 w-full relative" style="min-height: 350px;">
+                <canvas id="fundChart"></canvas>
             </div>
         </div>
 
-        <!-- Dynamic Content -->
-        <div id="dynamicContent" class="mb-4 px-0">
-            <div class="card">
-                <div class="card-body text-center py-4">
-                    <i class="fas fa-info-circle fs-2 text-info mb-3"></i>
-                    <h5>Chọn một giao dịch để xem chi tiết</h5>
-                    <p class="text-muted mb-0">Hoặc click vào nút "Thêm giao dịch" để tạo mới</p>
+        <!-- Filters & Search -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-8">
+            <form action="{{ path('app_funds_index') }}" method="GET" class="flex flex-col sm:flex-row gap-4" id="searchForm">
+                <div class="flex-1 relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" name="search" value="{{ search }}" class="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors" placeholder="Tìm kiếm mô tả giao dịch...">
                 </div>
-            </div>
+                <button type="submit" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    Tìm kiếm
+                </button>
+            </form>
         </div>
 
-        <!-- Bảng hiển thị dữ liệu -->
-        <div class="card shadow mb-4">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý quỹ</h6>
-                    <div class="d-flex align-items-center">
-                        <div class="d-flex align-items-center me-2 mb-0">
-                            <div class="input-group">
-                                <span class="input-group-text bg-transparent border-end-0">
-                                    <i class="fas fa-search text-secondary"></i>
-                                </span>
-                                <input type="text" id="fundsSearchInput" class="form-control border-start-0" placeholder="Tìm kiếm giao dịch..." style="max-width: 300px;">
-                            </div>
-                            <button type="button" id="fundsClearSearchBtn" class="btn btn-sm btn-outline-secondary mb-0 ms-2 d-none">
-                                <i class="fas fa-times me-1"></i>Xóa bộ lọc
-                            </button>
-                        </div>
-                        {% if is_granted('ROLE_TREASURER') %}
-                            <button type="button" class="btn btn-sm btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addFundModal">
-                                <i class="fas fa-plus me-1"></i> Thêm giao dịch
-                            </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            <div class="card-body px-0 pt-0 pb-2">
-                <div class="table-responsive p-0 px-3" style="max-height: 1080px; overflow-y: auto;">
-                    <table class="table table-hover align-items-center mb-0">
-                        <thead>
-                            <tr>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mô tả</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Loại giao dịch</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Số tiền</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Thao tác</th>
+        <!-- Dynamic Content Panel -->
+        <div id="dynamicContent" class="mb-8 scroll-mt-6 hidden">
+            <!-- Populated via JS -->
+        </div>
+
+        <!-- Funds List Table -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mô tả</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số tiền</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Người tạo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100">
+                        {% for fund in funds %}
+                            <tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="showFundDetails('{{ fund.id }}')">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ fund.date|date('d/m/Y') }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-700">
+                                    {{ fund.description|length > 40 ? fund.description|slice(0, 40) ~ '...' : fund.description }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if fund.transactionType == 'income' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Thu</span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800">Chi</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold {{ fund.transactionType == 'income' ? 'text-emerald-600' : 'text-rose-600' }}">
+                                    {{ fund.transactionType == 'income' ? '+' : '-' }}{{ fund.amount|number_format(0, ',', '.') }} đ
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                    {{ fund.createdBy.name }}
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody id="fundsTableBody">
-                            <!-- Populated via JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-                <div class="navigation mt-4">
-                    {{ knp_pagination_render(funds, null, {'search': search}) }}
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal: Thêm giao dịch -->
-        <div class="modal fade" id="addFundModal" tabindex="-1" aria-labelledby="addFundModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addFundModalLabel">Thêm giao dịch mới</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="alert alert-danger d-none" id="addFundError"></div>
-                        {{ form_start(addFundForm, {'attr': {'id': 'addFundForm', 'class': 'needs-validation'}}) }}
-                            <div class="mb-3">
-                                {{ form_label(addFundForm.transaction_type) }}
-                                {{ form_widget(addFundForm.transaction_type, {'attr': {'class': 'form-select'}}) }}
-                                <div class="text-danger">{{ form_errors(addFundForm.transaction_type) }}</div>
-                            </div>
-                            <div class="mb-3">
-                                {{ form_label(addFundForm.amount) }}
-                                <div class="input-group">
-                                    {{ form_widget(addFundForm.amount, {'attr': {'class': 'form-control', 'min': '0', 'step': '1000'}}) }}
-                                    <span class="input-group-text">VNĐ</span>
-                                </div>
-                                <div class="text-danger">{{ form_errors(addFundForm.amount) }}</div>
-                            </div>
-                            <div class="mb-3">
-                                {{ form_label(addFundForm.date) }}
-                                {{ form_widget(addFundForm.date, {'attr': {'class': 'form-control'}}) }}
-                                <div class="text-danger">{{ form_errors(addFundForm.date) }}</div>
-                            </div>
-                            <div class="mb-3">
-                                {{ form_label(addFundForm.description) }}
-                                {{ form_widget(addFundForm.description, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
-                                <div class="text-danger">{{ form_errors(addFundForm.description) }}</div>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">
-                                <span class="spinner-border spinner-border-sm d-none" id="addFundSpinner"></span>
-                                Lưu
-                            </button>
-                        {{ form_end(addFundForm) }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal: Sửa giao dịch -->
-        {% for fund in funds %}
-            <div class="modal fade" id="editFundModal{{ fund.id }}" tabindex="-1" aria-labelledby="editFundModalLabel{{ fund.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editFundModalLabel{{ fund.id }}">Sửa giao dịch #{{ fund.id }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="alert alert-danger d-none" id="editFundError{{ fund.id }}"></div>
-                            {{ form_start(editFundForms[fund.id], {'attr': {'id': 'editFundForm' ~ fund.id, 'class': 'needs-validation'}}) }}
-                                <div class="mb-3">
-                                    {{ form_label(editFundForms[fund.id].transaction_type) }}
-                                    {{ form_widget(editFundForms[fund.id].transaction_type, {'attr': {'class': 'form-select'}}) }}
-                                    <div class="text-danger">{{ form_errors(editFundForms[fund.id].transaction_type) }}</div>
-                                </div>
-                                <div class="mb-3">
-                                    {{ form_label(editFundForms[fund.id].amount) }}
-                                    <div class="input-group">
-                                        {{ form_widget(editFundForms[fund.id].amount, {'attr': {'class': 'form-control', 'min': '0', 'step': '1000'}}) }}
-                                        <span class="input-group-text">VNĐ</span>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center">
+                                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     </div>
-                                    <div class="text-danger">{{ form_errors(editFundForms[fund.id].amount) }}</div>
+                                    <h3 class="text-sm font-medium text-gray-900">Không tìm thấy giao dịch</h3>
+                                    <p class="mt-1 text-sm text-gray-500">Không có giao dịch nào phù hợp với điều kiện tìm kiếm.</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if funds.getTotalItemCount > 0 %}
+                {{ knp_pagination_render(funds) }}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Hidden Form Templates -->
+    <div id="form-templates" class="hidden">
+        <!-- Add Fund Form -->
+        <div id="template-add-fund">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transform transition-all duration-300">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+                    <h3 class="text-lg font-bold text-gray-800">Thêm giao dịch mới</h3>
+                    <button type="button" class="text-gray-400 hover:text-gray-600 focus:outline-none" onclick="document.getElementById('dynamicContent').classList.add('hidden')">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div id="addFundError" class="hidden mb-4 p-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert"></div>
+                    {{ form_start(addFundForm, {'attr': {'id': 'addFundForm', 'class': 'space-y-6', 'onsubmit': 'submitFundForm(event, "addFundForm", "' ~ path('app_funds_new') ~ '")'}}) }}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                {{ form_label(addFundForm.transaction_type, 'Loại giao dịch', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                {{ form_widget(addFundForm.transaction_type, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                            </div>
+                            <div>
+                                {{ form_label(addFundForm.date, 'Ngày giao dịch', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                {{ form_widget(addFundForm.date, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                            </div>
+                            <div class="md:col-span-2">
+                                {{ form_label(addFundForm.amount, 'Số tiền (VNĐ)', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">đ</span>
+                                    </div>
+                                    {{ form_widget(addFundForm.amount, {'attr': {'class': 'block w-full pl-8 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors', 'min': '0', 'step': '1000'}}) }}
                                 </div>
-                                <div class="mb-3">
-                                    {{ form_label(editFundForms[fund.id].date) }}
-                                    {{ form_widget(editFundForms[fund.id].date, {'attr': {'class': 'form-control'}}) }}
-                                    <div class="text-danger">{{ form_errors(editFundForms[fund.id].date) }}</div>
-                                </div>
-                                <div class="mb-3">
-                                    {{ form_label(editFundForms[fund.id].description) }}
-                                    {{ form_widget(editFundForms[fund.id].description, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
-                                    <div class="text-danger">{{ form_errors(editFundForms[fund.id].description) }}</div>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <span class="spinner-border spinner-border-sm d-none" id="editFundSpinner{{ fund.id }}"></span>
-                                    Lưu thay đổi
-                                </button>
-                            {{ form_end(editFundForms[fund.id]) }}
+                            </div>
+                            <div class="md:col-span-2">
+                                {{ form_label(addFundForm.description, 'Mô tả chi tiết', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                {{ form_widget(addFundForm.description, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors', 'rows': 3}}) }}
+                            </div>
                         </div>
-                    </div>
+                        <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                            <button type="button" class="px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-colors" onclick="document.getElementById('dynamicContent').classList.add('hidden')">Hủy</button>
+                            <button type="submit" class="px-4 py-2 bg-indigo-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-colors flex items-center">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" id="addFundForm-spinner" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                Lưu giao dịch
+                            </button>
+                        </div>
+                    {{ form_end(addFundForm) }}
                 </div>
             </div>
-        {% endfor %}
+        </div>
 
-        <!-- Modal: Xóa giao dịch -->
+        <!-- Edit Fund Forms -->
         {% for fund in funds %}
-            <div class="modal fade" id="deleteFundModal{{ fund.id }}" tabindex="-1" aria-labelledby="deleteFundModalLabel{{ fund.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-danger text-white">
-                            <h5 class="modal-title" id="deleteFundModalLabel{{ fund.id }}">Xóa giao dịch #{{ fund.id }}</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Bạn có chắc chắn muốn xóa giao dịch này?</p>
-                            <div class="alert alert-warning">
-                                <strong>Thông tin giao dịch:</strong><br>
-                                Ngày: {{ fund.date|date('d/m/Y') }}<br>
-                                Loại: {{ fund.transactionType == 'income' ? 'Thu' : 'Chi' }}<br>
-                                Số tiền: {{ fund.amount|number_format(0, ',', '.') }} VNĐ<br>
-                                Mô tả: {{ fund.description }}
+            <div id="template-edit-fund-{{ fund.id }}">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transform transition-all duration-300">
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+                        <h3 class="text-lg font-bold text-gray-800">Sửa giao dịch #{{ fund.id }}</h3>
+                        <button type="button" class="text-gray-400 hover:text-gray-600 focus:outline-none" onclick="showFundDetails('{{ fund.id }}')">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div id="editFundError{{ fund.id }}" class="hidden mb-4 p-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200" role="alert"></div>
+                        {{ form_start(editFundForms[fund.id], {'attr': {'id': 'editFundForm' ~ fund.id, 'class': 'space-y-6', 'onsubmit': 'submitFundForm(event, "editFundForm' ~ fund.id ~ '", "' ~ path('app_funds_edit', {'id': fund.id}) ~ '")'}}) }}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    {{ form_label(editFundForms[fund.id].transaction_type, 'Loại giao dịch', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                    {{ form_widget(editFundForms[fund.id].transaction_type, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                                </div>
+                                <div>
+                                    {{ form_label(editFundForms[fund.id].date, 'Ngày giao dịch', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                    {{ form_widget(editFundForms[fund.id].date, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                                </div>
+                                <div class="md:col-span-2">
+                                    {{ form_label(editFundForms[fund.id].amount, 'Số tiền (VNĐ)', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 sm:text-sm">đ</span>
+                                        </div>
+                                        {{ form_widget(editFundForms[fund.id].amount, {'attr': {'class': 'block w-full pl-8 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors', 'min': '0', 'step': '1000'}}) }}
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    {{ form_label(editFundForms[fund.id].description, 'Mô tả chi tiết', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                    {{ form_widget(editFundForms[fund.id].description, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors', 'rows': 3}}) }}
+                                </div>
                             </div>
-                            <form method="post" action="{{ path('app_funds_delete', {'id': fund.id}) }}" id="deleteFundForm{{ fund.id }}">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ fund.id) }}">
-                                <button type="submit" class="btn btn-danger w-100">
-                                    <span class="spinner-border spinner-border-sm d-none" id="deleteFundSpinner{{ fund.id }}"></span>
-                                    Xóa
-                                </button>
-                            </form>
-                        </div>
+                            <div class="pt-4 border-t border-gray-100 flex justify-between gap-3">
+                                <button type="button" class="px-4 py-2 bg-rose-50 border border-transparent rounded-xl text-sm font-medium text-rose-700 hover:bg-rose-100 focus:outline-none transition-colors" onclick="confirmDeleteFund('${fund.id}')">Xóa giao dịch</button>
+                                <div class="flex gap-3">
+                                    <button type="button" class="px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-colors" onclick="showFundDetails('{{ fund.id }}')">Quay lại</button>
+                                    <button type="submit" class="px-4 py-2 bg-indigo-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-colors flex items-center">
+                                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" id="editFundForm{{ fund.id }}-spinner" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        Lưu thay đổi
+                                    </button>
+                                </div>
+                            </div>
+                        {{ form_end(editFundForms[fund.id]) }}
                     </div>
                 </div>
             </div>
         {% endfor %}
     </div>
 
-    <script src="{{ asset('js/table-layout.js') }}"></script>
+    <!-- Script Data Store & Functions -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const isTreasurer = {{ is_granted('ROLE_TREASURER') ? 'true' : 'false' }};
-            const fundsData = [
-                {% for fund in funds %}
-                    {
-                        id: '{{ fund.id }}',
-                        date: '{{ fund.date ? fund.date|date('Y-m-d') : '' }}',
-                        description: '{{ fund.description|e('js') }}',
-                        transaction_type: '{{ fund.transactionType }}',
-                        amount: '{{ fund.amount|number_format(0, ',', '.') }} VNĐ',
-                        createdBy: '{{ fund.createdBy.name|e('js') }}',
-                        createdAt: '{{ fund.createdAt ? fund.createdAt|date('Y-m-d H:i:s') : '' }}',
-                        updatedAt: '{{ fund.updatedAt ? fund.updatedAt|date('Y-m-d H:i:s') : '' }}'
-                    },
-                {% endfor %}
-            ];
+        const isTreasurer = {{ is_granted('ROLE_TREASURER') ? 'true' : 'false' }};
+        const fundsStore = {
+            {% for fund in funds %}
+                '{{ fund.id }}': {
+                    id: '{{ fund.id }}',
+                    date: '{{ fund.date|date('d/m/Y') }}',
+                    description: '{{ fund.description|e('js')|nl2br }}',
+                    transactionType: '{{ fund.transactionType }}',
+                    amount: '{{ fund.amount|number_format(0, ',', '.') }} VNĐ',
+                    createdBy: '{{ fund.createdBy.name|e('js') }}',
+                    createdAt: '{{ fund.createdAt|date('d/m/Y H:i') }}',
+                    updatedAt: '{{ fund.updatedAt|date('d/m/Y H:i') }}',
+                    deleteToken: '{{ csrf_token('delete' ~ fund.id) }}'
+                }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        };
 
-            console.log('Funds Data:', fundsData); // Debug data
+        function showFundDetails(id) {
+            const fund = fundsStore[id];
+            if (!fund) return;
 
-            try {
-                const fundsTable = new TableLayout({
-                    data: fundsData,
-                    tableBodyId: 'fundsTableBody',
-                    searchInputId: 'fundsSearchInput',
-                    clearSearchBtnId: 'fundsClearSearchBtn',
-                    paginationId: 'fundsPagination',
-                    columns: [
-                        { field: 'id' },
-                        { field: 'date', type: 'date' },
-                        {
-                            field: 'description',
-                            formatter: (value, data) => `<p class="text-xs font-weight-bold mb-0" data-id="${data.id}">${value.length > 20 ? value.slice(0, 20) + '...' : value}</p>`
-                        },
-                        {
-                            field: 'transaction_type',
-                            formatter: (value, data) => `
-                                <span class="badge bg-${value === 'income' ? 'success' : 'danger'}" data-id="${data.id}">
-                                    ${value === 'income' ? 'Thu' : 'Chi'}
-                                </span>
-                            `
-                        },
-                        { field: 'amount' },
-                        {
-                            field: 'actions',
-                            formatter: (value, data) => `
-                                <div class="d-flex justify-content-center" data-id="${data.id}">
-                                    ${isTreasurer ? `
-                                        <button type="button" class="btn btn-sm btn-info text-white me-2" data-bs-toggle="modal" data-bs-target="#editFundModal${data.id}">
-                                            <i class="fas fa-edit me-1"></i> Sửa
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-danger text-white" data-bs-toggle="modal" data-bs-target="#deleteFundModal${data.id}">
-                                            <i class="fas fa-trash me-1"></i> Xóa
-                                        </button>
-                                    ` : ''}
+            const panel = document.getElementById('dynamicContent');
+            panel.classList.remove('hidden');
+
+            const typeBadge = fund.transactionType === 'income' 
+                ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>Thu</span>'
+                : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-rose-100 text-rose-800"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>Chi</span>';
+
+            const adminButtons = isTreasurer ? `
+                <div class="mt-6 flex flex-wrap gap-3 pt-6 border-t border-gray-100">
+                    <button class="px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-colors" onclick="showEditForm('${fund.id}')">Chỉnh sửa</button>
+                    <button class="px-4 py-2 bg-rose-50 border border-transparent rounded-xl text-sm font-medium text-rose-700 hover:bg-rose-100 focus:outline-none transition-colors" onclick="confirmDeleteFund('${fund.id}')">Xóa giao dịch</button>
+                </div>
+            ` : '';
+
+            panel.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transform transition-all duration-300">
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+                        <h3 class="text-lg font-bold text-gray-800">Chi tiết giao dịch #${fund.id}</h3>
+                        <button type="button" class="text-gray-400 hover:text-gray-600 focus:outline-none" onclick="document.getElementById('dynamicContent').classList.add('hidden')">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <div class="flex items-center gap-3 mb-6">
+                                    <h4 class="text-3xl font-bold ${fund.transactionType === 'income' ? 'text-emerald-600' : 'text-rose-600'}">${fund.transactionType === 'income' ? '+' : '-'}${fund.amount}</h4>
+                                    ${typeBadge}
                                 </div>
-                            `
-                        }
-                    ],
-                    onRowClick: (row) => {
-                        const fundId = row.getAttribute('data-id');
-                        if (!fundId) return;
-                        const fund = fundsData.find(f => f.id === fundId);
-                        if (fund) displayFundDetails(fund);
-                        dynamicContent.scrollIntoView({ behavior: 'smooth' });
+                                <div class="space-y-4">
+                                    <div class="flex items-center text-sm">
+                                        <span class="w-32 text-gray-500">Ngày giao dịch:</span>
+                                        <span class="font-medium text-gray-900">${fund.date}</span>
+                                    </div>
+                                    <div class="flex items-center text-sm">
+                                        <span class="w-32 text-gray-500">Người tạo:</span>
+                                        <span class="font-medium text-gray-900">${fund.createdBy}</span>
+                                    </div>
+                                    <div class="flex items-center text-sm">
+                                        <span class="w-32 text-gray-500">Ngày tạo:</span>
+                                        <span class="font-medium text-gray-900">${fund.createdAt}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Mô tả</p>
+                                <p class="text-sm text-gray-700 leading-relaxed">${fund.description}</p>
+                            </div>
+                        </div>
+                        ${adminButtons}
+                    </div>
+                </div>
+            `;
+            window.scrollTo({ top: panel.offsetTop - 20, behavior: 'smooth' });
+        }
+
+        function showAddForm() {
+            const template = document.getElementById('template-add-fund');
+            if (template) {
+                const panel = document.getElementById('dynamicContent');
+                panel.innerHTML = template.innerHTML;
+                panel.classList.remove('hidden');
+                window.scrollTo({ top: panel.offsetTop - 20, behavior: 'smooth' });
+            }
+        }
+
+        function showEditForm(id) {
+            const template = document.getElementById('template-edit-fund-' + id);
+            if (template) {
+                const panel = document.getElementById('dynamicContent');
+                panel.innerHTML = template.innerHTML.replace("confirmDeleteFund('${fund.id}')", `confirmDeleteFund('${id}')`);
+                panel.classList.remove('hidden');
+                window.scrollTo({ top: panel.offsetTop - 20, behavior: 'smooth' });
+            }
+        }
+
+        function submitFundForm(e, formId, url) {
+            e.preventDefault();
+            const form = document.getElementById(formId);
+            const spinner = document.getElementById(formId + '-spinner');
+            const errorDiv = document.getElementById(formId.replace('Form', 'Error'));
+            
+            spinner.classList.remove('hidden');
+            if (errorDiv) errorDiv.classList.add('hidden');
+            
+            fetch(url, {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    if (errorDiv) {
+                        errorDiv.textContent = data.error || 'Có lỗi xảy ra';
+                        errorDiv.classList.remove('hidden');
+                    } else {
+                        alert(data.error || 'Có lỗi xảy ra');
                     }
-                });
+                }
+            })
+            .catch(err => alert('Lỗi kết nối'))
+            .finally(() => spinner.classList.add('hidden'));
+        }
 
-                console.log('Table initialized:', fundsTable); // Debug table initialization
-            } catch (error) {
-                console.error('Error initializing table:', error); // Debug error
-            }
-
-            let currentFundId = null;
-
-            function displayFundDetails(fund) {
-                if (!fund || currentFundId === fund.id) return;
-                currentFundId = fund.id;
-                const dynamicContent = document.getElementById('dynamicContent');
-                if (!dynamicContent) return;
+        function confirmDeleteFund(id) {
+            const fund = fundsStore[id];
+            if (!fund) return;
+            
+            if (confirm(`Bạn có chắc chắn muốn xóa giao dịch #${id} không?\n\nSố tiền: ${fund.amount}\nMô tả: ${fund.description}`)) {
+                const formData = new FormData();
+                formData.append('_token', fund.deleteToken);
                 
-                const buttons = isTreasurer ? `
-                    <button type="button" class="btn btn-sm btn-info text-white me-2" data-bs-toggle="modal" data-bs-target="#editFundModal${fund.id}">
-                        <i class="fas fa-edit me-1"></i> Sửa
-                    </button>
-                    <button type="button" class="btn btn-sm btn-danger text-white" data-bs-toggle="modal" data-bs-target="#deleteFundModal${fund.id}">
-                        <i class="fas fa-trash me-1"></i> Xóa
-                    </button>
-                ` : '';
-
-                dynamicContent.innerHTML = `
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0">Giao dịch #${fund.id}</h6>
-                            <button type="button" class="btn-close" onclick="resetDynamicContent()"></button>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong>Ngày:</strong> ${fund.date}</p>
-                                    <p><strong>Loại giao dịch:</strong> 
-                                        <span class="badge bg-${fund.transaction_type === 'income' ? 'success' : 'danger'}">
-                                            ${fund.transaction_type === 'income' ? 'Thu' : 'Chi'}
-                                        </span>
-                                    </p>
-                                    <p><strong>Số tiền:</strong> ${fund.amount}</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p><strong>Người tạo:</strong> ${fund.createdBy}</p>
-                                    <p><strong>Ngày tạo:</strong> ${fund.createdAt}</p>
-                                    <p><strong>Ngày cập nhật:</strong> ${fund.updatedAt}</p>
-                                </div>
-                            </div>
-                            <div class="mt-3">
-                                <p><strong>Mô tả:</strong></p>
-                                <p>${fund.description}</p>
-                            </div>
-                            <div class="mt-3">
-                                ${buttons}
-                            </div>
-                        </div>
-                    </div>
-                `;
+                fetch(`/funds/${id}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert(data.error || 'Lỗi khi xóa giao dịch');
+                    }
+                })
+                .catch(err => alert('Lỗi kết nối'));
             }
-
-            function resetDynamicContent() {
-                currentFundId = null;
-                document.getElementById('dynamicContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-body text-center py-4">
-                            <i class="fas fa-info-circle fs-2 text-info mb-3"></i>
-                            <h5>Chọn một giao dịch để xem chi tiết</h5>
-                            <p class="text-muted mb-0">Hoặc click vào nút "Thêm giao dịch" để tạo mới</p>
-                        </div>
-                    </div>
-                `;
-            }
-
-            // Xử lý form thêm giao dịch
-            const addFundForm = document.getElementById('addFundForm');
-            if (addFundForm) {
-                addFundForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const spinner = document.getElementById('addFundSpinner');
-                    const errorDiv = document.getElementById('addFundError');
-                    
-                    spinner.classList.remove('d-none');
-                    errorDiv.classList.add('d-none');
-                    
-                    const formData = new FormData(this);
-                    
-                    fetch('{{ path('app_funds_new') }}', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = data.redirect;
-                        } else {
-                            errorDiv.textContent = data.error || 'Có lỗi xảy ra';
-                            errorDiv.classList.remove('d-none');
-                        }
-                    })
-                    .catch(error => {
-                        errorDiv.textContent = 'Có lỗi xảy ra khi xử lý yêu cầu';
-                        errorDiv.classList.remove('d-none');
-                    })
-                    .finally(() => {
-                        spinner.classList.add('d-none');
-                    });
-                });
-            }
-
-            // Xử lý form sửa giao dịch
-            {% for fund in funds %}
-                const editFundForm{{ fund.id }} = document.getElementById('editFundForm{{ fund.id }}');
-                if (editFundForm{{ fund.id }}) {
-                    editFundForm{{ fund.id }}.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const spinner = document.getElementById('editFundSpinner{{ fund.id }}');
-                        const errorDiv = document.getElementById('editFundError{{ fund.id }}');
-                        
-                        spinner.classList.remove('d-none');
-                        errorDiv.classList.add('d-none');
-                        
-                        const formData = new FormData(this);
-                        
-                        fetch('{{ path('app_funds_edit', {'id': fund.id}) }}', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = data.redirect;
-                            } else {
-                                errorDiv.textContent = data.error || 'Có lỗi xảy ra';
-                                errorDiv.classList.remove('d-none');
-                            }
-                        })
-                        .catch(error => {
-                            errorDiv.textContent = 'Có lỗi xảy ra khi xử lý yêu cầu';
-                            errorDiv.classList.remove('d-none');
-                        })
-                        .finally(() => {
-                            spinner.classList.add('d-none');
-                        });
-                    });
-                }
-            {% endfor %}
-
-            // Xử lý form xóa giao dịch
-            {% for fund in funds %}
-                const deleteFundForm{{ fund.id }} = document.getElementById('deleteFundForm{{ fund.id }}');
-                if (deleteFundForm{{ fund.id }}) {
-                    deleteFundForm{{ fund.id }}.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const spinner = document.getElementById('deleteFundSpinner{{ fund.id }}');
-                        
-                        spinner.classList.remove('d-none');
-                        
-                        const formData = new FormData(this);
-                        
-                        fetch('{{ path('app_funds_delete', {'id': fund.id}) }}', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                window.location.href = data.redirect;
-                            } else {
-                                alert(data.error || 'Có lỗi xảy ra');
-                            }
-                        })
-                        .catch(error => {
-                            alert('Có lỗi xảy ra khi xử lý yêu cầu');
-                        })
-                        .finally(() => {
-                            spinner.classList.add('d-none');
-                        });
-                    });
-                }
-            {% endfor %}
-        });
+        }
     </script>
 
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM đã được tải');
-            console.log('Chart.js version:', Chart.version);
-            
             const fundChart = document.getElementById('fundChart');
-            if (!fundChart) {
-                console.error('Không tìm thấy phần tử fundChart');
-                return;
-            }
-
+            if (!fundChart) return;
             const ctx = fundChart.getContext('2d');
-            if (!ctx) {
-                console.error('Không thể lấy context của canvas');
-                return;
-            }
-
-            // Hàm định dạng ngày
-            const formatDate = (dateStr) => {
-                const date = new Date(dateStr);
-                return date.toLocaleDateString('vi-VN', { 
-                    day: '2-digit',
-                    month: '2-digit'
-                });
+            
+            const formatCurrency = (amount) => {
+                amount = Number(amount);
+                if (amount >= 1000000) return (Math.round(amount / 100000) / 10) + ' tr';
+                if (amount >= 1000) return (Math.round(amount / 100) / 10) + ' k';
+                return amount.toLocaleString('vi-VN');
             };
 
-            // Hàm formatCurrency giống extension PHP
-            function formatCurrency(amount) {
-                amount = Number(amount);
-                if (amount >= 1000000) {
-                    return (Math.round(amount / 100000) / 10) + ' triệu';
-                } else if (amount >= 1000) {
-                    return (Math.round(amount / 100) / 10) + ' nghìn';
-                }
-                return amount.toLocaleString('vi-VN');
-            }
-
-            // Khởi tạo biểu đồ
             const chart = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [
-                        {
-                            label: 'Thu',
-                            data: [],
-                            backgroundColor: 'rgba(40, 167, 69, 0.8)',
-                            borderColor: '#28a745',
-                            borderWidth: 1,
-                            yAxisID: 'y'
-                        },
-                        {
-                            label: 'Chi',
-                            data: [],
-                            backgroundColor: 'rgba(220, 53, 69, 0.8)',
-                            borderColor: '#dc3545',
-                            borderWidth: 1,
-                            yAxisID: 'y'
-                        }
-                    ]
-                },
+                data: { labels: [], datasets: [
+                    { label: 'Thu', data: [], backgroundColor: 'rgba(52, 211, 153, 0.8)', borderColor: '#10b981', borderWidth: 0, borderRadius: 4 },
+                    { label: 'Chi', data: [], backgroundColor: 'rgba(248, 113, 113, 0.8)', borderColor: '#ef4444', borderWidth: 0, borderRadius: 4 }
+                ]},
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
-                    },
+                    interaction: { intersect: false, mode: 'index' },
                     plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', boxWidth: 8, font: { family: "'Inter', sans-serif" } } },
                         tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            titleFont: { family: "'Inter', sans-serif", size: 13 },
+                            bodyFont: { family: "'Inter', sans-serif", size: 12 },
+                            padding: 12,
+                            cornerRadius: 8,
                             callbacks: {
-                                title: function(context) {
-                                    const date = new Date(context[0].label);
-                                    return date.toLocaleDateString('vi-VN', {
-                                        weekday: 'long',
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric'
-                                    });
-                                },
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
-                                }
-                            }
-                        },
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                pointStyle: 'circle'
+                                label: (context) => `${context.dataset.label}: ${Number(context.raw).toLocaleString('vi-VN')} đ`
                             }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return formatCurrency(value);
-                                }
-                            }
+                            grid: { color: 'rgba(0, 0, 0, 0.04)', drawBorder: false },
+                            ticks: { callback: value => formatCurrency(value), font: { family: "'Inter', sans-serif" } },
+                            border: { display: false }
                         },
                         x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                callback: function(value, index, values) {
-                                    return formatDate(this.getLabelForValue(value));
-                                }
-                            }
+                            grid: { display: false, drawBorder: false },
+                            ticks: { font: { family: "'Inter', sans-serif" }, maxRotation: 0 },
+                            border: { display: false }
                         }
                     }
                 }
             });
 
-            console.log('Biểu đồ đã được khởi tạo:', chart);
-
-            // Hàm cập nhật dữ liệu biểu đồ
             const updateChartData = async (days) => {
                 try {
-                    console.log('Bắt đầu cập nhật dữ liệu cho', days, 'ngày');
                     const endDate = new Date();
                     const startDate = new Date();
                     startDate.setDate(endDate.getDate() - days);
 
-                    console.log('Ngày bắt đầu:', startDate.toISOString());
-                    console.log('Ngày kết thúc:', endDate.toISOString());
-
                     const response = await fetch(`/api/funds/chart?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
-                    console.log('Đã gửi request API, status:', response.status);
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
+                    if (!response.ok) throw new Error(`HTTP error!`);
                     const data = await response.json();
-                    console.log('Dữ liệu nhận được từ API:', data);
-
-                    if (data.error) {
-                        console.error('Lỗi từ API:', data.error);
-                        return;
-                    }
-
-                    if (!data.labels || !data.income || !data.expense) {
-                        console.error('Dữ liệu không đầy đủ:', data);
-                        return;
-                    }
-
-                    console.log('Cập nhật dữ liệu cho biểu đồ');
-                    chart.data.labels = data.labels;
-                    chart.data.datasets[0].data = data.income;
-                    chart.data.datasets[1].data = data.expense.map(value => -value); // Chuyển chi thành số âm
                     
-                    console.log('Gọi chart.update()');
-                    chart.update();
-                    console.log('Biểu đồ đã được cập nhật');
-                } catch (error) {
-                    console.error('Lỗi khi cập nhật dữ liệu:', error);
-                }
+                    if (data.labels && data.income && data.expense) {
+                        chart.data.labels = data.labels.map(d => {
+                            const date = new Date(d);
+                            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth()+1).toString().padStart(2, '0')}`;
+                        });
+                        chart.data.datasets[0].data = data.income;
+                        chart.data.datasets[1].data = data.expense.map(v => -v);
+                        chart.update();
+                    }
+                } catch (error) { console.error('Lỗi khi cập nhật biểu đồ:', error); }
             };
 
-            // Xử lý sự kiện khi thay đổi khoảng thời gian
             const timeRangeSelect = document.getElementById('timeRange');
             if (timeRangeSelect) {
-                console.log('Đã tìm thấy phần tử timeRange');
-                timeRangeSelect.addEventListener('change', function() {
-                    console.log('Đã thay đổi khoảng thời gian:', this.value);
-                    updateChartData(parseInt(this.value));
-                });
-
-                // Khởi tạo dữ liệu ban đầu với giá trị được chọn trong filter
-                console.log('Bắt đầu khởi tạo dữ liệu ban đầu');
+                timeRangeSelect.addEventListener('change', function() { updateChartData(parseInt(this.value)); });
                 updateChartData(parseInt(timeRangeSelect.value));
-            } else {
-                console.error('Không tìm thấy phần tử timeRange');
             }
         });
     </script>
