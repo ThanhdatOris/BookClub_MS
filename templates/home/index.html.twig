@@ -3,125 +3,127 @@
 {% block title %}Trang chủ{% endblock %}
 
 {% block body %}
-    <div class="mb-8 p-8 bg-white rounded-2xl shadow-sm border border-slate-100">
-        <h1 class="text-3xl font-bold text-slate-800 mb-2">Chào mừng đến với BookClub MS</h1>
-        <p class="text-slate-500 text-lg">Hệ thống quản lý câu lạc bộ sách dành cho sinh viên</p>
-        
-        <div class="mt-6 rounded-2xl overflow-hidden shadow-md">
-            <img src="{{ asset('assets/img/dh3.jpg') }}" alt="Banner" class="w-full object-cover max-h-80">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="mb-8 p-8 bg-white rounded-2xl shadow-sm border border-slate-100">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Chào mừng đến với BookClub MS</h1>
+            <p class="text-slate-500 text-lg">Hệ thống quản lý câu lạc bộ sách dành cho sinh viên</p>
+            
+            <div class="mt-6 rounded-2xl overflow-hidden shadow-md">
+                <img src="{{ asset('assets/img/dh3.jpg') }}" alt="Banner" class="w-full object-cover max-h-80">
+            </div>
         </div>
-    </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Cột trái: Thông tin nhanh -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col h-full">
-            <h5 class="text-xl font-bold text-indigo-600 mb-6">Thông tin nhanh</h5>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Cột trái: Thông tin nhanh -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col h-full">
+                <h5 class="text-xl font-bold text-indigo-600 mb-6">Thông tin nhanh</h5>
 
-            <!-- Khối CLB -->
-            <a href="{{ path('app_home') }}" target="_blank" class="block mb-4 group">
-                <div class="relative rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    <div class="absolute inset-0 bg-slate-900/60 z-10 group-hover:bg-slate-900/50 transition-colors"></div>
-                    <div class="absolute inset-0 bg-[url('{{ asset('assets/img/bg-clb.jpg') }}')] bg-cover bg-center z-0"></div>
-                    <div class="relative z-20 p-5 flex items-center justify-between">
-                        <div>
-                            <h6 class="text-white font-bold text-lg mb-1">CLB Sinh Viên Yêu Thích Sách</h6>
-                            <p class="text-slate-200 text-sm">Sách là đam mê</p>
-                        </div>
-                        <div class="bg-white/20 p-3 rounded-full backdrop-blur-sm">
-                            <i class="fas fa-book text-white text-2xl"></i>
+                <!-- Khối CLB -->
+                <a href="{{ path('app_home') }}" target="_blank" class="block mb-4 group">
+                    <div class="relative rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                        <div class="absolute inset-0 bg-slate-900/60 z-10 group-hover:bg-slate-900/50 transition-colors"></div>
+                        <div class="absolute inset-0 bg-[url('{{ asset('assets/img/bg-clb.jpg') }}')] bg-cover bg-center z-0"></div>
+                        <div class="relative z-20 p-5 flex items-center justify-between">
+                            <div>
+                                <h6 class="text-white font-bold text-lg mb-1">CLB Sinh Viên Yêu Thích Sách</h6>
+                                <p class="text-slate-200 text-sm">Sách là đam mê</p>
+                            </div>
+                            <div class="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+                                <i class="fas fa-book text-white text-2xl"></i>
+                            </div>
                         </div>
                     </div>
+                </a>
+
+                <!-- Các liên kết nhanh -->
+                <div class="grid grid-cols-1 gap-4 mt-auto">
+                    {% set quickLinks = [
+                        {
+                            'url': 'https://drive.google.com/drive/folders/1rWeBXLT4zFY4GpDyvxcVOCfK8zJx7-TT?usp=drive_link',
+                            'target': '_blank',
+                            'bg': 'bg-gradient-to-r from-rose-400 to-orange-300',
+                            'icon': 'fas fa-folder-open',
+                            'title': 'Minh chứng điểm danh',
+                            'description': 'Tổng hợp minh chứng hoạt động'
+                        },
+                        {
+                            'url': 'https://www.facebook.com/profile.php?id=100048446863883',
+                            'target': '_blank',
+                            'bg': 'bg-gradient-to-r from-teal-400 to-blue-500',
+                            'icon': 'fab fa-facebook',
+                            'title': 'Fanpage',
+                            'description': 'Cập nhật thông tin CLB'
+                        },
+                        {
+                            'url': 'https://zalo.me/g/ufsgge924',
+                            'target': '_blank',
+                            'bg': 'bg-gradient-to-r from-emerald-400 to-teal-400',
+                            'icon': 'fab fa-facebook-messenger',
+                            'title': 'Group Chat',
+                            'description': 'Trao đổi, thông báo nhanh'
+                        },
+                        {
+                            'url': 'mailto:bookclub.ctut@gmail.com',
+                            'target': '_self',
+                            'bg': 'bg-gradient-to-r from-amber-400 to-yellow-300',
+                            'icon': 'fas fa-envelope',
+                            'title': 'Mail góp ý',
+                            'description': 'bookclub.ctut@gmail.com'
+                        }
+                    ] %}
+                    
+                    {% for link in quickLinks %}
+                        <a href="{{ link.url }}" target="{{ link.target }}" class="block group">
+                            <div class="{{ link.bg }} rounded-xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow hover:-translate-y-0.5 transform duration-200">
+                                <div>
+                                    <h6 class="text-white font-bold mb-0.5">{{ link.title }}</h6>
+                                    <p class="text-white/90 text-xs">{{ link.description }}</p>
+                                </div>
+                                <div class="bg-white/20 p-2.5 rounded-full backdrop-blur-sm">
+                                    <i class="{{ link.icon }} text-white text-xl"></i>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
                 </div>
+
+                <div class="text-center mt-6 pt-4 border-t border-slate-100">
+                    <p class="text-slate-700 font-semibold mb-0.5">Câu lạc bộ sinh viên yêu thích sách</p>
+                    <p class="text-slate-500 text-sm">Trường Đại học Kỹ thuật - Công nghệ Cần Thơ</p>
+                </div>
+            </div>
+
+            <!-- Cột phải: Fanpage -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col h-full">
+                <h5 class="text-xl font-bold text-indigo-600 mb-6">Hoạt động gần đây từ Fanpage</h5>
+                <div class="flex-1 rounded-xl overflow-hidden border border-slate-200 shadow-inner bg-slate-50 min-h-[500px]">
+                    <iframe 
+                        src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2F100048446863883&tabs=timeline&width=410&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId"
+                        width="100%"
+                        height="100%"
+                        style="border:none;overflow:hidden; min-height: 500px;"
+                        scrolling="no"
+                        frameborder="0"
+                        allowTransparency="true"
+                        allow="encrypted-media">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+        
+        {% if not app.user %}
+            <div class="mt-8 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3 text-amber-800">
+                <i class="fas fa-exclamation-triangle text-xl"></i> 
+                <div>
+                    <p class="font-medium">Bạn chưa đăng nhập.</p>
+                    <p class="text-sm">Hãy đăng nhập để trải nghiệm đầy đủ hệ thống!</p>
+                </div>
+            </div>
+            <a href="{{ path('app_login') }}" class="mt-4 block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl shadow-sm transition-colors">
+                <i class="fab fa-google mr-2"></i> Đăng nhập bằng Google
             </a>
-
-            <!-- Các liên kết nhanh -->
-            <div class="grid grid-cols-1 gap-4 mt-auto">
-                {% set quickLinks = [
-                    {
-                        'url': 'https://drive.google.com/drive/folders/1rWeBXLT4zFY4GpDyvxcVOCfK8zJx7-TT?usp=drive_link',
-                        'target': '_blank',
-                        'bg': 'bg-gradient-to-r from-rose-400 to-orange-300',
-                        'icon': 'fas fa-folder-open',
-                        'title': 'Minh chứng điểm danh',
-                        'description': 'Tổng hợp minh chứng hoạt động'
-                    },
-                    {
-                        'url': 'https://www.facebook.com/profile.php?id=100048446863883',
-                        'target': '_blank',
-                        'bg': 'bg-gradient-to-r from-teal-400 to-blue-500',
-                        'icon': 'fab fa-facebook',
-                        'title': 'Fanpage',
-                        'description': 'Cập nhật thông tin CLB'
-                    },
-                    {
-                        'url': 'https://zalo.me/g/ufsgge924',
-                        'target': '_blank',
-                        'bg': 'bg-gradient-to-r from-emerald-400 to-teal-400',
-                        'icon': 'fab fa-facebook-messenger',
-                        'title': 'Group Chat',
-                        'description': 'Trao đổi, thông báo nhanh'
-                    },
-                    {
-                        'url': 'mailto:bookclub.ctut@gmail.com',
-                        'target': '_self',
-                        'bg': 'bg-gradient-to-r from-amber-400 to-yellow-300',
-                        'icon': 'fas fa-envelope',
-                        'title': 'Mail góp ý',
-                        'description': 'bookclub.ctut@gmail.com'
-                    }
-                ] %}
-                
-                {% for link in quickLinks %}
-                    <a href="{{ link.url }}" target="{{ link.target }}" class="block group">
-                        <div class="{{ link.bg }} rounded-xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow hover:-translate-y-0.5 transform duration-200">
-                            <div>
-                                <h6 class="text-white font-bold mb-0.5">{{ link.title }}</h6>
-                                <p class="text-white/90 text-xs">{{ link.description }}</p>
-                            </div>
-                            <div class="bg-white/20 p-2.5 rounded-full backdrop-blur-sm">
-                                <i class="{{ link.icon }} text-white text-xl"></i>
-                            </div>
-                        </div>
-                    </a>
-                {% endfor %}
-            </div>
-
-            <div class="text-center mt-6 pt-4 border-t border-slate-100">
-                <p class="text-slate-700 font-semibold mb-0.5">Câu lạc bộ sinh viên yêu thích sách</p>
-                <p class="text-slate-500 text-sm">Trường Đại học Kỹ thuật - Công nghệ Cần Thơ</p>
-            </div>
-        </div>
-
-        <!-- Cột phải: Fanpage -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col h-full">
-            <h5 class="text-xl font-bold text-indigo-600 mb-6">Hoạt động gần đây từ Fanpage</h5>
-            <div class="flex-1 rounded-xl overflow-hidden border border-slate-200 shadow-inner bg-slate-50 min-h-[500px]">
-                <iframe 
-                    src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2F100048446863883&tabs=timeline&width=410&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId"
-                    width="100%"
-                    height="100%"
-                    style="border:none;overflow:hidden; min-height: 500px;"
-                    scrolling="no"
-                    frameborder="0"
-                    allowTransparency="true"
-                    allow="encrypted-media">
-                </iframe>
-            </div>
-        </div>
+        {% endif %}
     </div>
-    
-    {% if not app.user %}
-        <div class="mt-8 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3 text-amber-800">
-            <i class="fas fa-exclamation-triangle text-xl"></i> 
-            <div>
-                <p class="font-medium">Bạn chưa đăng nhập.</p>
-                <p class="text-sm">Hãy đăng nhập để trải nghiệm đầy đủ hệ thống!</p>
-            </div>
-        </div>
-        <a href="{{ path('app_login') }}" class="mt-4 block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-xl shadow-sm transition-colors">
-            <i class="fab fa-google mr-2"></i> Đăng nhập bằng Google
-        </a>
-    {% endif %}
 {% endblock %}
 
 {% block javascripts %}

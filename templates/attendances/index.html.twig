@@ -1,343 +1,417 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Quản lý điểm danh{% endblock %}
+{% block title %}Quản lý điểm danh chung{% endblock %}
 
 {% block body %}
-    <div class="container-fluid py-4">
-        <!-- Thông báo flash -->
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success">{{ message }}</div>
-        {% endfor %}
-        {% for message in app.flashes('error') %}
-            <div class="alert alert-danger">{{ message }}</div>
-        {% endfor %}
-
-        <!-- Header và Danh sách điểm danh trong một card -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header pb-0">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="text-uppercase text-secondary font-weight-bold mb-0">Quản lý điểm danh</h6>
-                            <div class="d-flex align-items-center">
-                                <div class="d-flex align-items-center me-2 mb-0">
-                                    <input type="text" id="attendancesSearchInput" class="form-control me-2" placeholder="Tìm kiếm điểm danh..." style="max-width: 300px;">
-                                    <button type="button" id="attendancesClearSearchBtn" class="btn btn-secondary mb-0 ms-2 d-none">Xóa bộ lọc</button>
-                                </div>
-                                <button type="button" class="btn btn-success mb-0" data-bs-toggle="modal" data-bs-target="#addAttendanceModal">
-                                    <i class="fas fa-plus me-1"></i> Thêm điểm danh
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body px-0 pt-0 pb-2">
-                        <div class="table-responsive p-0 px-3" style="max-height: 400px; overflow-y: auto;">
-                            <table class="table table-hover align-items-center mb-0">
-                                <thead>
-                                    <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            <a href="#" class="sort-link" data-sort="userName">Tên người dùng</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            <a href="#" class="sort-link" data-sort="activityTitle">Hoạt động</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            <a href="#" class="sort-link" data-sort="status">Trạng thái</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            <a href="#" class="sort-link" data-sort="remark">Ghi chú</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            <a href="#" class="sort-link" data-sort="markedAt">Thời gian điểm danh</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                            <a href="#" class="sort-link" data-sort="markedBy">Người điểm danh</a>
-                                        </th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="attendancesTableBody">
-                                    {% for attendance in attendances %}
-                                        <tr data-url="{{ path('app_attendances_show', {'id': attendance.id}) }}" style="cursor: pointer;">
-                                            <td>
-                                                <div class="d-flex px-2 py-1">
-                                                    <div class="d-flex flex-column justify-content-center">
-                                                        <h6 class="mb-0 text-sm">{{ attendance.userId.name }}</h6>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ attendance.activityId.title }}</p>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0 text-{{ attendance.status == 'present' ? 'success' : 'danger' }}">{{ attendance.status }}</p>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ attendance.remark ?? 'N/A' }}</p>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ attendance.markedAt|date('Y-m-d H:i:s') }}</p>
-                                            </td>
-                                            <td>
-                                                <p class="text-xs font-weight-bold mb-0">{{ attendance.markedBy.name }}</p>
-                                            </td>
-                                            <td class="text-center">
-                                                <a href="{{ path('app_attendances_show', {'id': attendance.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
-                                                <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editAttendanceModal{{ attendance.id }}" onclick="event.stopPropagation();">Sửa</button>
-                                                <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ attendance.id }}" data-csrf-token="{{ csrf_token('delete' ~ attendance.id) }}" onclick="event.stopPropagation();">Xóa</button>
-                                            </td>
-                                        </tr>
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="7" class="text-center">Không có điểm danh nào.</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- Phân trang client-side -->
-                        <div class="navigation mt-4 d-flex justify-content-center">
-                            <nav>
-                                <ul class="pagination" id="attendancesPagination"></ul>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Quản lý điểm danh</h1>
+                <p class="mt-2 text-sm text-gray-500">Giám sát và quản lý trạng thái tham gia của tất cả thành viên.</p>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" onclick="showAddForm()">
+                    <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    Thêm điểm danh
+                </button>
             </div>
         </div>
 
-        <!-- Modal: Thêm điểm danh -->
-        <div class="modal fade" id="addAttendanceModal" tabindex="-1" aria-labelledby="addAttendanceModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addAttendanceModalLabel">Thêm điểm danh</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div id="addAttendanceError" class="alert alert-danger d-none"></div>
-                        {{ form_start(addAttendanceForm, {'attr': {'id': 'addAttendanceForm'}}) }}
-                            <div class="mb-3">
-                                {{ form_label(addAttendanceForm.user_id) }}
-                                {{ form_widget(addAttendanceForm.user_id, {'attr': {'class': 'form-select'}}) }}
-                                <div class="text-danger">{{ form_errors(addAttendanceForm.user_id) }}</div>
-                            </div>
-                            <div class="mb-3">
-                                {{ form_label(addAttendanceForm.activity_id) }}
-                                {{ form_widget(addAttendanceForm.activity_id, {'attr': {'class': 'form-select'}}) }}
-                                <div class="text-danger">{{ form_errors(addAttendanceForm.activity_id) }}</div>
-                            </div>
-                            <div class="mb-3">
-                                {{ form_label(addAttendanceForm.status) }}
-                                {{ form_widget(addAttendanceForm.status, {'attr': {'class': 'form-select'}}) }}
-                                <div class="text-danger">{{ form_errors(addAttendanceForm.status) }}</div>
-                            </div>
-                            <div class="mb-3">
-                                {{ form_label(addAttendanceForm.remark) }}
-                                {{ form_widget(addAttendanceForm.remark, {'attr': {'class': 'form-control'}}) }}
-                                <div class="text-danger">{{ form_errors(addAttendanceForm.remark) }}</div>
-                            </div>
-                            <div class="mb-3">
-                                {{ form_label(addAttendanceForm.marked_at) }}
-                                {{ form_widget(addAttendanceForm.marked_at, {'attr': {'class': 'form-control'}}) }}
-                                <div class="text-danger">{{ form_errors(addAttendanceForm.marked_at) }}</div>
-                            </div>
-                            {{ form_row(addAttendanceForm.marked_by, {'attr': {'class': 'd-none'}}) }}
-                            {{ form_row(addAttendanceForm._token) }}
-                            <button type="submit" class="btn btn-primary" id="addAttendanceSubmitBtn">
-                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="addAttendanceSpinner"></span>
-                                Lưu
-                            </button>
-                        {{ form_end(addAttendanceForm) }}
-                    </div>
+        <!-- Alerts -->
+        <div id="alert-container" class="mb-6 space-y-4">
+            {% for message in app.flashes('success') %}
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl flex items-center shadow-sm">
+                    <svg class="w-5 h-5 mr-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-sm font-medium">{{ message }}</span>
                 </div>
-            </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl flex items-center shadow-sm">
+                    <svg class="w-5 h-5 mr-3 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-sm font-medium">{{ message }}</span>
+                </div>
+            {% endfor %}
         </div>
 
-        <!-- Modal: Sửa điểm danh -->
-        {% for attendance in attendances %}
-            <div class="modal fade" id="editAttendanceModal{{ attendance.id }}" tabindex="-1" aria-labelledby="editAttendanceModalLabel{{ attendance.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editAttendanceModalLabel{{ attendance.id }}">Sửa điểm danh</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div id="editAttendanceError{{ attendance.id }}" class="alert alert-danger d-none"></div>
-                            {{ form_start(editAttendanceForms[attendance.id], {'attr': {'id': 'editAttendanceForm' ~ attendance.id}}) }}
-                                <div class="mb-3">
-                                    {{ form_label(editAttendanceForms[attendance.id].user_id) }}
-                                    {{ form_widget(editAttendanceForms[attendance.id].user_id, {'attr': {'class': 'form-select'}}) }}
-                                    <div class="text-danger">{{ form_errors(editAttendanceForms[attendance.id].user_id) }}</div>
-                                </div>
-                                <div class="mb-3">
-                                    {{ form_label(editAttendanceForms[attendance.id].activity_id) }}
-                                    {{ form_widget(editAttendanceForms[attendance.id].activity_id, {'attr': {'class': 'form-select'}}) }}
-                                    <div class="text-danger">{{ form_errors(editAttendanceForms[attendance.id].activity_id) }}</div>
-                                </div>
-                                <div class="mb-3">
-                                    {{ form_label(editAttendanceForms[attendance.id].status) }}
-                                    {{ form_widget(editAttendanceForms[attendance.id].status, {'attr': {'class': 'form-select'}}) }}
-                                    <div class="text-danger">{{ form_errors(editAttendanceForms[attendance.id].status) }}</div>
-                                </div>
-                                <div class="mb-3">
-                                    {{ form_label(editAttendanceForms[attendance.id].remark) }}
-                                    {{ form_widget(editAttendanceForms[attendance.id].remark, {'attr': {'class': 'form-control'}}) }}
-                                    <div class="text-danger">{{ form_errors(editAttendanceForms[attendance.id].remark) }}</div>
-                                </div>
-                                <div class="mb-3">
-                                    {{ form_label(editAttendanceForms[attendance.id].marked_at) }}
-                                    {{ form_widget(editAttendanceForms[attendance.id].marked_at, {'attr': {'class': 'form-control'}}) }}
-                                    <div class="text-danger">{{ form_errors(editAttendanceForms[attendance.id].marked_at) }}</div>
-                                </div>
-                                {{ form_row(editAttendanceForms[attendance.id].marked_by, {'attr': {'class': 'd-none'}}) }}
-                                {{ form_row(editAttendanceForms[attendance.id]._token) }}
-                                <button type="submit" class="btn btn-primary" id="editAttendanceSubmitBtn{{ attendance.id }}">
-                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="editAttendanceSpinner{{ attendance.id }}"></span>
-                                    Cập nhật
-                                </button>
-                            {{ form_end(editAttendanceForms[attendance.id]) }}
-                        </div>
+        <!-- Dynamic Content Panel -->
+        <div id="dynamicContent" class="mb-8 scroll-mt-6 hidden">
+            <!-- Populated via JS -->
+        </div>
+
+        <!-- Attendances List -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <!-- Table Header & Search -->
+            <div class="px-6 py-5 border-b border-gray-100 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h3 class="text-lg font-bold text-gray-800">Danh sách điểm danh</h3>
+                <div class="relative w-full sm:w-auto">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
+                    <input type="text" id="searchInput" class="block w-full sm:w-80 pl-10 pr-3 py-2 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors" placeholder="Tìm kiếm tên, hoạt động...">
                 </div>
             </div>
-        {% endfor %}
 
-        <!-- Include table-layout.js -->
-        <script src="{{ asset('js/table-layout.js') }}"></script>
-
-        <!-- JavaScript để khởi tạo TableLayout -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const attendancesTable = new TableLayout({
-                    data: [
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-white">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên thành viên</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hoạt động</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời gian</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100" id="attendanceTableBody">
                         {% for attendance in attendances %}
-                            {
-                                userName: '{{ attendance.userId.name|e('js') }}',
-                                activityTitle: '{{ attendance.activityId.title|e('js') }}',
-                                status: '{{ attendance.status|e('js') }}',
-                                remark: '{{ attendance.remark ? attendance.remark|e('js') : 'N/A' }}',
-                                markedAt: '{{ attendance.markedAt|date('Y-m-d H:i:s') }}',
-                                markedBy: '{{ attendance.markedBy.name|e('js') }}',
-                                detailUrl: '{{ path('app_attendances_show', {'id': attendance.id}) }}',
-                                actions: `
-                                    <a href="{{ path('app_attendances_show', {'id': attendance.id}) }}" class="btn btn-sm btn-info mb-0" onclick="event.stopPropagation();">Xem</a>
-                                    <button type="button" class="btn btn-sm btn-primary mb-0" data-bs-toggle="modal" data-bs-target="#editAttendanceModal{{ attendance.id }}" onclick="event.stopPropagation();">Sửa</button>
-                                    <button type="button" class="btn btn-sm btn-danger mb-0 delete-btn" data-id="{{ attendance.id }}" data-csrf-token="{{ csrf_token('delete' ~ attendance.id) }}" onclick="event.stopPropagation();">Xóa</button>
-                                `
-                            },
+                            <tr class="hover:bg-gray-50 cursor-pointer transition-colors attendance-row" onclick="showAttendanceDetails('{{ attendance.id }}')">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 flex-shrink-0">
+                                            <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
+                                                {{ attendance.userId.name|first|upper }}
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900 attendance-name">{{ attendance.userId.name }}</div>
+                                            <div class="text-xs text-gray-500">{{ attendance.userId.studentId }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900 font-medium attendance-activity line-clamp-1" title="{{ attendance.activityId.title }}">{{ attendance.activityId.title }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if attendance.status == 'present' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                            Có mặt
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800">
+                                            Vắng mặt
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ attendance.markedAt|date('d/m/Y H:i') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button type="button" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition-colors ml-2" 
+                                            onclick="event.stopPropagation(); deleteAttendance('{{ attendance.id }}', '{{ csrf_token('delete' ~ attendance.id) }}')">
+                                        Xóa
+                                    </button>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr id="emptyRow">
+                                <td colspan="5" class="px-6 py-12 text-center">
+                                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                    </div>
+                                    <h3 class="text-sm font-medium text-gray-900">Không có điểm danh</h3>
+                                    <p class="mt-1 text-sm text-gray-500">Chưa có ai được điểm danh trên hệ thống.</p>
+                                </td>
+                            </tr>
                         {% endfor %}
-                    ],
-                    tableBodyId: 'attendancesTableBody',
-                    searchInputId: 'attendancesSearchInput',
-                    clearSearchBtnId: 'attendancesClearSearchBtn',
-                    paginationId: 'attendancesPagination',
-                    columns: [
-                        {
-                            field: 'userName',
-                            formatter: (value) => `
-                                <div class="d-flex px-2 py-1">
-                                    <div class="d-flex flex-column justify-content-center">
-                                        <h6 class="mb-0 text-sm">${value}</h6>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Form Templates -->
+    <div id="form-templates" class="hidden">
+        <!-- Add Form -->
+        <div id="template-add">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transform transition-all duration-300">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+                    <h3 class="text-lg font-bold text-gray-800">Thêm điểm danh mới</h3>
+                    <button type="button" class="text-gray-400 hover:text-gray-600 focus:outline-none" onclick="document.getElementById('dynamicContent').classList.add('hidden')">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div id="addError" class="hidden mb-4 p-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200"></div>
+                    {{ form_start(addAttendanceForm, {'attr': {'id': 'addForm', 'class': 'space-y-6', 'onsubmit': 'submitForm(event, "addForm", "' ~ path('app_attendances_new') ~ '")'}}) }}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                {{ form_label(addAttendanceForm.user_id, 'Thành viên', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                {{ form_widget(addAttendanceForm.user_id, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                            </div>
+                            <div>
+                                {{ form_label(addAttendanceForm.activity_id, 'Hoạt động', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                {{ form_widget(addAttendanceForm.activity_id, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                            </div>
+                            <div>
+                                {{ form_label(addAttendanceForm.status, 'Trạng thái', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                {{ form_widget(addAttendanceForm.status, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                            </div>
+                            <div>
+                                {{ form_label(addAttendanceForm.marked_at, 'Thời gian', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                {{ form_widget(addAttendanceForm.marked_at, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                            </div>
+                            <div class="md:col-span-2">
+                                {{ form_label(addAttendanceForm.remark, 'Ghi chú', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                {{ form_widget(addAttendanceForm.remark, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                            </div>
+                            <div class="hidden">
+                                {{ form_widget(addAttendanceForm.marked_by) }}
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                            <button type="button" class="px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" onclick="document.getElementById('dynamicContent').classList.add('hidden')">Hủy</button>
+                            <button type="submit" class="px-4 py-2 bg-indigo-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-indigo-700 transition-colors flex items-center">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" id="addForm-spinner" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                Lưu điểm danh
+                            </button>
+                        </div>
+                    {{ form_end(addAttendanceForm) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Forms -->
+        {% for attendance in attendances %}
+            <div id="template-edit-{{ attendance.id }}">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transform transition-all duration-300">
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+                        <h3 class="text-lg font-bold text-gray-800">Chỉnh sửa điểm danh</h3>
+                        <button type="button" class="text-gray-400 hover:text-gray-600 focus:outline-none" onclick="showAttendanceDetails('{{ attendance.id }}')">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div id="editError{{ attendance.id }}" class="hidden mb-4 p-4 text-sm text-red-800 rounded-lg bg-red-50 border border-red-200"></div>
+                        {{ form_start(editAttendanceForms[attendance.id], {'attr': {'id': 'editForm' ~ attendance.id, 'class': 'space-y-6', 'onsubmit': 'submitForm(event, "editForm' ~ attendance.id ~ '", "' ~ path('app_attendances_edit', {'id': attendance.id}) ~ '")'}}) }}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    {{ form_label(editAttendanceForms[attendance.id].user_id, 'Thành viên', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                    {{ form_widget(editAttendanceForms[attendance.id].user_id, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                                </div>
+                                <div>
+                                    {{ form_label(editAttendanceForms[attendance.id].activity_id, 'Hoạt động', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                    {{ form_widget(editAttendanceForms[attendance.id].activity_id, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                                </div>
+                                <div>
+                                    {{ form_label(editAttendanceForms[attendance.id].status, 'Trạng thái', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                    {{ form_widget(editAttendanceForms[attendance.id].status, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                                </div>
+                                <div>
+                                    {{ form_label(editAttendanceForms[attendance.id].marked_at, 'Thời gian', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                    {{ form_widget(editAttendanceForms[attendance.id].marked_at, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                                </div>
+                                <div class="md:col-span-2">
+                                    {{ form_label(editAttendanceForms[attendance.id].remark, 'Ghi chú', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}}) }}
+                                    {{ form_widget(editAttendanceForms[attendance.id].remark, {'attr': {'class': 'block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors'}}) }}
+                                </div>
+                                <div class="hidden">
+                                    {{ form_widget(editAttendanceForms[attendance.id].marked_by) }}
+                                </div>
+                            </div>
+                            <div class="pt-4 border-t border-gray-100 flex justify-between gap-3">
+                                <button type="button" class="px-4 py-2 bg-rose-50 border border-transparent rounded-xl text-sm font-medium text-rose-700 hover:bg-rose-100 transition-colors" onclick="deleteAttendance('{{ attendance.id }}', '{{ csrf_token('delete' ~ attendance.id) }}')">Xóa</button>
+                                <div class="flex gap-3">
+                                    <button type="button" class="px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" onclick="showAttendanceDetails('{{ attendance.id }}')">Quay lại</button>
+                                    <button type="submit" class="px-4 py-2 bg-indigo-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-indigo-700 transition-colors flex items-center">
+                                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" id="editForm{{ attendance.id }}-spinner" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        Lưu thay đổi
+                                    </button>
+                                </div>
+                            </div>
+                        {{ form_end(editAttendanceForms[attendance.id]) }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Script Store & Handlers -->
+    <script>
+        const store = {
+            {% for a in attendances %}
+                '{{ a.id }}': {
+                    id: '{{ a.id }}',
+                    userName: '{{ a.userId.name|e('js') }}',
+                    userStudentId: '{{ a.userId.studentId|e('js') }}',
+                    activityTitle: '{{ a.activityId.title|e('js') }}',
+                    status: '{{ a.status }}',
+                    remark: '{{ a.remark ? a.remark|e('js')|nl2br : 'N/A' }}',
+                    markedAt: '{{ a.markedAt|date('d/m/Y H:i') }}',
+                    markedBy: '{{ a.markedBy.name|e('js') }}'
+                }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        };
+
+        // Client-side Search
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const term = e.target.value.toLowerCase();
+                    const rows = document.querySelectorAll('.attendance-row');
+                    let visibleCount = 0;
+
+                    rows.forEach(row => {
+                        const name = row.querySelector('.attendance-name').textContent.toLowerCase();
+                        const activity = row.querySelector('.attendance-activity').textContent.toLowerCase();
+                        
+                        if (name.includes(term) || activity.includes(term)) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    const emptyRow = document.getElementById('emptyRow');
+                    if (visibleCount === 0 && rows.length > 0) {
+                        if (!emptyRow) {
+                            const tbody = document.getElementById('attendanceTableBody');
+                            tbody.insertAdjacentHTML('beforeend', `
+                                <tr id="emptyRow">
+                                    <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">
+                                        Không tìm thấy kết quả phù hợp.
+                                    </td>
+                                </tr>
+                            `);
+                        } else {
+                            emptyRow.style.display = '';
+                        }
+                    } else if (emptyRow) {
+                        emptyRow.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        function showAttendanceDetails(id) {
+            const data = store[id];
+            if (!data) return;
+
+            const panel = document.getElementById('dynamicContent');
+            panel.classList.remove('hidden');
+
+            const typeBadge = data.status === 'present' 
+                ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">Có mặt</span>'
+                : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-rose-100 text-rose-800">Vắng mặt</span>';
+
+            panel.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transform transition-all duration-300">
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+                        <h3 class="text-lg font-bold text-gray-800">Chi tiết điểm danh</h3>
+                        <button type="button" class="text-gray-400 hover:text-gray-600 focus:outline-none" onclick="document.getElementById('dynamicContent').classList.add('hidden')">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-xl font-bold text-gray-900 mb-1">${data.userName}</h4>
+                                <p class="text-sm text-gray-500 mb-6">Mã SV: ${data.userStudentId}</p>
+                                
+                                <div class="space-y-4">
+                                    <div class="flex items-start text-sm">
+                                        <span class="w-32 text-gray-500">Hoạt động:</span>
+                                        <span class="font-medium text-gray-900">${data.activityTitle}</span>
+                                    </div>
+                                    <div class="flex items-center text-sm">
+                                        <span class="w-32 text-gray-500">Trạng thái:</span>
+                                        ${typeBadge}
+                                    </div>
+                                    <div class="flex items-center text-sm">
+                                        <span class="w-32 text-gray-500">Thời gian:</span>
+                                        <span class="font-medium text-gray-900">${data.markedAt}</span>
+                                    </div>
+                                    <div class="flex items-center text-sm">
+                                        <span class="w-32 text-gray-500">Người ghi nhận:</span>
+                                        <span class="font-medium text-gray-900">${data.markedBy}</span>
                                     </div>
                                 </div>
-                            `
-                        },
-                        { field: 'activityTitle' },
-                        {
-                            field: 'status',
-                            formatter: (value) => `
-                                <p class="text-xs font-weight-bold mb-0 text-${value === 'present' ? 'success' : 'danger'}">${value}</p>
-                            `
-                        },
-                        { field: 'remark' },
-                        { field: 'markedAt', type: 'datetime' },
-                        { field: 'markedBy' }
-                    ],
-                    onRowClick: (row) => {
-                        const detailUrl = row.getAttribute('data-url');
-                        if (detailUrl) window.location.href = detailUrl;
-                    },
-                    onDelete: (button) => {
-                        if (!confirm('Bạn có chắc chắn muốn xóa điểm danh này?')) return;
-                        const id = button.getAttribute('data-id');
-                        const csrfToken = button.getAttribute('data-csrf-token');
-                        fetch(`/attendances/${id}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body: `_token=${csrfToken}`
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) window.location.reload();
-                            else alert(data.error);
-                        })
-                        .catch(error => alert('Có lỗi xảy ra: ' + error.message));
-                    },
-                    scrollPositionKey: 'attendances_table_scroll_position'
-                });
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Ghi chú</p>
+                                <p class="text-sm text-gray-700 leading-relaxed">${data.remark}</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex flex-wrap gap-3 pt-6 border-t border-gray-100">
+                            <button class="px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" onclick="showEditForm('${data.id}')">Chỉnh sửa</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            window.scrollTo({ top: panel.offsetTop - 20, behavior: 'smooth' });
+        }
 
-                // Xử lý form thêm điểm danh
-                const addAttendanceForm = document.getElementById('addAttendanceForm');
-                if (addAttendanceForm) {
-                    const addAttendanceSubmitBtn = document.getElementById('addAttendanceSubmitBtn');
-                    const addAttendanceSpinner = document.getElementById('addAttendanceSpinner');
-                    const addAttendanceError = document.getElementById('addAttendanceError');
+        function showAddForm() {
+            const template = document.getElementById('template-add');
+            if (template) {
+                const panel = document.getElementById('dynamicContent');
+                panel.innerHTML = template.innerHTML;
+                panel.classList.remove('hidden');
+                window.scrollTo({ top: panel.offsetTop - 20, behavior: 'smooth' });
+            }
+        }
 
-                    addAttendanceForm.addEventListener('submit', function (e) {
-                        e.preventDefault();
-                        const formData = new FormData(this);
-                        attendancesTable.showLoading(addAttendanceSubmitBtn, addAttendanceSpinner);
-                        attendancesTable.hideError(addAttendanceError);
+        function showEditForm(id) {
+            const template = document.getElementById('template-edit-' + id);
+            if (template) {
+                const panel = document.getElementById('dynamicContent');
+                panel.innerHTML = template.innerHTML;
+                panel.classList.remove('hidden');
+                window.scrollTo({ top: panel.offsetTop - 20, behavior: 'smooth' });
+            }
+        }
 
-                        fetch(this.action, {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            attendancesTable.hideLoading(addAttendanceSubmitBtn, addAttendanceSpinner);
-                            if (data.success) window.location.reload();
-                            else attendancesTable.showError(addAttendanceError, data.error);
-                        })
-                        .catch(error => {
-                            attendancesTable.hideLoading(addAttendanceSubmitBtn, addAttendanceSpinner);
-                            attendancesTable.showError(addAttendanceError, 'Có lỗi xảy ra: ' + error.message);
-                        });
-                    });
+        function submitForm(e, formId, url) {
+            e.preventDefault();
+            const form = document.getElementById(formId);
+            const spinner = document.getElementById(formId + '-spinner');
+            const errorDiv = document.getElementById(formId.replace('Form', 'Error'));
+            
+            spinner.classList.remove('hidden');
+            if (errorDiv) errorDiv.classList.add('hidden');
+            
+            fetch(url, {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    if (errorDiv) {
+                        errorDiv.innerHTML = data.error || 'Có lỗi xảy ra';
+                        errorDiv.classList.remove('hidden');
+                    } else {
+                        alert(data.error || 'Có lỗi xảy ra');
+                    }
                 }
+            })
+            .catch(err => alert('Lỗi kết nối'))
+            .finally(() => spinner.classList.add('hidden'));
+        }
 
-                // Xử lý form sửa điểm danh
-                document.querySelectorAll('[id^="editAttendanceForm"]').forEach(form => {
-                    const formId = form.id;
-                    const submitBtn = document.getElementById('editAttendanceSubmitBtn' + formId.replace('editAttendanceForm', ''));
-                    const spinner = document.getElementById('editAttendanceSpinner' + formId.replace('editAttendanceForm', ''));
-                    const errorDiv = document.getElementById('editAttendanceError' + formId.replace('editAttendanceForm', ''));
-
-                    form.addEventListener('submit', function (e) {
-                        e.preventDefault();
-                        const formData = new FormData(this);
-                        attendancesTable.showLoading(submitBtn, spinner);
-                        attendancesTable.hideError(errorDiv);
-
-                        fetch(this.action, {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            attendancesTable.hideLoading(submitBtn, spinner);
-                            if (data.success) window.location.reload();
-                            else attendancesTable.showError(errorDiv, data.error);
-                        })
-                        .catch(error => {
-                            attendancesTable.hideLoading(submitBtn, spinner);
-                            attendancesTable.showError(errorDiv, 'Có lỗi xảy ra: ' + error.message);
-                        });
-                    });
-                });
-            });
-        </script>
-    </div>
+        function deleteAttendance(id, csrfToken) {
+            if (confirm('Bạn có chắc chắn muốn xóa bản ghi điểm danh này không?')) {
+                const formData = new FormData();
+                formData.append('_token', csrfToken);
+                
+                fetch(`/attendances/${id}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert(data.error || 'Lỗi khi xóa');
+                    }
+                })
+                .catch(err => alert('Lỗi kết nối'));
+            }
+        }
+    </script>
 {% endblock %}
