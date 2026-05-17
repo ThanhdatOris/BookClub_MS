@@ -1,33 +1,33 @@
 {# templates/pagination/custom_pagination.html.twig #}
 {% if pageCount > 1 %}
-    <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center">
+    <nav aria-label="Page navigation" class="flex justify-center mt-6">
+        <ul class="inline-flex -space-x-px text-sm">
             {# First #}
             {% if first is defined and current != first %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ path(route, query|merge({(pageParameterName): first})) }}" aria-label="First">
-                        <i class="fas fa-angle-double-left"></i>
+                <li>
+                    <a href="{{ path(route, query|merge({(pageParameterName): first})) }}" aria-label="First" class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
                     </a>
                 </li>
             {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link">
-                        <i class="fas fa-angle-double-left"></i>
+                <li>
+                    <span class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-400 bg-gray-50 border border-e-0 border-gray-300 rounded-s-lg cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
                     </span>
                 </li>
             {% endif %}
 
             {# Previous #}
             {% if previous is defined %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ path(route, query|merge({(pageParameterName): previous})) }}" aria-label="Previous">
-                        <i class="fas fa-angle-left"></i>
+                <li>
+                    <a href="{{ path(route, query|merge({(pageParameterName): previous})) }}" aria-label="Previous" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     </a>
                 </li>
             {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link">
-                        <i class="fas fa-angle-left"></i>
+                <li>
+                    <span class="flex items-center justify-center px-3 h-8 leading-tight text-gray-400 bg-gray-50 border border-gray-300 cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     </span>
                 </li>
             {% endif %}
@@ -35,45 +35,45 @@
             {# Pages #}
             {% for page in pagesInRange %}
                 {% if page != current %}
-                    <li class="page-item">
-                        <a class="page-link" href="{{ path(route, query|merge({(pageParameterName): page})) }}">{{ page }}</a>
+                    <li>
+                        <a href="{{ path(route, query|merge({(pageParameterName): page})) }}" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">{{ page }}</a>
                     </li>
                 {% else %}
-                    <li class="page-item active">
-                        <span class="page-link">{{ page }}</span>
+                    <li>
+                        <span class="flex items-center justify-center px-3 h-8 text-indigo-600 border border-gray-300 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 z-10 font-semibold">{{ page }}</span>
                     </li>
                 {% endif %}
             {% endfor %}
 
             {# Next #}
             {% if next is defined %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ path(route, query|merge({(pageParameterName): next})) }}" aria-label="Next">
-                        <i class="fas fa-angle-right"></i>
+                <li>
+                    <a href="{{ path(route, query|merge({(pageParameterName): next})) }}" aria-label="Next" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </a>
                 </li>
             {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link">
-                        <i class="fas fa-angle-right"></i>
+                <li>
+                    <span class="flex items-center justify-center px-3 h-8 leading-tight text-gray-400 bg-gray-50 border border-gray-300 cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </span>
                 </li>
             {% endif %}
 
             {# Last #}
             {% if last is defined and current != last %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ path(route, query|merge({(pageParameterName): last})) }}" aria-label="Last">
-                        <i class="fas fa-angle-double-right"></i>
+                <li>
+                    <a href="{{ path(route, query|merge({(pageParameterName): last})) }}" aria-label="Last" class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
                     </a>
                 </li>
             {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link">
-                        <i class="fas fa-angle-double-right"></i>
+                <li>
+                    <span class="flex items-center justify-center px-3 h-8 leading-tight text-gray-400 bg-gray-50 border border-gray-300 rounded-e-lg cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
                     </span>
                 </li>
             {% endif %}
         </ul>
     </nav>
-{% endif %} 
+{% endif %}
