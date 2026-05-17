@@ -145,10 +145,29 @@ class TableLayout {
 
         const createPageItem = (page, text, disabled = false, active = false, icon = null) => {
             const li = document.createElement('li');
-            li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
             const a = document.createElement('a');
-            a.className = 'page-link';
             a.href = '#';
+            
+            // Tailwind CSS classes for pagination
+            let baseClasses = "flex items-center justify-center px-3 h-8 leading-tight border ";
+            
+            if (active) {
+                baseClasses += "z-10 text-indigo-600 border-indigo-300 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 ";
+            } else if (disabled) {
+                baseClasses += "text-gray-400 border-gray-300 bg-gray-100 cursor-not-allowed ";
+            } else {
+                baseClasses += "text-gray-500 bg-white border-gray-300 hover:bg-gray-100 hover:text-gray-700 ";
+            }
+            
+            // Border radius logic
+            if (text === '' && icon === 'fas fa-angle-double-left') {
+                baseClasses += "rounded-l-lg ";
+            }
+            if (text === '' && icon === 'fas fa-angle-double-right') {
+                baseClasses += "rounded-r-lg ";
+            }
+
+            a.className = baseClasses;
             
             if (icon) {
                 const i = document.createElement('i');
@@ -164,6 +183,8 @@ class TableLayout {
                     this.currentPage = page;
                     this.renderTable();
                 });
+            } else {
+                a.addEventListener('click', (e) => e.preventDefault());
             }
             
             li.appendChild(a);
