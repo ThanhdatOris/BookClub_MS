@@ -16,42 +16,38 @@ class UsersRepository extends ServiceEntityRepository
         parent::__construct($registry, Users::class);
     }
 
-    //    /**
-    //     * @return Users[] Returns an array of Users objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Users
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
-
-    /**
-     * Find all users ordered by ID ascending and status (active first, then inactive).
-     *
-     * @return Users[]
-     */
     public function findAllOrderedByIdAndStatus(): array
     {
         return $this->createQueryBuilder('u')
-            ->orderBy('u.status', 'ASC') // active (alphabetically > inactive)
+            ->orderBy('u.status', 'ASC')
             ->addOrderBy('u.id', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function searchUsers(?string $search)
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->orderBy('u.status', 'ASC')
+            ->addOrderBy('u.id', 'DESC');
+
+        if ($search) {
+            $qb->andWhere('u.name LIKE :search OR u.student_id LIKE :search OR u.email LIKE :search OR u.faculty LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function getUsersStatistics(): array
+    {
+        return [
+            'total' => $this->count([]),
+            'active' => $this->count(['status' => 'active']),
+            'inactive' => $this->count(['status' => 'inactive']),
+            'admin' => $this->count(['role' => 'ROLE_ADMIN']),
+            'treasurer' => $this->count(['role' => 'ROLE_TREASURER']),
+            'member' => $this->count(['role' => 'ROLE_MEMBER']),
+        ];
     }
 }

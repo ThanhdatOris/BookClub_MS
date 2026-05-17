@@ -17,30 +17,6 @@ class FundsRepository extends ServiceEntityRepository
         parent::__construct($registry, Funds::class);
     }
 
-//    /**
-//     * @return Funds[] Returns an array of Funds objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('f')
-//            ->andWhere('f.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('f.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Funds
-//    {
-//        return $this->createQueryBuilder('f')
-//            ->andWhere('f.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
     public function findAllFundsQuery(): QueryBuilder
     {
         return $this->createQueryBuilder('f')
@@ -67,6 +43,75 @@ class FundsRepository extends ServiceEntityRepository
             ->setParameter('type', $type)
             ->getQuery()
             ->getSingleScalarResult() ?? 0;
+    }
+
+    public function getTotalIncome(): float
+    {
+        return (float) $this->createQueryBuilder('f')
+            ->select('COALESCE(SUM(f.amount), 0)')
+            ->where('f.transaction_type = :type')
+            ->setParameter('type', 'income')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function getTotalExpense(): float
+    {
+        return (float) $this->createQueryBuilder('f')
+            ->select('COALESCE(SUM(ABS(f.amount)), 0)')
+            ->where('f.transaction_type = :type')
+            ->setParameter('type', 'expense')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function getAvailableYears(): array
+    {
+        $years = $this->createQueryBuilder('f')
+            ->select('DISTINCT YEAR(f.date) as year')
+            ->orderBy('year', 'DESC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_column($years, 'year');
+    }
+
+    public function getChartData(int $year, ?int $month, string $type): array
+    {
+        $qb = $this->createQueryBuilder('f')
+            ->where('YEAR(f.date) = :year')
+            ->setParameter('year', $year);
+
+        if ($month !== null) {
+            $qb->andWhere('MONTH(f.date) = :month')
+               ->setParameter('month', $month);
+        }
+
+        if ($type === 'income' || $type === 'expense') {
+            $qb->andWhere('f.transaction_type = :type')
+               ->setParameter('type', $type);
+        }
+
+        return $qb->select("MONTH(f.date) as month, 
+                          SUM(CASE WHEN f.transaction_type = 'income' THEN f.amount ELSE 0 END) as income,
+                          SUM(CASE WHEN f.transaction_type = 'expense' THEN ABS(f.amount) ELSE 0 END) as expense")
+            ->groupBy('month')
+            ->orderBy('month', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getFundsBetweenDates(\DateTime $startDate, \DateTime $endDate): array
+    {
+        return $this->createQueryBuilder('f')
+            ->select('f.date', 'f.transaction_type', 'SUM(f.amount) as total')
+            ->where('f.date BETWEEN :startDate AND :endDate')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->groupBy('f.date', 'f.transaction_type')
+            ->orderBy('f.date', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     public function getFundsByDateRange(\DateTime $startDate, \DateTime $endDate)
